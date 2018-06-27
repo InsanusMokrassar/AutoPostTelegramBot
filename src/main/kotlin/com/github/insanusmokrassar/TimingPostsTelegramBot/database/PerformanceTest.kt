@@ -100,7 +100,8 @@ fun main(args: Array<String>) {
     val records = listOf(
         testCreatingPosts(),
         testReadingPosts(),
-        testCreatingMessages()
+        testCreatingMessages(),
+        testCreatingMessagesByOneCalling()
     )
 
     records.joinToString("\n\n") {
@@ -163,10 +164,42 @@ private fun testCreatingMessages(): Record {
 
         var j = 0
         while (j < messagesPerPost) {
-            PostsMessagesTable.addMessageToPost(it, id)
+            PostsMessagesTable.addMessagesToPost(it, id)
             id++
             j++
         }
+
+        subRecord.stop("Post message added")
+
+        record.addSubrecord(subRecord)
+    }
+
+    record.stop("Messages inserted")
+    return record
+}
+
+private fun testCreatingMessagesByOneCalling(): Record {
+    val record = Record()
+
+    val postsIds = transaction {
+        PostsTable.selectAll().map {
+            it[PostsTable.id]
+        }
+    }
+
+    var id = transaction {
+        PostsMessagesTable.selectAll().count()
+    }
+
+    record.start("Start insert of messages")
+
+    postsIds.forEach {
+        val subRecord = Record()
+
+        subRecord.start("Start to add")
+
+        PostsMessagesTable.addMessagesToPost(it, *(id until (id + messagesPerPost)).map { it }.toIntArray())
+        id += messagesPerPost + 1
 
         subRecord.stop("Post message added")
 

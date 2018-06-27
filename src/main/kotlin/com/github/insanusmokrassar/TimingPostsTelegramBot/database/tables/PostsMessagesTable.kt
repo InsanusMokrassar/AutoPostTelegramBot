@@ -23,9 +23,10 @@ object PostsMessagesTable : Table() {
         }
     }
 
-    fun addMessageToPost(postId: Int, messageId: Int) {
+    fun addMessagesToPost(postId: Int, vararg messageIds: Int) {
         transaction {
-            if (select { PostsMessagesTable.postId.eq(postId) }.empty()) {
+            messageIds.forEach {
+                messageId ->
                 insert {
                     it[PostsMessagesTable.postId] = postId
                     it[PostsMessagesTable.messageId] = messageId
