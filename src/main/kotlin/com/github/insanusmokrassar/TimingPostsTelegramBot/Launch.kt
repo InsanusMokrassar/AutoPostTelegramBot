@@ -2,13 +2,11 @@ package com.github.insanusmokrassar.TimingPostsTelegramBot
 
 import com.github.insanusmokrassar.BotIncomeMessagesListener.BotIncomeMessagesListener
 import com.github.insanusmokrassar.IObjectKRealisations.*
-import com.github.insanusmokrassar.TimingPostsTelegramBot.callbacks.OnMediaGroup
-import com.github.insanusmokrassar.TimingPostsTelegramBot.callbacks.OnMessage
+import com.github.insanusmokrassar.TimingPostsTelegramBot.callbacks.*
 import com.github.insanusmokrassar.TimingPostsTelegramBot.commands.FixPost
 import com.github.insanusmokrassar.TimingPostsTelegramBot.commands.StartPost
 import com.github.insanusmokrassar.TimingPostsTelegramBot.database.tables.*
 import com.pengrad.telegrambot.TelegramBot
-import com.pengrad.telegrambot.model.Chat
 import com.pengrad.telegrambot.request.GetChat
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
@@ -48,11 +46,13 @@ fun main(args: Array<String>) {
 
     val messagesListener = OnMessage(config, startPost, fixPost)
     val mediaGroupsListener = OnMediaGroup(config, startPost, fixPost)
+    val onCallbackQuery = OnCallbackQuery(bot)
 
     bot.setUpdatesListener(
         BotIncomeMessagesListener(
             messagesListener,
             onChannelPost = messagesListener,
+            onCallbackQuery = onCallbackQuery,
             onMessageMediaGroup = mediaGroupsListener,
             onChannelPostMediaGroup = mediaGroupsListener
         )

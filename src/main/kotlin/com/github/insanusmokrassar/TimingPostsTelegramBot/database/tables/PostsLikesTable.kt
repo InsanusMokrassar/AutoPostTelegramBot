@@ -14,9 +14,13 @@ object PostsLikesTable : Table() {
         userLike(userId, postId, true)
     }
 
-    fun userUnlikePost(userId: Long, postId: Int) {
+    fun userDislikePost(userId: Long, postId: Int) {
         userLike(userId, postId, false)
     }
+
+    fun postLikes(postId: Int): Int = postLikeCount(postId, true)
+
+    fun postDislikes(postId: Int): Int = postLikeCount(postId, false)
 
     fun getPostRating(postId: Int): Int {
         return transaction {
@@ -26,6 +30,12 @@ object PostsLikesTable : Table() {
                 createChooser(postId, like = false)
             }.count()
         }
+    }
+
+    private fun postLikeCount(postId: Int, like: Boolean): Int = transaction {
+        select {
+            PostsLikesTable.postId.eq(postId).and(PostsLikesTable.like.eq(like))
+        }.count()
     }
 
     private fun createChooser(postId: Int, userId: Long? = null, like: Boolean? = null): Op<Boolean> {
