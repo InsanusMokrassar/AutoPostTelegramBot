@@ -66,7 +66,7 @@ fun main(args: Array<String>) {
         config.sourceChatId.toLong(),
         bot,
         listOf(
-            PhotoForwarder(config.botToken),
+            PhotoForwarder(),
             SimpleForwarder()
         ),
         config.postDelay

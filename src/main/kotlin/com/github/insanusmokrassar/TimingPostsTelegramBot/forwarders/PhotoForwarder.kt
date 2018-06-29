@@ -1,14 +1,11 @@
 package com.github.insanusmokrassar.TimingPostsTelegramBot.forwarders
 
-import com.github.insanusmokrassar.TimingPostsTelegramBot.utils.makePhotoLink
 import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.model.Message
 import com.pengrad.telegrambot.request.GetFile
 import com.pengrad.telegrambot.request.SendPhoto
 
-class PhotoForwarder(
-    private val botToken: String
-) : Forwarder {
+class PhotoForwarder : Forwarder {
     override fun canForward(message: Message): Boolean {
         return message.photo() != null && message.mediaGroupId() == null
     }
@@ -20,14 +17,11 @@ class PhotoForwarder(
                     GetFile(
                         it.fileId()
                     )
-                ).file().filePath().let {
+                ).file().fileId().let {
                     bot.execute(
                         SendPhoto(
                             targetChatId,
-                            makePhotoLink(
-                                botToken,
-                                it
-                            )
+                            it
                         )
                     )
                 }

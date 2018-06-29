@@ -66,14 +66,16 @@ class TimerStrategy (
                                     if (!iterator.hasNext()) {
                                         iterator = forwardersList.iterator()
                                     }
-                                    iterator.next().let {
+                                    forwarder = iterator.next()
+                                }
+                                if (mapOfExecution.lastOrNull() ?. first != forwarder) {
+                                    forwarder ?. let {
                                         mapOfExecution.add(
                                             it to mutableListOf()
                                         )
-                                        forwarder = it
                                     }
                                 }
-                                mapOfExecution.first().second.add(message)
+                                mapOfExecution.last().second.add(message)
                             }
 
                             mapOfExecution.forEach {
