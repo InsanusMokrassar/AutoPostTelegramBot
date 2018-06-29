@@ -11,21 +11,15 @@ class PhotoForwarder : Forwarder {
     }
 
     override fun forward(bot: TelegramBot, targetChatId: Long, vararg messages: Message) {
-        messages.forEach {
+        messages.mapNotNull {
             it.photo().maxBy { it.fileSize() } ?.let {
-                bot.execute(
-                    GetFile(
-                        it.fileId()
-                    )
-                ).file().fileId().let {
-                    bot.execute(
-                        SendPhoto(
-                            targetChatId,
-                            it
-                        )
-                    )
-                }
+                SendPhoto(
+                    targetChatId,
+                    it.fileId()
+                )
             }
+        }.forEach {
+            bot.execute(it)
         }
     }
 }

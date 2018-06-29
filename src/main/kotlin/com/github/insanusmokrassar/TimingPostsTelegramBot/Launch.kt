@@ -6,8 +6,7 @@ import com.github.insanusmokrassar.TimingPostsTelegramBot.PostingStrategies.Time
 import com.github.insanusmokrassar.TimingPostsTelegramBot.callbacks.*
 import com.github.insanusmokrassar.TimingPostsTelegramBot.commands.*
 import com.github.insanusmokrassar.TimingPostsTelegramBot.database.tables.*
-import com.github.insanusmokrassar.TimingPostsTelegramBot.forwarders.PhotoForwarder
-import com.github.insanusmokrassar.TimingPostsTelegramBot.forwarders.SimpleForwarder
+import com.github.insanusmokrassar.TimingPostsTelegramBot.forwarders.*
 import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.request.GetChat
 import org.jetbrains.exposed.sql.Database
@@ -67,6 +66,7 @@ fun main(args: Array<String>) {
         bot,
         listOf(
             PhotoForwarder(),
+            VideoForwarder(),
             SimpleForwarder()
         ),
         config.postDelay
