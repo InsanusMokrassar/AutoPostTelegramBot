@@ -3,8 +3,7 @@ package com.github.insanusmokrassar.TimingPostsTelegramBot
 import com.github.insanusmokrassar.BotIncomeMessagesListener.BotIncomeMessagesListener
 import com.github.insanusmokrassar.IObjectKRealisations.*
 import com.github.insanusmokrassar.TimingPostsTelegramBot.callbacks.*
-import com.github.insanusmokrassar.TimingPostsTelegramBot.commands.FixPost
-import com.github.insanusmokrassar.TimingPostsTelegramBot.commands.StartPost
+import com.github.insanusmokrassar.TimingPostsTelegramBot.commands.*
 import com.github.insanusmokrassar.TimingPostsTelegramBot.database.tables.*
 import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.request.GetChat
@@ -43,8 +42,9 @@ fun main(args: Array<String>) {
 
     val startPost = StartPost()
     val fixPost = FixPost(bot)
+    val mostRated = MostRated(bot)
 
-    val messagesListener = OnMessage(config, startPost, fixPost)
+    val messagesListener = OnMessage(config, startPost, fixPost, mostRated)
     val mediaGroupsListener = OnMediaGroup(config, startPost, fixPost)
     val onCallbackQuery = OnCallbackQuery(bot)
 

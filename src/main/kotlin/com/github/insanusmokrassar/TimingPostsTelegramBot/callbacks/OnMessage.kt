@@ -3,8 +3,7 @@ package com.github.insanusmokrassar.TimingPostsTelegramBot.callbacks
 import com.github.insanusmokrassar.BotIncomeMessagesListener.UpdateCallback
 import com.github.insanusmokrassar.IObjectK.interfaces.IObject
 import com.github.insanusmokrassar.TimingPostsTelegramBot.FinalConfig
-import com.github.insanusmokrassar.TimingPostsTelegramBot.commands.FixPost
-import com.github.insanusmokrassar.TimingPostsTelegramBot.commands.StartPost
+import com.github.insanusmokrassar.TimingPostsTelegramBot.commands.*
 import com.github.insanusmokrassar.TimingPostsTelegramBot.database.tables.PostTransactionTable
 import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.model.Message
@@ -14,12 +13,14 @@ private val commandRegex = Regex("^/[^\\s]*")
 class OnMessage(
     private val config: FinalConfig,
     private val startPost: StartPost,
-    private val fixPost: FixPost
+    private val fixPost: FixPost,
+    private val mostRated: MostRated
 ) : UpdateCallback<Message> {
 
     private val commands = mapOf(
         "/startPost" to startPost,
-        "/fixPost" to fixPost
+        "/fixPost" to fixPost,
+        "/mostRated" to mostRated
     )
 
     override fun invoke(id: Int, update: IObject<Any>, message: Message) {
