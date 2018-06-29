@@ -32,4 +32,20 @@ object PostsTable : Table() {
             select { id.eq(postId) }.first()[postRegisteredMessageId]
         }
     }
+
+    fun removePost(postId: Int) {
+        transaction {
+            PostsMessagesTable.getMessagesOfPost(postId).forEach {
+                PostsMessagesTable.removeMessageOfPost(it)
+            }
+            PostsLikesTable.clearPostMarks(postId)
+            deleteWhere { id.eq(postId) }
+        }
+    }
+
+    fun getAll(): List<Int> {
+        return transaction {
+            selectAll().map { it[id] }
+        }
+    }
 }

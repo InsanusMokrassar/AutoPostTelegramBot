@@ -1,6 +1,5 @@
 package com.github.insanusmokrassar.TimingPostsTelegramBot.database.tables
 
-import com.github.insanusmokrassar.TimingPostsTelegramBot.database.exceptions.NoRowFoundException
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -34,17 +33,17 @@ object PostsLikesTable : Table() {
 
     fun getMostRated(): List<Int> {
         return transaction {
-            selectAll().distinct().let {
+            PostsTable.getAll().let {
                 var maxRating = Int.MIN_VALUE
                 ArrayList<Int>().apply {
                     it.forEach {
-                        val currentRating = getPostRating(it[postId])
+                        val currentRating = getPostRating(it)
                         if (currentRating > maxRating) {
                             maxRating = currentRating
                             clear()
                         }
                         if (currentRating == maxRating) {
-                            add(it[postId])
+                            add(it)
                         }
                     }
                 }
@@ -103,6 +102,12 @@ object PostsLikesTable : Table() {
                 it[PostsLikesTable.userId] = userId
                 it[PostsLikesTable.like] = like
             }
+        }
+    }
+
+    internal fun clearPostMarks(postId: Int) {
+        transaction {
+            deleteWhere { PostsLikesTable.postId.eq(postId) }
         }
     }
 }

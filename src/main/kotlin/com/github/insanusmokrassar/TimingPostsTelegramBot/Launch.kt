@@ -2,6 +2,7 @@ package com.github.insanusmokrassar.TimingPostsTelegramBot
 
 import com.github.insanusmokrassar.BotIncomeMessagesListener.BotIncomeMessagesListener
 import com.github.insanusmokrassar.IObjectKRealisations.*
+import com.github.insanusmokrassar.TimingPostsTelegramBot.PostingStrategies.TimerStrategy
 import com.github.insanusmokrassar.TimingPostsTelegramBot.callbacks.*
 import com.github.insanusmokrassar.TimingPostsTelegramBot.commands.*
 import com.github.insanusmokrassar.TimingPostsTelegramBot.database.tables.*
@@ -56,5 +57,12 @@ fun main(args: Array<String>) {
             onMessageMediaGroup = mediaGroupsListener,
             onChannelPostMediaGroup = mediaGroupsListener
         )
+    )
+
+    TimerStrategy(
+        config.targetChatId.toLong(),
+        config.sourceChatId.toLong(),
+        bot,
+        config.postDelay
     )
 }
