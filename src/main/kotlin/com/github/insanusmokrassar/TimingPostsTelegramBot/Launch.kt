@@ -4,6 +4,8 @@ import com.github.insanusmokrassar.BotIncomeMessagesListener.BotIncomeMessagesLi
 import com.github.insanusmokrassar.IObjectKRealisations.*
 import com.github.insanusmokrassar.TimingPostsTelegramBot.callbacks.OnMediaGroup
 import com.github.insanusmokrassar.TimingPostsTelegramBot.callbacks.OnMessage
+import com.github.insanusmokrassar.TimingPostsTelegramBot.commands.FixPost
+import com.github.insanusmokrassar.TimingPostsTelegramBot.commands.StartPost
 import com.github.insanusmokrassar.TimingPostsTelegramBot.database.tables.*
 import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.model.Chat
@@ -41,8 +43,11 @@ fun main(args: Array<String>) {
         throw IllegalArgumentException("Can't check chats availability")
     }
 
-    val messagesListener = OnMessage(config)
-    val mediaGroupsListener = OnMediaGroup(config)
+    val startPost = StartPost()
+    val fixPost = FixPost(bot)
+
+    val messagesListener = OnMessage(config, startPost, fixPost)
+    val mediaGroupsListener = OnMediaGroup(config, startPost, fixPost)
 
     bot.setUpdatesListener(
         BotIncomeMessagesListener(

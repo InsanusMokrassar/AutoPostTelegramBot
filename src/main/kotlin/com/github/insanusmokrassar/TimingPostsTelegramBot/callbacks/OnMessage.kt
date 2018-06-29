@@ -3,15 +3,24 @@ package com.github.insanusmokrassar.TimingPostsTelegramBot.callbacks
 import com.github.insanusmokrassar.BotIncomeMessagesListener.UpdateCallback
 import com.github.insanusmokrassar.IObjectK.interfaces.IObject
 import com.github.insanusmokrassar.TimingPostsTelegramBot.FinalConfig
+import com.github.insanusmokrassar.TimingPostsTelegramBot.commands.FixPost
+import com.github.insanusmokrassar.TimingPostsTelegramBot.commands.StartPost
 import com.github.insanusmokrassar.TimingPostsTelegramBot.database.tables.PostTransactionTable
+import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.model.Message
 
 private val commandRegex = Regex("^/[^\\s]*")
 
 class OnMessage(
-    private val config: FinalConfig
+    private val config: FinalConfig,
+    private val startPost: StartPost,
+    private val fixPost: FixPost
 ) : UpdateCallback<Message> {
-    private val commands = mapOf<String, UpdateCallback<Message>>()
+
+    private val commands = mapOf(
+        "/startPost" to startPost,
+        "/fixPost" to fixPost
+    )
 
     override fun invoke(id: Int, update: IObject<Any>, message: Message) {
         if (message.chat().id().toString() == config.sourceChatId
@@ -25,11 +34,11 @@ class OnMessage(
                 }
             } ?:let {
                 if (PostTransactionTable.inTransaction) {
-                    PostTransactionTable.addMessageId(message.messageId(), message.mediaGroupId())
+                    PostTransactionTable.addMessageId(message.messageId())
                 } else {
-                    PostTransactionTable.startTransaction(message.mediaGroupId())
-                    PostTransactionTable.addMessageId(message.messageId(), message.mediaGroupId())
-                    PostTransactionTable.saveWithPostId()
+                    startPost(id, update, message)
+                    PostTransactionTable.addMessageId(message.messageId())
+                    fixPost(id, update, message)
                 }
             }
         }
