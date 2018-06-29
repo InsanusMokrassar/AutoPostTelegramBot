@@ -32,6 +32,26 @@ object PostsLikesTable : Table() {
         }
     }
 
+    fun getMostRated(): List<Int> {
+        return transaction {
+            selectAll().distinct().let {
+                var maxRating = Int.MIN_VALUE
+                ArrayList<Int>().apply {
+                    it.forEach {
+                        val currentRating = getPostRating(it[postId])
+                        if (currentRating > maxRating) {
+                            maxRating = currentRating
+                            clear()
+                        }
+                        if (currentRating == maxRating) {
+                            add(it[postId])
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     private fun postLikeCount(postId: Int, like: Boolean): Int = transaction {
         select {
             PostsLikesTable.postId.eq(postId).and(PostsLikesTable.like.eq(like))

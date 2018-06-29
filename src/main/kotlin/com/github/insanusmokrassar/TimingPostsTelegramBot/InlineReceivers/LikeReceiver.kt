@@ -43,8 +43,7 @@ class LikeReceiver(
             refreshRegisteredMessage(
                 query.message().chat(),
                 postId,
-                bot,
-                query.message().messageId()
+                bot
             )
         }
     }
