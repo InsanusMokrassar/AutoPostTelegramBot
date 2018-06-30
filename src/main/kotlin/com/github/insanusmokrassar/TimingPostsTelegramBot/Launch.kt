@@ -2,11 +2,14 @@ package com.github.insanusmokrassar.TimingPostsTelegramBot
 
 import com.github.insanusmokrassar.BotIncomeMessagesListener.BotIncomeMessagesListener
 import com.github.insanusmokrassar.IObjectKRealisations.*
-import com.github.insanusmokrassar.TimingPostsTelegramBot.PostingStrategies.TimerStrategy
+import com.github.insanusmokrassar.TimingPostsTelegramBot.triggers.TimerStrategy
 import com.github.insanusmokrassar.TimingPostsTelegramBot.callbacks.*
+import com.github.insanusmokrassar.TimingPostsTelegramBot.choosers.MostRatedChooser
 import com.github.insanusmokrassar.TimingPostsTelegramBot.commands.*
 import com.github.insanusmokrassar.TimingPostsTelegramBot.database.tables.*
 import com.github.insanusmokrassar.TimingPostsTelegramBot.forwarders.*
+import com.github.insanusmokrassar.TimingPostsTelegramBot.publishers.PostPublisher
+import com.github.insanusmokrassar.TimingPostsTelegramBot.triggers.Trigger
 import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.request.GetChat
 import org.jetbrains.exposed.sql.Database
@@ -61,22 +64,26 @@ fun main(args: Array<String>) {
         )
     )
 
-    TimerStrategy(
-        config.targetChatId.toLong(),
-        config.sourceChatId.toLong(),
-        bot,
-        listOf(
-            PhotoForwarder(),
-            VideoForwarder(),
-            MediaGroupForwarder(),
-            AudioForwarder(),
-            VoiceForwarder(),
-            DocumentForwarder(),
-            TextForwarder(),
-            LocationForwarder(),
-            ContactForwarder(),
-            SimpleForwarder()
-        ),
-        config.postDelay
+    val trigger: Trigger = TimerStrategy(
+        config.postDelay,
+        MostRatedChooser(),
+        PostPublisher(
+            config.targetChatId.toLong(),
+            config.sourceChatId.toLong(),
+            bot,
+            listOf(
+                PhotoForwarder(),
+                VideoForwarder(),
+                MediaGroupForwarder(),
+                AudioForwarder(),
+                VoiceForwarder(),
+                DocumentForwarder(),
+                TextForwarder(),
+                LocationForwarder(),
+                ContactForwarder(),
+                SimpleForwarder()
+            )
+        )
     )
+    trigger.start()
 }
