@@ -68,6 +68,7 @@ fun main(args: Array<String>) {
             PhotoForwarder(),
             VideoForwarder(),
             MediaGroupForwarder(),
+            DocumentForwarder(),
             TextForwarder(),
             SimpleForwarder()
         ),

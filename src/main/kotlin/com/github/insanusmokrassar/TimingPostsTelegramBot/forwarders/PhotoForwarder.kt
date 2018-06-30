@@ -21,7 +21,9 @@ class PhotoForwarder : Forwarder {
                     it.fileId()
                 )
             } ?.apply {
-                caption(it.caption())
+                it.caption() ?.let {
+                    caption(it)
+                }
                 parseMode(ParseMode.Markdown)
             }
         }.forEach {
