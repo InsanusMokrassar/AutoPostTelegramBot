@@ -72,6 +72,7 @@ fun main(args: Array<String>) {
             VoiceForwarder(),
             DocumentForwarder(),
             TextForwarder(),
+            LocationForwarder(),
             SimpleForwarder()
         ),
         config.postDelay
