@@ -12,6 +12,41 @@ import com.pengrad.telegrambot.request.DeleteMessage
 import com.pengrad.telegrambot.request.SendMessage
 import java.lang.ref.WeakReference
 
+fun deletePost(
+    bot: TelegramBot,
+    chatId: Long,
+    postId: Int,
+    vararg additionalMessagesIdsToDelete: Int
+) {
+    try {
+        val messagesToDelete = mutableListOf(
+            *PostsMessagesTable.getMessagesOfPost(postId).map { it.messageId }.toTypedArray(),
+            PostsTable.postRegisteredMessage(postId),
+            *additionalMessagesIdsToDelete.toTypedArray()
+        )
+
+        PostsTable.removePost(postId)
+
+        messagesToDelete.filterNotNull().forEach {
+            bot.executeAsync(
+                DeleteMessage(
+                    chatId,
+                    it
+                )
+            )
+        }
+    } catch (e: Exception) {
+        bot.executeAsync(
+            SendMessage(
+                chatId,
+                "Message in reply is not related to any post"
+            ).parseMode(
+                ParseMode.Markdown
+            )
+        )
+    }
+}
+
 class DeletePost(
     bot: TelegramBot
 ) : UpdateCallback<Message> {
@@ -23,22 +58,13 @@ class DeletePost(
             try {
                 val postId = PostsTable.findPost(messageId)
                 val chatId = message.chat().id()
-                val messagesToDelete = mutableListOf(
-                    *PostsMessagesTable.getMessagesOfPost(postId).map { it.messageId }.toTypedArray(),
-                    PostsTable.postRegisteredMessage(postId),
+                deletePost(
+                    bot,
+                    chatId,
+                    postId,
+                    messageId,
                     message.messageId()
                 )
-
-                PostsTable.removePost(postId)
-
-                messagesToDelete.filterNotNull().forEach {
-                    bot.executeAsync(
-                        DeleteMessage(
-                            chatId,
-                            it
-                        )
-                    )
-                }
             } catch (e: Exception) {
                 bot.executeAsync(
                     SendMessage(

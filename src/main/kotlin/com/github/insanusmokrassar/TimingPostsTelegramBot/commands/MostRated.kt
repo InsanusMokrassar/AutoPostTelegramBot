@@ -11,6 +11,7 @@ import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.model.Message
 import com.pengrad.telegrambot.model.request.InlineKeyboardButton
 import com.pengrad.telegrambot.model.request.InlineKeyboardMarkup
+import com.pengrad.telegrambot.request.ForwardMessage
 import com.pengrad.telegrambot.request.SendMessage
 import java.lang.ref.WeakReference
 
@@ -21,11 +22,12 @@ class MostRated (
     override fun invoke(updateId: Int, update: IObject<Any>, message: Message) {
         val bot = bot.get() ?: return
         val mostRated = PostsLikesTable.getMostRated()
+        val chatId = message.chat().id()
         message.chat().username() ?.let {
             username ->
             bot.executeAsync(
                 SendMessage(
-                    message.chat().id(),
+                    chatId,
                     "Most rated posts"
                 ).replyMarkup(
                     InlineKeyboardMarkup(
@@ -46,12 +48,17 @@ class MostRated (
                 )
             )
         } ?:let {
-            bot.executeAsync(
-                SendMessage(
-                    message.chat().id(),
-                    "Can't make links to posts. Most rated posts count: ${mostRated.size}"
+            mostRated.mapNotNull {
+                PostsTable.postRegisteredMessage(it)
+            }.forEach {
+                bot.execute(
+                    ForwardMessage(
+                        chatId,
+                        chatId,
+                        it
+                    )
                 )
-            )
+            }
         }
     }
 }
