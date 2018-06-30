@@ -73,6 +73,7 @@ fun main(args: Array<String>) {
             DocumentForwarder(),
             TextForwarder(),
             LocationForwarder(),
+            ContactForwarder(),
             SimpleForwarder()
         ),
         config.postDelay
