@@ -2,7 +2,8 @@ package com.github.insanusmokrassar.TimingPostsTelegramBot.commands
 
 import com.github.insanusmokrassar.BotIncomeMessagesListener.UpdateCallback
 import com.github.insanusmokrassar.IObjectK.interfaces.IObject
-import com.github.insanusmokrassar.TimingPostsTelegramBot.database.tables.*
+import com.github.insanusmokrassar.TimingPostsTelegramBot.database.tables.PostsMessagesTable
+import com.github.insanusmokrassar.TimingPostsTelegramBot.database.tables.PostsTable
 import com.github.insanusmokrassar.TimingPostsTelegramBot.extensions.executeAsync
 import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.model.Message

@@ -6,7 +6,6 @@ import com.github.insanusmokrassar.TimingPostsTelegramBot.FinalConfig
 import com.github.insanusmokrassar.TimingPostsTelegramBot.commands.*
 import com.github.insanusmokrassar.TimingPostsTelegramBot.database.tables.PostTransactionTable
 import com.github.insanusmokrassar.TimingPostsTelegramBot.models.PostMessage
-import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.model.Message
 
 private val commandRegex = Regex("^/[^\\s]*")

@@ -3,7 +3,6 @@ package com.github.insanusmokrassar.TimingPostsTelegramBot.InlineReceivers
 import com.github.insanusmokrassar.BotIncomeMessagesListener.UpdateCallback
 import com.github.insanusmokrassar.IObjectK.interfaces.IObject
 import com.github.insanusmokrassar.IObjectKRealisations.toIObject
-import com.github.insanusmokrassar.TimingPostsTelegramBot.commands.DeletePost
 import com.github.insanusmokrassar.TimingPostsTelegramBot.database.tables.PostsMessagesTable
 import com.github.insanusmokrassar.TimingPostsTelegramBot.database.tables.PostsTable
 import com.github.insanusmokrassar.TimingPostsTelegramBot.extensions.executeAsync

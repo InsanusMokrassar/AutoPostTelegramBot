@@ -2,7 +2,6 @@ package com.github.insanusmokrassar.TimingPostsTelegramBot.forwarders
 
 import com.github.insanusmokrassar.TimingPostsTelegramBot.models.PostMessage
 import com.pengrad.telegrambot.TelegramBot
-import com.pengrad.telegrambot.model.Message
 import com.pengrad.telegrambot.model.request.ParseMode
 import com.pengrad.telegrambot.request.SendPhoto
 

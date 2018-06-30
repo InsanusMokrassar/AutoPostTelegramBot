@@ -2,7 +2,8 @@ package com.github.insanusmokrassar.TimingPostsTelegramBot.extensions
 
 import com.pengrad.telegrambot.Callback
 import com.pengrad.telegrambot.TelegramBot
-import com.pengrad.telegrambot.request.*
+import com.pengrad.telegrambot.request.AnswerCallbackQuery
+import com.pengrad.telegrambot.request.BaseRequest
 import com.pengrad.telegrambot.response.BaseResponse
 import kotlinx.coroutines.experimental.async
 import kotlinx.coroutines.experimental.delay

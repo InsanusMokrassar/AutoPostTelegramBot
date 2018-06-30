@@ -1,13 +1,15 @@
 package com.github.insanusmokrassar.TimingPostsTelegramBot.utils
 
-import com.github.insanusmokrassar.TimingPostsTelegramBot.InlineReceivers.*
+import com.github.insanusmokrassar.TimingPostsTelegramBot.InlineReceivers.makeDislikeInline
+import com.github.insanusmokrassar.TimingPostsTelegramBot.InlineReceivers.makeLikeInline
 import com.github.insanusmokrassar.TimingPostsTelegramBot.database.tables.*
 import com.github.insanusmokrassar.TimingPostsTelegramBot.extensions.executeAsync
 import com.github.insanusmokrassar.TimingPostsTelegramBot.extensions.toTable
 import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.model.Chat
 import com.pengrad.telegrambot.model.request.*
-import com.pengrad.telegrambot.request.*
+import com.pengrad.telegrambot.request.EditMessageText
+import com.pengrad.telegrambot.request.SendMessage
 
 const val like = "\uD83D\uDC4D"
 const val dislike = "\uD83D\uDC4E"
