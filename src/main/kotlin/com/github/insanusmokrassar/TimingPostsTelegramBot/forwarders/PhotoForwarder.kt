@@ -3,6 +3,7 @@ package com.github.insanusmokrassar.TimingPostsTelegramBot.forwarders
 import com.github.insanusmokrassar.TimingPostsTelegramBot.models.PostMessage
 import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.model.Message
+import com.pengrad.telegrambot.model.request.ParseMode
 import com.pengrad.telegrambot.request.SendPhoto
 
 class PhotoForwarder : Forwarder {
@@ -19,6 +20,9 @@ class PhotoForwarder : Forwarder {
                     targetChatId,
                     it.fileId()
                 )
+            } ?.apply {
+                caption(it.caption())
+                parseMode(ParseMode.Markdown)
             }
         }.forEach {
             bot.execute(it)

@@ -26,7 +26,7 @@ class MediaGroupForwarder : Forwarder {
             SendMediaGroup(
                 targetChatId,
                 *it.mapNotNull {
-                    it.photo() ?.let {
+                    (it.photo() ?.let {
                         it.maxBy { it.fileSize() } ?. fileId() ?.let {
                             InputMediaPhoto(
                                 it
@@ -36,6 +36,9 @@ class MediaGroupForwarder : Forwarder {
                         InputMediaVideo(
                             it.fileId()
                         )
+                    }) ?.apply {
+                        caption(it.caption())
+                        parseMode(ParseMode.Markdown)
                     }
                 }.toTypedArray()
             )
