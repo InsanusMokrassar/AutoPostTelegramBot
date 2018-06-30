@@ -23,13 +23,6 @@ fun refreshRegisteredMessage(
     val buttons = mutableListOf<MutableList<InlineKeyboardButton>>(
         mutableListOf(
             InlineKeyboardButton(
-                "Delete"
-            ).callbackData(
-                makeDeleteInline(postId)
-            )
-        ),
-        mutableListOf(
-            InlineKeyboardButton(
                 makeDisikeText(
                     PostsLikesTable.postDislikes(postId)
                 )

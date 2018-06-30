@@ -15,12 +15,14 @@ class OnMessage(
     private val config: FinalConfig,
     private val startPost: StartPost,
     private val fixPost: FixPost,
-    private val mostRated: MostRated
+    private val mostRated: MostRated,
+    private val deletePost: DeletePost
 ) : UpdateCallback<Message> {
 
     private val commands = mapOf(
         "/startPost" to startPost,
         "/fixPost" to fixPost,
+        "/deletePost" to deletePost,
         "/mostRated" to mostRated
     )
 

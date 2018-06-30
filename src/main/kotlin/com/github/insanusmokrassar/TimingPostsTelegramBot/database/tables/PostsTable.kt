@@ -1,6 +1,7 @@
 package com.github.insanusmokrassar.TimingPostsTelegramBot.database.tables
 
 import com.github.insanusmokrassar.TimingPostsTelegramBot.database.exceptions.CreationException
+import com.github.insanusmokrassar.TimingPostsTelegramBot.database.exceptions.NoRowFoundException
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 
@@ -46,6 +47,15 @@ object PostsTable : Table() {
     fun getAll(): List<Int> {
         return transaction {
             selectAll().map { it[id] }
+        }
+    }
+
+    @Throws(NoRowFoundException::class)
+    fun findPost(messageId: Int): Int {
+        return transaction {
+            select {
+                postRegisteredMessageId.eq(messageId)
+            }.firstOrNull() ?.get(id) ?: throw NoRowFoundException("Can't find row for message $messageId")
         }
     }
 }
