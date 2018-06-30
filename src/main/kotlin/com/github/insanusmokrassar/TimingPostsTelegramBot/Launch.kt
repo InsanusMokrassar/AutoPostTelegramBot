@@ -34,7 +34,7 @@ fun main(args: Array<String>) {
         )
 
         transaction {
-            SchemaUtils.createMissingTablesAndColumns(PostsLikesTable, PostsMessagesTable, PostsTable)
+            SchemaUtils.createMissingTablesAndColumns(PostsTable, PostsLikesTable, PostsMessagesTable)
         }
     }
 
