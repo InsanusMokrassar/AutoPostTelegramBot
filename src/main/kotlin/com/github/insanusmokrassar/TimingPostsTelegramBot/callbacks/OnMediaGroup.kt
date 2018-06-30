@@ -6,6 +6,7 @@ import com.github.insanusmokrassar.TimingPostsTelegramBot.FinalConfig
 import com.github.insanusmokrassar.TimingPostsTelegramBot.commands.FixPost
 import com.github.insanusmokrassar.TimingPostsTelegramBot.commands.StartPost
 import com.github.insanusmokrassar.TimingPostsTelegramBot.database.tables.PostTransactionTable
+import com.github.insanusmokrassar.TimingPostsTelegramBot.models.PostMessage
 import com.pengrad.telegrambot.model.Message
 
 class OnMediaGroup(
@@ -21,12 +22,22 @@ class OnMediaGroup(
         ) {
             if (PostTransactionTable.inTransaction) {
                 messages.forEach {
-                    PostTransactionTable.addMessageId(it.messageId())
+                    PostTransactionTable.addMessageId(
+                        PostMessage(
+                            it.messageId(),
+                            it.mediaGroupId()
+                        )
+                    )
                 }
             } else {
                 startPost(-1, updates.first(), messages.first())
                 messages.forEach {
-                    PostTransactionTable.addMessageId(it.messageId())
+                    PostTransactionTable.addMessageId(
+                        PostMessage(
+                            it.messageId(),
+                            it.mediaGroupId()
+                        )
+                    )
                 }
                 fixPost(-1, updates.last(), messages.last())
             }

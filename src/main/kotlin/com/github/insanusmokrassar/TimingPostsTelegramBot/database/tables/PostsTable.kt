@@ -36,7 +36,7 @@ object PostsTable : Table() {
     fun removePost(postId: Int) {
         transaction {
             PostsMessagesTable.getMessagesOfPost(postId).forEach {
-                PostsMessagesTable.removeMessageOfPost(it)
+                PostsMessagesTable.removeMessageOfPost(it.messageId)
             }
             PostsLikesTable.clearPostMarks(postId)
             deleteWhere { id.eq(postId) }

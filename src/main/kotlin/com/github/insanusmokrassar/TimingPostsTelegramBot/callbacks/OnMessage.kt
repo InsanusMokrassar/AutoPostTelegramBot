@@ -5,6 +5,7 @@ import com.github.insanusmokrassar.IObjectK.interfaces.IObject
 import com.github.insanusmokrassar.TimingPostsTelegramBot.FinalConfig
 import com.github.insanusmokrassar.TimingPostsTelegramBot.commands.*
 import com.github.insanusmokrassar.TimingPostsTelegramBot.database.tables.PostTransactionTable
+import com.github.insanusmokrassar.TimingPostsTelegramBot.models.PostMessage
 import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.model.Message
 
@@ -35,10 +36,14 @@ class OnMessage(
                 }
             } ?:let {
                 if (PostTransactionTable.inTransaction) {
-                    PostTransactionTable.addMessageId(message.messageId())
+                    PostTransactionTable.addMessageId(
+                        PostMessage(message)
+                    )
                 } else {
                     startPost(id, update, message)
-                    PostTransactionTable.addMessageId(message.messageId())
+                    PostTransactionTable.addMessageId(
+                        PostMessage(message)
+                    )
                     fixPost(id, update, message)
                 }
             }

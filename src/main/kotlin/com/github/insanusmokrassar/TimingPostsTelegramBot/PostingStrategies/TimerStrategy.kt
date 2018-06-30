@@ -3,6 +3,7 @@ package com.github.insanusmokrassar.TimingPostsTelegramBot.PostingStrategies
 import com.github.insanusmokrassar.TimingPostsTelegramBot.database.tables.*
 import com.github.insanusmokrassar.TimingPostsTelegramBot.extensions.executeAsync
 import com.github.insanusmokrassar.TimingPostsTelegramBot.forwarders.Forwarder
+import com.github.insanusmokrassar.TimingPostsTelegramBot.models.PostMessage
 import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.model.Message
 import com.pengrad.telegrambot.request.*
@@ -25,84 +26,88 @@ class TimerStrategy (
             synchronized(PostsTable) {
                 synchronized(PostsMessagesTable) {
                     synchronized(PostsLikesTable) {
-                        PostsLikesTable.getMostRated().min() ?.let {
-                            postId ->
-                            val messagesToDelete = mutableListOf<Int>()
-
-                            bot.execute(
-                                SendMessage(
-                                    sourceChatId,
-                                    "Start post"
-                                )
-                            ) ?. message() ?. messageId() ?.let {
-                                messagesToDelete.add(it)
-                            }
-
-                            val messageToPost = PostsMessagesTable.getMessagesOfPost(postId).mapNotNull {
-                                messageId ->
-                                messagesToDelete.add(messageId)
+                        try {
+                            PostsLikesTable.getMostRated().min()?.let { postId ->
+                                val messagesToDelete = mutableListOf<Int>()
 
                                 bot.execute(
-                                    ForwardMessage(
+                                    SendMessage(
                                         sourceChatId,
-                                        sourceChatId,
-                                        messageId
+                                        "Start post"
                                     )
-                                ).let {
-                                    it.message() ?.also {
-                                        messagesToDelete.add(it.messageId())
+                                )?.message()?.messageId()?.let {
+                                    messagesToDelete.add(it)
+                                }
+
+                                val messageToPost = PostsMessagesTable.getMessagesOfPost(postId).also {
+                                    it.forEach { message ->
+                                        messagesToDelete.add(message.messageId)
+
+                                        bot.execute(
+                                            ForwardMessage(
+                                                sourceChatId,
+                                                sourceChatId,
+                                                message.messageId
+                                            )
+                                        ).also {
+                                            messagesToDelete.add(it.message().messageId())
+                                            message.message = it.message()
+                                        }
                                     }
                                 }
-                            }
 
-                            val mapOfExecution = mutableListOf<Pair<Forwarder, MutableList<Message>>>()
+                                val mapOfExecution = mutableListOf<Pair<Forwarder, MutableList<PostMessage>>>()
 
-                            var iterator = forwardersList.iterator()
-                            var forwarder: Forwarder? = null
+                                var forwarder: Forwarder? = null
 
-                            messageToPost.forEach {
-                                message ->
-                                while (forwarder ?. canForward(message) != true) {
-                                    if (!iterator.hasNext()) {
-                                        iterator = forwardersList.iterator()
+                                messageToPost.forEach { message ->
+                                    if (forwarder?.canForward(message) != true) {
+                                        val iterator = forwardersList.iterator()
+                                        while (forwarder?.canForward(message) != true) {
+                                            if (!iterator.hasNext()) {
+                                                return@forEach
+                                            }
+                                            forwarder = iterator.next()
+                                        }
                                     }
-                                    forwarder = iterator.next()
+                                    if (mapOfExecution.lastOrNull()?.first != forwarder) {
+                                        forwarder?.let {
+                                            mapOfExecution.add(
+                                                it to mutableListOf()
+                                            )
+                                        }
+                                    }
+                                    mapOfExecution.last().second.add(message)
                                 }
-                                if (mapOfExecution.lastOrNull() ?. first != forwarder) {
-                                    forwarder ?. let {
-                                        mapOfExecution.add(
-                                            it to mutableListOf()
+
+                                mapOfExecution.forEach {
+                                    it.first.forward(
+                                        bot,
+                                        targetChatId,
+                                        *it.second.toTypedArray()
+                                    )
+                                }
+
+                                PostsTable.postRegisteredMessage(postId)?.let {
+                                    bot.executeAsync(
+                                        DeleteMessage(
+                                            sourceChatId,
+                                            it
                                         )
-                                    }
+                                    )
                                 }
-                                mapOfExecution.last().second.add(message)
-                            }
-
-                            mapOfExecution.forEach {
-                                it.first(
-                                    bot,
-                                    targetChatId,
-                                    it.second
-                                )
-                            }
-
-                            PostsTable.postRegisteredMessage(postId) ?.let {
-                                bot.executeAsync(
-                                    DeleteMessage(
-                                        sourceChatId,
-                                        it
+                                PostsTable.removePost(postId)
+                                messagesToDelete.forEach {
+                                    bot.executeAsync(
+                                        DeleteMessage(
+                                            sourceChatId,
+                                            it
+                                        )
                                     )
-                                )
+                                }
                             }
-                            PostsTable.removePost(postId)
-                            messagesToDelete.forEach {
-                                bot.executeAsync(
-                                    DeleteMessage(
-                                        sourceChatId,
-                                        it
-                                    )
-                                )
-                            }
+                        } catch (e: Exception) {
+                            e.printStackTrace()
                         }
                     }
                 }

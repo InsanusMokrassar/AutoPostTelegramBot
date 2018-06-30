@@ -67,6 +67,7 @@ fun main(args: Array<String>) {
         listOf(
             PhotoForwarder(),
             VideoForwarder(),
+            MediaGroupForwarder(),
             SimpleForwarder()
         ),
         config.postDelay

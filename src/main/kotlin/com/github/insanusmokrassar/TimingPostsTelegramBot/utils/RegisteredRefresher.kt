@@ -47,14 +47,14 @@ fun refreshRegisteredMessage(
         )
     )
 
-    val messagesIds = PostsMessagesTable.getMessagesOfPost(postId)
+    val messages = PostsMessagesTable.getMessagesOfPost(postId)
 
     chat.username() ?.let {
         chatUsername ->
-        messagesIds.map {
+        messages.map {
             makeLinkToMessage(
                 chatUsername,
-                it
+                it.messageId
             )
         }.mapIndexed {
             index, s ->
@@ -90,7 +90,7 @@ fun refreshRegisteredMessage(
         ).replyMarkup(
             markup
         ).replyToMessageId(
-            messagesIds.first()
+            messages.first().messageId
         ).let {
             bot.executeAsync(
                 it,

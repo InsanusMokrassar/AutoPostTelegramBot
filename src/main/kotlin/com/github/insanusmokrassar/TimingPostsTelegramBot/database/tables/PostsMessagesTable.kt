@@ -1,20 +1,25 @@
 package com.github.insanusmokrassar.TimingPostsTelegramBot.database.tables
 
 import com.github.insanusmokrassar.TimingPostsTelegramBot.database.exceptions.NoRowFoundException
+import com.github.insanusmokrassar.TimingPostsTelegramBot.models.PostMessage
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 
 object PostsMessagesTable : Table() {
     private val messageId = integer("messageId").primaryKey()
+    private val mediaGroupId = text("mediaGroupId").nullable()
     private val postId = integer("postId").references(PostsTable.id)
 
     @Throws(NoRowFoundException::class)
-    fun getMessagesOfPost(postId: Int): List<Int> {
+    fun getMessagesOfPost(postId: Int): List<PostMessage> {
         return transaction {
             select {
                 PostsMessagesTable.postId.eq(postId)
             }.map {
-                it[messageId]
+                PostMessage(
+                    it[messageId],
+                    it[mediaGroupId]
+                )
             }.also {
                 if (it.isEmpty()) {
                     throw NoRowFoundException("No rows for $postId")
@@ -23,13 +28,14 @@ object PostsMessagesTable : Table() {
         }
     }
 
-    fun addMessagesToPost(postId: Int, vararg messageIds: Int) {
+    fun addMessagesToPost(postId: Int, vararg messages: PostMessage) {
         transaction {
-            messageIds.forEach {
-                messageId ->
+            messages.forEach {
+                message ->
                 insert {
                     it[PostsMessagesTable.postId] = postId
-                    it[PostsMessagesTable.messageId] = messageId
+                    it[messageId] = message.messageId
+                    it[mediaGroupId] = message.mediaGroupId
                 }
             }
         }

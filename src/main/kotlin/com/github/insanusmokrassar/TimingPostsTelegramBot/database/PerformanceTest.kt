@@ -1,6 +1,7 @@
 package com.github.insanusmokrassar.TimingPostsTelegramBot.database
 
 import com.github.insanusmokrassar.TimingPostsTelegramBot.database.tables.*
+import com.github.insanusmokrassar.TimingPostsTelegramBot.models.PostMessage
 import org.h2.Driver
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -164,7 +165,7 @@ private fun testCreatingMessages(): Record {
 
         var j = 0
         while (j < messagesPerPost) {
-            PostsMessagesTable.addMessagesToPost(it, id)
+            PostsMessagesTable.addMessagesToPost(it, PostMessage(id))
             id++
             j++
         }
@@ -198,7 +199,7 @@ private fun testCreatingMessagesByOneCalling(): Record {
 
         subRecord.start("Start to add")
 
-        PostsMessagesTable.addMessagesToPost(it, *(id until (id + messagesPerPost)).map { it }.toIntArray())
+        PostsMessagesTable.addMessagesToPost(it, *(id until (id + messagesPerPost)).map { PostMessage(it) }.toTypedArray())
         id += messagesPerPost + 1
 
         subRecord.stop("Post message added")
