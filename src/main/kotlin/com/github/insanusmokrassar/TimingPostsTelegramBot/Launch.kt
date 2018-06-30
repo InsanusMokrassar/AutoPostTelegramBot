@@ -69,6 +69,7 @@ fun main(args: Array<String>) {
             VideoForwarder(),
             MediaGroupForwarder(),
             AudioForwarder(),
+            VoiceForwarder(),
             DocumentForwarder(),
             TextForwarder(),
             SimpleForwarder()
