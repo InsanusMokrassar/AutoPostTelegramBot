@@ -1,7 +1,6 @@
 package com.github.insanusmokrassar.TimingPostsTelegramBot.utils
 
-import com.github.insanusmokrassar.TimingPostsTelegramBot.InlineReceivers.makeDislikeInline
-import com.github.insanusmokrassar.TimingPostsTelegramBot.InlineReceivers.makeLikeInline
+import com.github.insanusmokrassar.TimingPostsTelegramBot.InlineReceivers.*
 import com.github.insanusmokrassar.TimingPostsTelegramBot.database.tables.*
 import com.github.insanusmokrassar.TimingPostsTelegramBot.extensions.executeAsync
 import com.github.insanusmokrassar.TimingPostsTelegramBot.extensions.toTable
@@ -26,7 +25,7 @@ fun refreshRegisteredMessage(
             InlineKeyboardButton(
                 "Delete"
             ).callbackData(
-                "Delete"
+                makeDeleteInline(postId)
             )
         ),
         mutableListOf(
