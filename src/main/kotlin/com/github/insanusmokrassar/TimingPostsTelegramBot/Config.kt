@@ -5,7 +5,6 @@ import org.h2.Driver
 class Config (
     val targetChatId: String? = null,
     val sourceChatId: String? = null,
-    val adminChatId: String? = null,
     val botToken: String? = null,
     val postDelay: Long = 60 * 60 * 1000,
     val databaseConfig: DatabaseConfig = DatabaseConfig(
@@ -24,7 +23,6 @@ class Config (
             botToken ?: throw IllegalArgumentException("Bot token (field \"botToken\") can't be null"),
             databaseConfig,
             postDelay,
-            adminChatId,
             debug
         )
 }
@@ -42,6 +40,5 @@ class FinalConfig (
     val botToken: String,
     val databaseConfig: DatabaseConfig,
     val postDelay: Long = 60 * 60 * 1000,
-    val adminChatId: String? = null,
     val debug: Boolean = false
 )

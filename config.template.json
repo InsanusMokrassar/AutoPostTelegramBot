@@ -2,6 +2,5 @@
   "targetChatId": "",
   "sourceChatId": "",
   "botToken": "",
-  "adminChatId": "",
   "postDelay": 60000
 }
