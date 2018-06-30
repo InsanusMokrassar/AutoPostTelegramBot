@@ -1,5 +1,6 @@
 package com.github.insanusmokrassar.TimingPostsTelegramBot.PostingStrategies
 
+import com.github.insanusmokrassar.TimingPostsTelegramBot.commands.deletePost
 import com.github.insanusmokrassar.TimingPostsTelegramBot.database.tables.*
 import com.github.insanusmokrassar.TimingPostsTelegramBot.extensions.executeAsync
 import com.github.insanusmokrassar.TimingPostsTelegramBot.forwarders.Forwarder
@@ -35,7 +36,7 @@ class TimerStrategy (
                                         sourceChatId,
                                         "Start post"
                                     )
-                                )?.message()?.messageId()?.let {
+                                ) ?. message() ?. messageId() ?.let {
                                     messagesToDelete.add(it)
                                 }
 
@@ -88,23 +89,12 @@ class TimerStrategy (
                                     )
                                 }
 
-                                PostsTable.postRegisteredMessage(postId)?.let {
-                                    bot.executeAsync(
-                                        DeleteMessage(
-                                            sourceChatId,
-                                            it
-                                        )
-                                    )
-                                }
-                                PostsTable.removePost(postId)
-                                messagesToDelete.forEach {
-                                    bot.executeAsync(
-                                        DeleteMessage(
-                                            sourceChatId,
-                                            it
-                                        )
-                                    )
-                                }
+                                deletePost(
+                                    bot,
+                                    sourceChatId,
+                                    postId,
+                                    *messagesToDelete.toIntArray()
+                                )
                             }
                         } catch (e: Exception) {
                             e.printStackTrace()

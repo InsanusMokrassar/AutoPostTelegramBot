@@ -4,7 +4,6 @@ import com.github.insanusmokrassar.BotIncomeMessagesListener.UpdateCallback
 import com.github.insanusmokrassar.IObjectK.interfaces.IObject
 import com.github.insanusmokrassar.TimingPostsTelegramBot.database.tables.*
 import com.github.insanusmokrassar.TimingPostsTelegramBot.extensions.executeAsync
-import com.github.insanusmokrassar.TimingPostsTelegramBot.utils.refreshRegisteredMessage
 import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.model.Message
 import com.pengrad.telegrambot.model.request.ParseMode
@@ -18,31 +17,33 @@ fun deletePost(
     postId: Int,
     vararg additionalMessagesIdsToDelete: Int
 ) {
-    try {
-        val messagesToDelete = mutableListOf(
-            *PostsMessagesTable.getMessagesOfPost(postId).map { it.messageId }.toTypedArray(),
-            PostsTable.postRegisteredMessage(postId),
-            *additionalMessagesIdsToDelete.toTypedArray()
-        )
+    val messagesToDelete = mutableListOf(
+        *PostsMessagesTable.getMessagesOfPost(postId).map { it.messageId }.toTypedArray(),
+        PostsTable.postRegisteredMessage(postId),
+        *additionalMessagesIdsToDelete.toTypedArray()
+    ).toSet().filterNotNull()
 
-        PostsTable.removePost(postId)
+    PostsTable.removePost(postId)
 
-        messagesToDelete.filterNotNull().forEach {
-            bot.executeAsync(
-                DeleteMessage(
-                    chatId,
-                    it
-                )
-            )
-        }
-    } catch (e: Exception) {
+    messagesToDelete.forEach { currentMessageToDeleteId ->
         bot.executeAsync(
-            SendMessage(
+            DeleteMessage(
                 chatId,
-                "Message in reply is not related to any post"
-            ).parseMode(
-                ParseMode.Markdown
-            )
+                currentMessageToDeleteId
+            ),
+            {
+                _, ioException ->
+                bot.executeAsync(
+                    SendMessage(
+                        chatId,
+                        "Can't delete message. Reason:\n```\n${ioException?.message}\n```\n\nPlease, delete manually"
+                    ).parseMode(
+                        ParseMode.Markdown
+                    ).replyToMessageId(
+                        currentMessageToDeleteId
+                    )
+                )
+            }
         )
     }
 }
