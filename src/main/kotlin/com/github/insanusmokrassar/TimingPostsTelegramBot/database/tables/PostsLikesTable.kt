@@ -51,6 +51,17 @@ object PostsLikesTable : Table() {
         }
     }
 
+    /**
+     * @param min Included. If null - always true
+     * @param max Included. If null - always true
+     */
+    fun getRateRange(min: Int?, max: Int?): List<Int> {
+        return PostsTable.getAll().filter {
+            val rating = getPostRating(it)
+            min ?.let { it <= rating } != false && max ?.let { rating <= it } != false
+        }
+    }
+
     private fun postLikeCount(postId: Int, like: Boolean): Int = transaction {
         select {
             PostsLikesTable.postId.eq(postId).and(PostsLikesTable.like.eq(like))

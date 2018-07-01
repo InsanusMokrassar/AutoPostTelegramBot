@@ -101,7 +101,7 @@ fun main(args: Array<String>) {
     val trigger: Trigger = TimerStrategy(
         config.postDelay,
         initChooser(
-            config.chooser.chooserName,
+            config.chooser.name,
             config.chooser.params
         ),
         PostPublisher(
