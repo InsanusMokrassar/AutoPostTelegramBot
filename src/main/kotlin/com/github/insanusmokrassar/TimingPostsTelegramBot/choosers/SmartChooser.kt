@@ -6,15 +6,32 @@ import com.github.insanusmokrassar.TimingPostsTelegramBot.database.tables.PostsL
 import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
 import org.joda.time.format.DateTimeFormat
+import java.util.*
 
 private val timeFormat = DateTimeFormat.forPattern("HH:mm")
+
+private fun String.toTime(offset: String = "+00:00"): DateTime {
+    return timeFormat.withZone(
+        DateTimeZone.forID(offset)
+    ).parseDateTime(
+        this
+    )
+}
+
+private fun Long.fromTime(offset: String = "+00:00"): String {
+    return timeFormat.withZone(
+        DateTimeZone.forID(offset)
+    ).print(
+        this
+    )
+}
 
 private class SmartChooserConfigItem (
     val minRate: Int? = null,
     val maxRate: Int? = null,
     val timeOffset: String = "+00:00",
     val time: Array<String?> = arrayOf(
-        null,
+        "00:00",
         null
     )
 ) {
@@ -24,31 +41,12 @@ private class SmartChooserConfigItem (
         get() {
             return realTimePairs ?:let {
                 val pairs = mutableListOf<Pair<Long?, Long?>>()
-                var lastFirstTime: String? = null
                 time.forEachIndexed {
                     index, s ->
-                    lastFirstTime = if (index % 2 == 0) {
-                        s
+                    if (index % 2 == 0) {
+                        pairs.add(s ?. toTime(timeOffset) ?. millis to null)
                     } else {
-                        pairs.add(
-                            Pair(
-                                lastFirstTime ?.let {
-                                    timeFormat.parseDateTime(
-                                        it
-                                    ).withZone(
-                                        DateTimeZone.forID(timeOffset)
-                                    ).millis
-                                },
-                                s ?.let {
-                                    timeFormat.parseDateTime(
-                                        it
-                                    ).withZone(
-                                        DateTimeZone.forID(timeOffset)
-                                    ).millis
-                                }
-                            )
-                        )
-                        null
+                        pairs[pairs.lastIndex] = pairs.last().first to s ?. toTime(timeOffset) ?. millis
                     }
                 }
                 realTimePairs = pairs
@@ -72,6 +70,16 @@ private class SmartChooserConfigItem (
             }
             return false
         }
+
+    override fun toString(): String {
+        val stringBuilder = StringBuilder()
+        stringBuilder.append("Rating: ${minRate ?: "any low"} - ${maxRate ?: "any big"}\n")
+        stringBuilder.append("Time:\n")
+        timePairs.forEach {
+            stringBuilder.append("  ${it.first ?. fromTime(timeOffset) ?: "any low"} - ${it.second ?. fromTime(timeOffset) ?: "any big"}\n")
+        }
+        return stringBuilder.toString()
+    }
 }
 
 private class SmartChooserConfig(
@@ -84,6 +92,11 @@ class SmartChooser(
 ) : Chooser {
 
     private val config = config.toObject(SmartChooserConfig::class.java)
+
+    init {
+        println("Smart chooser inited: ${this.config.times.joinToString(separator = "\n") { it.toString() }}")
+        println("Actual: ${this.config.times.firstOrNull { it.actual } ?.toString() ?: "Nothing"}")
+    }
 
     override fun triggerChoose(): Collection<Int> {
         return config.times.firstOrNull { it.actual } ?.let {
