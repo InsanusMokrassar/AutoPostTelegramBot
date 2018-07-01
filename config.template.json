@@ -2,5 +2,11 @@
   "targetChatId": "",
   "sourceChatId": "",
   "botToken": "",
-  "postDelay": 60000
+  "postDelay": 60000,
+  "proxy": {
+    "host": "default.localhost",
+    "port": 1080,
+    "username": "optional",
+    "password": "optional"
+  }
 }

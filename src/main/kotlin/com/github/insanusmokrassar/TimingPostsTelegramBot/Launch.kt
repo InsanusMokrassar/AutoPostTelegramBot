@@ -5,6 +5,7 @@ import com.github.insanusmokrassar.IObjectKRealisations.load
 import com.github.insanusmokrassar.IObjectKRealisations.toObject
 import com.github.insanusmokrassar.TimingPostsTelegramBot.callbacks.*
 import com.github.insanusmokrassar.TimingPostsTelegramBot.choosers.MostRatedChooser
+import com.github.insanusmokrassar.TimingPostsTelegramBot.choosers.initChooser
 import com.github.insanusmokrassar.TimingPostsTelegramBot.commands.*
 import com.github.insanusmokrassar.TimingPostsTelegramBot.database.tables.*
 import com.github.insanusmokrassar.TimingPostsTelegramBot.forwarders.*
@@ -13,9 +14,13 @@ import com.github.insanusmokrassar.TimingPostsTelegramBot.triggers.TimerStrategy
 import com.github.insanusmokrassar.TimingPostsTelegramBot.triggers.Trigger
 import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.request.GetChat
+import okhttp3.Credentials
+import okhttp3.OkHttpClient
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.transactions.transaction
+import java.net.InetSocketAddress
+import java.net.Proxy
 
 fun main(args: Array<String>) {
     val config = load(args[0]).toObject(Config::class.java).finalConfig
@@ -25,6 +30,34 @@ fun main(args: Array<String>) {
     ).run {
         if (config.debug) {
             debug()
+        }
+        config.proxy ?.let {
+            proxy ->
+            okHttpClient(
+                OkHttpClient.Builder().apply {
+                    proxy(
+                        Proxy(
+                            Proxy.Type.SOCKS,
+                            InetSocketAddress(
+                                proxy.host,
+                                proxy.port
+                            )
+                        )
+                    )
+                    proxy.password ?.let {
+                        password ->
+                        proxyAuthenticator {
+                            _, response ->
+                            response.request().newBuilder().apply {
+                                addHeader(
+                                    "Proxy-Authorization",
+                                    Credentials.basic(proxy.username ?: "", password)
+                                )
+                            }.build()
+                        }
+                    }
+                }.build()
+            )
         }
         build()
     }
@@ -67,7 +100,10 @@ fun main(args: Array<String>) {
 
     val trigger: Trigger = TimerStrategy(
         config.postDelay,
-        MostRatedChooser(),
+        initChooser(
+            config.chooser.chooserName,
+            config.chooser.params
+        ),
         PostPublisher(
             config.targetChatId.toLong(),
             config.sourceChatId.toLong(),

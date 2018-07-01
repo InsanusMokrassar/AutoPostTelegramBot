@@ -1,5 +1,8 @@
 package com.github.insanusmokrassar.TimingPostsTelegramBot
 
+import com.github.insanusmokrassar.TimingPostsTelegramBot.choosers.ChooserConfig
+import com.github.insanusmokrassar.TimingPostsTelegramBot.choosers.choosers
+import com.github.insanusmokrassar.TimingPostsTelegramBot.utils.ProxySettings
 import org.h2.Driver
 
 class Config (
@@ -13,6 +16,10 @@ class Config (
         "sa",
         ""
     ),
+    val chooser: ChooserConfig = ChooserConfig(
+        choosers.keys.first()
+    ),
+    val proxy: ProxySettings? = null,
     val debug: Boolean = false
 ) {
     val finalConfig: FinalConfig
@@ -23,6 +30,8 @@ class Config (
             botToken ?: throw IllegalArgumentException("Bot token (field \"botToken\") can't be null"),
             databaseConfig,
             postDelay,
+            chooser,
+            proxy,
             debug
         )
 }
@@ -40,5 +49,7 @@ class FinalConfig (
     val botToken: String,
     val databaseConfig: DatabaseConfig,
     val postDelay: Long = 60 * 60 * 1000,
+    val chooser: ChooserConfig,
+    val proxy: ProxySettings? = null,
     val debug: Boolean = false
 )
