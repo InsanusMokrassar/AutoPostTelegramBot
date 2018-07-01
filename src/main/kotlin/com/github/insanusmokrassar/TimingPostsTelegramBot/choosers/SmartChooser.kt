@@ -84,14 +84,20 @@ private class SmartChooserConfigItem (
 
 private class SmartChooserConfig(
     val times: List<SmartChooserConfigItem> = emptyList(),
-    val mostRatedIfNoActual: Boolean = false
+    val mostRatedIfNoActual: Boolean = false,
+    val countToChoose: Int = 1,
+    val pickRandom: Boolean = true
 )
 
 class SmartChooser(
     config: IObject<Any>
 ) : Chooser {
-
     private val config = config.toObject(SmartChooserConfig::class.java)
+    private val random: Random? = if (this.config.pickRandom) {
+        Random()
+    } else {
+        null
+    }
 
     init {
         println("Smart chooser inited: ${this.config.times.joinToString(separator = "\n") { it.toString() }}")
@@ -104,6 +110,30 @@ class SmartChooser(
                 it.minRate,
                 it.maxRate
             )
+        } ?.let {
+            chosenList ->
+            random ?.let {
+                random ->
+                val mutableChosen = chosenList.toMutableList()
+                val result = mutableListOf<Int>()
+                while (result.size < config.countToChoose && mutableChosen.size > 0) {
+                    mutableChosen.removeAt(
+                        random.nextInt(mutableChosen.size)
+                    ).let {
+                        result.add(it)
+                    }
+                }
+                result
+            } ?:let {
+                if (config.countToChoose > chosenList.size) {
+                    chosenList
+                } else {
+                    chosenList.subList(
+                        0,
+                        config.countToChoose
+                    )
+                }
+            }
         } ?: if (config.mostRatedIfNoActual) {
             PostsLikesTable.getMostRated().firstOrNull() ?.let {
                 listOf(it)
