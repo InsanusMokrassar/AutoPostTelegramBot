@@ -9,7 +9,6 @@ import org.joda.time.format.DateTimeFormat
 import java.util.*
 
 private val timeFormat = DateTimeFormat.forPattern("HH:mm")
-private const val next24Hour = 24 * 60 * 60 * 1000L
 
 private fun String.toTime(offset: String = "+00:00"): DateTime {
     return timeFormat.withZone(
@@ -27,6 +26,14 @@ private fun Long.fromTime(offset: String = "+00:00"): String {
     )
 }
 
+private fun getZeroHour(offset: String = "+00:00"): Long {
+    return timeFormat.withZone(DateTimeZone.forID(offset)).parseDateTime("00:00").millis
+}
+
+private fun get24Hour(offset: String = "+00:00"): Long {
+    return getZeroHour(offset) + (24 * 60 * 60 * 1000)
+}
+
 private class SmartChooserConfigItem (
     val minRate: Int? = null,
     val maxRate: Int? = null,
@@ -38,6 +45,14 @@ private class SmartChooserConfigItem (
 ) {
     private var realTimePairs: List<Pair<Long, Long>>? = null
 
+    private val zeroHour: Lazy<Long> = lazy {
+        getZeroHour(timeOffset)
+    }
+
+    private val nextDayZeroHour = lazy {
+        get24Hour(timeOffset)
+    }
+
     private val timePairs: List<Pair<Long, Long>>
         get() {
             return realTimePairs ?:let {
@@ -47,12 +62,12 @@ private class SmartChooserConfigItem (
                     s ->
                     currentPair ?.let {
                         currentPairNN ->
-                        val first = currentPairNN.first ?: 0L
-                        val second = s ?. toTime(timeOffset) ?. millis ?: next24Hour
+                        val first = currentPairNN.first ?: zeroHour.value
+                        val second = s ?. toTime(timeOffset) ?. millis ?: nextDayZeroHour.value
 
                         if (first > second) {
-                            pairs.add(first to next24Hour)
-                            pairs.add(0L to second)
+                            pairs.add(first to nextDayZeroHour.value)
+                            pairs.add(zeroHour.value to second)
                         } else {
                             pairs.add(first to second)
                         }
