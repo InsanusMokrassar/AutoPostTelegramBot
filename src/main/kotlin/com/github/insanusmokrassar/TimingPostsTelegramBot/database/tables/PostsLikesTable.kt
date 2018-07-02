@@ -56,9 +56,15 @@ object PostsLikesTable : Table() {
      * @param max Included. If null - always true
      */
     fun getRateRange(min: Int?, max: Int?): List<Int> {
-        return PostsTable.getAll().filter {
-            val rating = getPostRating(it)
-            min ?.let { it <= rating } != false && max ?.let { rating <= it } != false
+        return PostsTable.getAll().map {
+            it to getPostRating(it)
+        }.sortedByDescending {
+            it.second
+        }.filter {
+            pair ->
+            min ?.let { it <= pair.second } != false && max ?.let { pair.second <= it } != false
+        }.map {
+            it.first
         }
     }
 
