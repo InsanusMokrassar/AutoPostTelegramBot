@@ -9,6 +9,7 @@ import org.joda.time.format.DateTimeFormat
 import java.util.*
 
 private val timeFormat = DateTimeFormat.forPattern("HH:mm")
+private const val next24Hour = 24 * 60 * 60 * 1000L
 
 private fun String.toTime(offset: String = "+00:00"): DateTime {
     return timeFormat.withZone(
@@ -35,18 +36,30 @@ private class SmartChooserConfigItem (
         null
     )
 ) {
-    private var realTimePairs: List<Pair<Long?, Long?>>? = null
+    private var realTimePairs: List<Pair<Long, Long>>? = null
 
-    private val timePairs: List<Pair<Long?, Long?>>
+    private val timePairs: List<Pair<Long, Long>>
         get() {
             return realTimePairs ?:let {
-                val pairs = mutableListOf<Pair<Long?, Long?>>()
-                time.forEachIndexed {
-                    index, s ->
-                    if (index % 2 == 0) {
-                        pairs.add(s ?. toTime(timeOffset) ?. millis to null)
-                    } else {
-                        pairs[pairs.lastIndex] = pairs.last().first to s ?. toTime(timeOffset) ?. millis
+                val pairs = mutableListOf<Pair<Long, Long>>()
+                var currentPair: Pair<Long?, Long?>? = null
+                time.forEach {
+                    s ->
+                    currentPair ?.let {
+                        currentPairNN ->
+                        val first = currentPairNN.first ?: 0L
+                        val second = s ?. toTime(timeOffset) ?. millis ?: next24Hour
+
+                        if (first > second) {
+                            pairs.add(first to next24Hour)
+                            pairs.add(0L to second)
+                        } else {
+                            pairs.add(first to second)
+                        }
+
+                        currentPair = null
+                    } ?:let {
+                        currentPair = s ?. toTime(timeOffset) ?. millis to null
                     }
                 }
                 realTimePairs = pairs
@@ -63,7 +76,7 @@ private class SmartChooserConfigItem (
             }.let {
                 now ->
                 timePairs.forEach {
-                    if (it.first ?.let { it <= now } != false && it.second ?.let { it > now } != false) {
+                    if (it.first <= now && now < it.second) {
                         return true
                     }
                 }
@@ -76,7 +89,7 @@ private class SmartChooserConfigItem (
         stringBuilder.append("Rating: ${minRate ?: "any low"} - ${maxRate ?: "any big"}\n")
         stringBuilder.append("Time:\n")
         timePairs.forEach {
-            stringBuilder.append("  ${it.first ?. fromTime(timeOffset) ?: "any low"} - ${it.second ?. fromTime(timeOffset) ?: "any big"}\n")
+            stringBuilder.append("  ${it.first.fromTime(timeOffset)} - ${it.second.fromTime(timeOffset)}\n")
         }
         return stringBuilder.toString()
     }
