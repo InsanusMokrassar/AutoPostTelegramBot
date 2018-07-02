@@ -1,6 +1,7 @@
 package com.github.insanusmokrassar.TimingPostsTelegramBot.publishers
 
 import com.github.insanusmokrassar.TimingPostsTelegramBot.commands.deletePost
+import com.github.insanusmokrassar.TimingPostsTelegramBot.database.tables.PostsLikesTable
 import com.github.insanusmokrassar.TimingPostsTelegramBot.database.tables.PostsMessagesTable
 import com.github.insanusmokrassar.TimingPostsTelegramBot.forwarders.Forwarder
 import com.github.insanusmokrassar.TimingPostsTelegramBot.models.PostMessage
@@ -85,7 +86,7 @@ class PostPublisher(
             bot.execute(
                 SendMessage(
                     sourceChatId,
-                    "Post published"
+                    "Post published. Rating: ${PostsLikesTable.getPostRating(postId)}"
                 ).parseMode(
                     ParseMode.Markdown
                 )
