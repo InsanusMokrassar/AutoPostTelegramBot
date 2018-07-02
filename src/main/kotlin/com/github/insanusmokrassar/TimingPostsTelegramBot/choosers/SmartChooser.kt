@@ -84,7 +84,6 @@ private class SmartChooserConfigItem (
 
 private class SmartChooserConfig(
     val times: List<SmartChooserConfigItem> = emptyList(),
-    val mostRatedIfNoActual: Boolean = false,
     val countToChoose: Int = 1,
     val pickRandom: Boolean = true
 )
@@ -134,12 +133,6 @@ class SmartChooser(
                     )
                 }
             }
-        } ?: if (config.mostRatedIfNoActual) {
-            PostsLikesTable.getMostRated().firstOrNull() ?.let {
-                listOf(it)
-            }
-        } else {
-            null
         } ?: emptyList()
     }
 }

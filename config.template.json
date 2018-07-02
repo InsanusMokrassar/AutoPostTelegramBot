@@ -10,7 +10,7 @@
     "password": "optional"
   },
   "chooser": {
-    "name": "mostRated|mostRatedRandom",
+    "name": "mostRated|mostRatedRandom|smartChooser",
     "params": {
       "in future": "will be given to other choosers"
     }
