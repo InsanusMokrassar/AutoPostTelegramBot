@@ -9,8 +9,8 @@ class LocationForwarder : Forwarder {
         return message.message ?. location() != null
     }
 
-    override fun forward(bot: TelegramBot, targetChatId: Long, vararg messages: PostMessage) {
-        messages.mapNotNull {
+    override fun forward(bot: TelegramBot, targetChatId: Long, vararg messages: PostMessage): List<Int> {
+        return messages.mapNotNull {
             it.message
         }.map {
             SendLocation(
@@ -18,8 +18,8 @@ class LocationForwarder : Forwarder {
                 it.location().latitude(),
                 it.location().longitude()
             )
-        }.forEach {
-            bot.execute(it)
+        }.mapNotNull {
+            bot.execute(it).message() ?.messageId()
         }
     }
 }

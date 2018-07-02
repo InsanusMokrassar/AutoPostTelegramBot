@@ -9,5 +9,5 @@ interface Forwarder {
         bot: TelegramBot,
         targetChatId: Long,
         vararg messages: PostMessage
-    )
+    ): List<Int>
 }

@@ -11,7 +11,7 @@ class MediaGroupForwarder : Forwarder {
         return message.mediaGroupId != null
     }
 
-    override fun forward(bot: TelegramBot, targetChatId: Long, vararg messages: PostMessage) {
+    override fun forward(bot: TelegramBot, targetChatId: Long, vararg messages: PostMessage): List<Int> {
         val mediaGroups = mutableMapOf<String, MutableList<Message>>()
         messages.forEach {
             postMessage ->
@@ -22,7 +22,7 @@ class MediaGroupForwarder : Forwarder {
             }).add(message)
         }
 
-        mediaGroups.values.map {
+        return mediaGroups.values.map {
             SendMediaGroup(
                 targetChatId,
                 *it.mapNotNull {
@@ -42,8 +42,10 @@ class MediaGroupForwarder : Forwarder {
                     }
                 }.toTypedArray()
             )
-        }.forEach {
-            bot.execute(it)
+        }.flatMap {
+            bot.execute(it).messages() ?.mapNotNull {
+                it.messageId()
+            } ?: emptyList()
         }
     }
 }

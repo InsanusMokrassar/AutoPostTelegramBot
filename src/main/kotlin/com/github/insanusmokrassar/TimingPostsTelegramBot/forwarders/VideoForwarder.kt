@@ -10,8 +10,8 @@ class VideoForwarder : Forwarder {
         return message.message ?. video() != null && message.mediaGroupId == null
     }
 
-    override fun forward(bot: TelegramBot, targetChatId: Long, vararg messages: PostMessage) {
-        messages.mapNotNull {
+    override fun forward(bot: TelegramBot, targetChatId: Long, vararg messages: PostMessage): List<Int> {
+        return messages.mapNotNull {
             it.message
         }.map {
             SendVideo(
@@ -23,8 +23,8 @@ class VideoForwarder : Forwarder {
                 }
                 parseMode(ParseMode.Markdown)
             }
-        }.forEach {
-            bot.execute(it)
+        }.mapNotNull {
+            bot.execute(it).message() ?.messageId()
         }
     }
 }

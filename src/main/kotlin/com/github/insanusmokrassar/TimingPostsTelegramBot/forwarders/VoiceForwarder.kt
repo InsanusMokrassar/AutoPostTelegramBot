@@ -9,8 +9,8 @@ class VoiceForwarder : Forwarder {
         return message.message ?. voice() != null
     }
 
-    override fun forward(bot: TelegramBot, targetChatId: Long, vararg messages: PostMessage) {
-        messages.mapNotNull {
+    override fun forward(bot: TelegramBot, targetChatId: Long, vararg messages: PostMessage): List<Int> {
+        return messages.mapNotNull {
             it.message
         }.map {
             SendVoice(
@@ -26,8 +26,8 @@ class VoiceForwarder : Forwarder {
                     }
                 }
             }
-        }.forEach {
-            bot.execute(it)
+        }.mapNotNull {
+            bot.execute(it).message() ?.messageId()
         }
     }
 }

@@ -5,6 +5,7 @@ import com.github.insanusmokrassar.TimingPostsTelegramBot.database.tables.PostsM
 import com.github.insanusmokrassar.TimingPostsTelegramBot.forwarders.Forwarder
 import com.github.insanusmokrassar.TimingPostsTelegramBot.models.PostMessage
 import com.pengrad.telegrambot.TelegramBot
+import com.pengrad.telegrambot.model.request.ParseMode
 import com.pengrad.telegrambot.request.ForwardMessage
 import com.pengrad.telegrambot.request.SendMessage
 import java.lang.ref.WeakReference
@@ -40,6 +41,8 @@ class PostPublisher(
                         sourceChatId,
                         sourceChatId,
                         message.messageId
+                    ).disableNotification(
+                        true
                     )
                 ).also {
                     messagesToDelete.add(it.message().messageId())
@@ -72,12 +75,30 @@ class PostPublisher(
             mapOfExecution.last().second.add(message)
         }
 
-        mapOfExecution.forEach {
+        mapOfExecution.flatMap {
             it.first.forward(
                 bot,
                 targetChatId,
                 *it.second.toTypedArray()
             )
+        }.let {
+            bot.execute(
+                SendMessage(
+                    sourceChatId,
+                    "Post published"
+                ).parseMode(
+                    ParseMode.Markdown
+                )
+            )
+            it.forEach {
+                bot.execute(
+                    ForwardMessage(
+                        sourceChatId,
+                        targetChatId,
+                        it
+                    )
+                )
+            }
         }
 
         deletePost(

@@ -9,17 +9,17 @@ class SimpleForwarder : Forwarder {
         return true
     }
 
-    override fun forward(bot: TelegramBot, targetChatId: Long, vararg messages: PostMessage) {
-        messages.mapNotNull {
+    override fun forward(bot: TelegramBot, targetChatId: Long, vararg messages: PostMessage): List<Int> {
+        return messages.mapNotNull {
             it.message
-        }.forEach {
-            bot.execute(
-                ForwardMessage(
-                    targetChatId,
-                    it.chat().id(),
-                    it.messageId()
-                )
+        }.map {
+            ForwardMessage(
+                targetChatId,
+                it.chat().id(),
+                it.messageId()
             )
+        }.mapNotNull {
+            bot.execute(it).message() ?.messageId()
         }
     }
 }

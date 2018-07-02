@@ -10,8 +10,8 @@ class DocumentForwarder : Forwarder {
         return message.message ?. document() != null
     }
 
-    override fun forward(bot: TelegramBot, targetChatId: Long, vararg messages: PostMessage) {
-        messages.mapNotNull {
+    override fun forward(bot: TelegramBot, targetChatId: Long, vararg messages: PostMessage): List<Int> {
+        return messages.mapNotNull {
             it.message
         }.map {
             SendDocument(
@@ -27,8 +27,8 @@ class DocumentForwarder : Forwarder {
             }.parseMode(
                 ParseMode.Markdown
             )
-        }.forEach {
-            bot.execute(it)
+        }.mapNotNull {
+            bot.execute(it).message() ?.messageId()
         }
     }
 }

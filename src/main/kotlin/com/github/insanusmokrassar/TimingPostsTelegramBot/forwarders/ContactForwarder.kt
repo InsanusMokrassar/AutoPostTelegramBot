@@ -9,8 +9,8 @@ class ContactForwarder : Forwarder {
         return message.message ?. contact() != null
     }
 
-    override fun forward(bot: TelegramBot, targetChatId: Long, vararg messages: PostMessage) {
-        messages.mapNotNull {
+    override fun forward(bot: TelegramBot, targetChatId: Long, vararg messages: PostMessage): List<Int> {
+        return messages.mapNotNull {
             it.message
         }.map {
             val contact = it.contact()
@@ -26,8 +26,8 @@ class ContactForwarder : Forwarder {
                     parameters["user_id"] = it
                 }
             }
-        }.forEach {
-            bot.execute(it)
+        }.mapNotNull {
+            bot.execute(it).message() ?.messageId()
         }
     }
 }
