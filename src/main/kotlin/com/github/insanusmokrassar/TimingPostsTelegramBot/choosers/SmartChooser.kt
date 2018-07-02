@@ -45,11 +45,11 @@ private class SmartChooserConfigItem (
 ) {
     private var realTimePairs: List<Pair<Long, Long>>? = null
 
-    private val zeroHour: Lazy<Long> = lazy {
+    private val zeroHour: Long by lazy {
         getZeroHour(timeOffset)
     }
 
-    private val nextDayZeroHour = lazy {
+    private val nextDayZeroHour: Long by lazy {
         get24Hour(timeOffset)
     }
 
@@ -62,12 +62,12 @@ private class SmartChooserConfigItem (
                     s ->
                     currentPair ?.let {
                         currentPairNN ->
-                        val first = currentPairNN.first ?: zeroHour.value
-                        val second = s ?. toTime(timeOffset) ?. millis ?: nextDayZeroHour.value
+                        val first = currentPairNN.first ?: zeroHour
+                        val second = s ?. toTime(timeOffset) ?. millis ?: nextDayZeroHour
 
                         if (first > second) {
-                            pairs.add(first to nextDayZeroHour.value)
-                            pairs.add(zeroHour.value to second)
+                            pairs.add(first to nextDayZeroHour)
+                            pairs.add(zeroHour to second)
                         } else {
                             pairs.add(first to second)
                         }
