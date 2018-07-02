@@ -109,6 +109,8 @@ class SmartChooser(
                 it.minRate,
                 it.maxRate
             )
+        } ?.sortedByDescending {
+            PostsLikesTable.getPostRating(it)
         } ?.let {
             chosenList ->
             random ?.let {
