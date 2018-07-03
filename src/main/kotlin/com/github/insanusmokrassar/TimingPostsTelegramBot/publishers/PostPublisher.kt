@@ -110,6 +110,7 @@ class PostPublisher(
             )
         } catch (e: Exception) {
             e.printStackTrace()
+        } finally {
             messagesToDelete.forEach {
                 bot.executeAsync(
                     DeleteMessage(
