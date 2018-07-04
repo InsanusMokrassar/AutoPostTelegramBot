@@ -2,6 +2,7 @@ package com.github.insanusmokrassar.TimingPostsTelegramBot.choosers
 
 import com.github.insanusmokrassar.IObjectK.interfaces.IObject
 import com.github.insanusmokrassar.IObjectKRealisations.toObject
+import com.github.insanusmokrassar.TimingPostsTelegramBot.database.tables.PostIdRatingPair
 import com.github.insanusmokrassar.TimingPostsTelegramBot.database.tables.PostsLikesTable
 import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
@@ -34,6 +35,65 @@ private fun get24Hour(offset: String = "+00:00"): Long {
     return getZeroHour(offset) + (24 * 60 * 60 * 1000)
 }
 
+private const val ascendSort = "ascend"
+private const val descendSort = "descend"
+private const val randomSort = "random"
+private const val defaultSort = descendSort
+
+private val commonRandom = Random()
+
+private typealias InnerChooser = (List<PostIdRatingPair>, Int) -> Collection<Int>
+
+private val commonInnerChoosers = mapOf<String, InnerChooser>(
+    ascendSort to {
+        pairs, count ->
+        pairs.sortedBy { it.second }.let {
+            it.subList(
+                0,
+                if (it.size < count) {
+                    it.size
+                } else {
+                    count
+                }
+            )
+        }.map {
+            it.first
+        }
+    },
+    descendSort to {
+        pairs, count ->
+        pairs.sortedByDescending { it.second }.let {
+            it.subList(
+                0,
+                if (it.size < count) {
+                    it.size
+                } else {
+                    count
+                }
+            )
+        }.map {
+            it.first
+        }
+    },
+    randomSort to {
+        pairs, count ->
+        mutableSetOf<Int>().apply {
+            val from = pairs.toMutableSet()
+            while (size < count && size < from.size) {
+                val chosen = from.elementAt(
+                    commonRandom.nextInt(
+                        from.size
+                    )
+                )
+                from.remove(chosen)
+                add(
+                    chosen.first
+                )
+            }
+        }
+    }
+)
+
 private class SmartChooserConfigItem (
     val minRate: Int? = null,
     val maxRate: Int? = null,
@@ -41,7 +101,9 @@ private class SmartChooserConfigItem (
     val time: Array<String?> = arrayOf(
         "00:00",
         null
-    )
+    ),
+    val sort: String = defaultSort,
+    val count: Int = 1
 ) {
     private var realTimePairs: List<Pair<Long, Long>>? = null
 
@@ -53,34 +115,31 @@ private class SmartChooserConfigItem (
         get24Hour(timeOffset)
     }
 
-    private val timePairs: List<Pair<Long, Long>>
-        get() {
-            return realTimePairs ?:let {
-                val pairs = mutableListOf<Pair<Long, Long>>()
-                var currentPair: Pair<Long?, Long?>? = null
-                time.forEach {
-                    s ->
-                    currentPair ?.let {
-                        currentPairNN ->
-                        val first = currentPairNN.first ?: zeroHour
-                        val second = s ?. toTime(timeOffset) ?. millis ?: nextDayZeroHour
+    private val timePairs: List<Pair<Long, Long>> by lazy {
+        val pairs = mutableListOf<Pair<Long, Long>>()
+        var currentPair: Pair<Long?, Long?>? = null
+        time.forEach {
+            s ->
+            currentPair ?.let {
+                currentPairNN ->
+                val first = currentPairNN.first ?: zeroHour
+                val second = s ?. toTime(timeOffset) ?. millis ?: nextDayZeroHour
 
-                        if (first > second) {
-                            pairs.add(first to nextDayZeroHour)
-                            pairs.add(zeroHour to second)
-                        } else {
-                            pairs.add(first to second)
-                        }
-
-                        currentPair = null
-                    } ?:let {
-                        currentPair = s ?. toTime(timeOffset) ?. millis to null
-                    }
+                if (first > second) {
+                    pairs.add(first to nextDayZeroHour)
+                    pairs.add(zeroHour to second)
+                } else {
+                    pairs.add(first to second)
                 }
-                realTimePairs = pairs
-                pairs
+
+                currentPair = null
+            } ?:let {
+                currentPair = s ?. toTime(timeOffset) ?. millis to null
             }
         }
+        realTimePairs = pairs
+        pairs
+    }
 
     val actual: Boolean
         get() {
@@ -99,6 +158,9 @@ private class SmartChooserConfigItem (
             return false
         }
 
+    val chooser: InnerChooser?
+        get() = commonInnerChoosers[sort]
+
     override fun toString(): String {
         val stringBuilder = StringBuilder()
         stringBuilder.append("Rating: ${minRate ?: "any low"} - ${maxRate ?: "any big"}\n")
@@ -111,20 +173,13 @@ private class SmartChooserConfigItem (
 }
 
 private class SmartChooserConfig(
-    val times: List<SmartChooserConfigItem> = emptyList(),
-    val countToChoose: Int = 1,
-    val pickRandom: Boolean = true
+    val times: List<SmartChooserConfigItem> = emptyList()
 )
 
 class SmartChooser(
     config: IObject<Any>
 ) : Chooser {
     private val config = config.toObject(SmartChooserConfig::class.java)
-    private val random: Random? = if (this.config.pickRandom) {
-        Random()
-    } else {
-        null
-    }
 
     init {
         println("Smart chooser inited: ${this.config.times.joinToString(separator = "\n") { it.toString() }}")
@@ -132,35 +187,18 @@ class SmartChooser(
     }
 
     override fun triggerChoose(): Collection<Int> {
-        return config.times.firstOrNull { it.actual } ?.let {
+        val actualItem = config.times.firstOrNull { it.actual }
+        return actualItem ?.let {
             PostsLikesTable.getRateRange(
                 it.minRate,
                 it.maxRate
             )
         } ?.let {
             chosenList ->
-            random ?.let {
-                random ->
-                val mutableChosen = chosenList.toMutableList()
-                val result = mutableListOf<Int>()
-                while (result.size < config.countToChoose && mutableChosen.size > 0) {
-                    mutableChosen.removeAt(
-                        random.nextInt(mutableChosen.size)
-                    ).let {
-                        result.add(it)
-                    }
-                }
-                result
-            } ?:let {
-                if (config.countToChoose > chosenList.size) {
-                    chosenList
-                } else {
-                    chosenList.subList(
-                        0,
-                        config.countToChoose
-                    )
-                }
-            }
+            actualItem.chooser ?.invoke(
+                chosenList,
+                actualItem.count
+            )
         } ?: emptyList()
     }
 }

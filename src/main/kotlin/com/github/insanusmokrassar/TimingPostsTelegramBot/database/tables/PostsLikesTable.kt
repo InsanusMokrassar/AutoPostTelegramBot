@@ -4,6 +4,8 @@ import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.transactions.transaction
 
+typealias PostIdRatingPair = Pair<Int, Int>
+
 object PostsLikesTable : Table() {
     private val userId = long("userId").primaryKey()
     private val postId = integer("postId").references(PostsTable.id).primaryKey()
@@ -54,8 +56,10 @@ object PostsLikesTable : Table() {
     /**
      * @param min Included. If null - always true
      * @param max Included. If null - always true
+     *
+     * @return Pairs with postId to Rate
      */
-    fun getRateRange(min: Int?, max: Int?): List<Int> {
+    fun getRateRange(min: Int?, max: Int?): List<PostIdRatingPair> {
         return PostsTable.getAll().map {
             it to getPostRating(it)
         }.sortedByDescending {
@@ -63,8 +67,6 @@ object PostsLikesTable : Table() {
         }.filter {
             pair ->
             min ?.let { it <= pair.second } != false && max ?.let { pair.second <= it } != false
-        }.map {
-            it.first
         }
     }
 
