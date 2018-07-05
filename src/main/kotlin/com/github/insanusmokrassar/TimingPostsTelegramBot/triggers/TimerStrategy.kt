@@ -11,7 +11,7 @@ class TimerStrategy (
     private val chooser: Chooser = MostRatedChooser(),
     private val publisher: Publisher
 ) : Trigger {
-    val job = launch(start = CoroutineStart.LAZY) {
+    private val job = launch(start = CoroutineStart.LAZY) {
         while (isActive) {
             synchronized(PostsTable) {
                 synchronized(PostsMessagesTable) {

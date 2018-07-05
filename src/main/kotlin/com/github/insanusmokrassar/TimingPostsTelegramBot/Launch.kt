@@ -83,8 +83,9 @@ fun main(args: Array<String>) {
     val fixPost = FixPost(bot)
     val mostRated = MostRated(bot)
     val deletePost = DeletePost(bot)
+    val availableRates = AvailableRates(bot)
 
-    val messagesListener = OnMessage(config, startPost, fixPost, mostRated, deletePost)
+    val messagesListener = OnMessage(config, startPost, fixPost, mostRated, deletePost, availableRates)
     val mediaGroupsListener = OnMediaGroup(config, startPost, fixPost)
     val onCallbackQuery = OnCallbackQuery(bot)
 
