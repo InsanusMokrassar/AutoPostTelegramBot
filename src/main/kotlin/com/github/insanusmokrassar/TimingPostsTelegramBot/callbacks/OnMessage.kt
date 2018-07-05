@@ -33,7 +33,7 @@ class OnMessage(
             message.text() ?. let {
                 if (it.startsWith("/")) {
                     val command = commandRegex.find(it) ?. value
-                    commands[command] ?. invoke(id, update, message)
+                    commands[command] ?. invoke(id, update, message) ?: return
                 } else {
                     null
                 }
