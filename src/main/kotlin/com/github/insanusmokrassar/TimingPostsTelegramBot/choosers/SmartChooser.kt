@@ -144,7 +144,7 @@ private class SmartChooserConfigItem (
     val actual: Boolean
         get() {
             DateTime.now().let {
-                timeFormat.print(it.millis)
+                timeFormat.withZone(DateTimeZone.forID(timeOffset)).print(it.millis)
             }.let {
                 timeFormat.parseDateTime(it).millis
             }.let {
