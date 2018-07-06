@@ -9,6 +9,7 @@ import com.github.insanusmokrassar.TimingPostsTelegramBot.models.PostMessage
 import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.model.request.ParseMode
 import com.pengrad.telegrambot.request.*
+import java.io.*
 import java.lang.ref.WeakReference
 
 class PostPublisher(
@@ -110,6 +111,14 @@ class PostPublisher(
             )
         } catch (e: Exception) {
             e.printStackTrace()
+            bot.executeAsync(
+                SendMessage(
+                    sourceChatId,
+                    "Can't publish post:\n```$e```"
+                ).parseMode(
+                    ParseMode.Markdown
+                )
+            )
         } finally {
             messagesToDelete.forEach {
                 bot.executeAsync(
