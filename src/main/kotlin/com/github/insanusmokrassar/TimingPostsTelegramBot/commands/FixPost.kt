@@ -4,7 +4,6 @@ import com.github.insanusmokrassar.BotIncomeMessagesListener.UpdateCallback
 import com.github.insanusmokrassar.IObjectK.interfaces.IObject
 import com.github.insanusmokrassar.TimingPostsTelegramBot.database.PostTransactionTable
 import com.github.insanusmokrassar.TimingPostsTelegramBot.database.exceptions.NothingToSaveException
-import com.github.insanusmokrassar.TimingPostsTelegramBot.database.tables.PostsTable
 import com.github.insanusmokrassar.TimingPostsTelegramBot.extensions.executeAsync
 import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.model.Message

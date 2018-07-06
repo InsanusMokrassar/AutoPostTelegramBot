@@ -1,6 +1,5 @@
 package com.github.insanusmokrassar.TimingPostsTelegramBot.database.tables
 
-import com.github.insanusmokrassar.TimingPostsTelegramBot.database.exceptions.NoRowFoundException
 import com.github.insanusmokrassar.TimingPostsTelegramBot.models.PostMessage
 import kotlinx.coroutines.experimental.channels.BroadcastChannel
 import kotlinx.coroutines.experimental.launch
@@ -18,7 +17,6 @@ object PostsMessagesTable : Table() {
     private val mediaGroupId = text("mediaGroupId").nullable()
     private val postId = integer("postId").references(PostsTable.id)
 
-    @Throws(NoRowFoundException::class)
     fun getMessagesOfPost(postId: Int): List<PostMessage> {
         return transaction {
             select {
@@ -28,10 +26,6 @@ object PostsMessagesTable : Table() {
                     it[messageId],
                     it[mediaGroupId]
                 )
-            }.also {
-                if (it.isEmpty()) {
-                    throw NoRowFoundException("No rows for $postId")
-                }
             }
         }
     }

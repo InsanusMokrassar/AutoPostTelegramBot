@@ -4,7 +4,6 @@ import com.github.insanusmokrassar.TimingPostsTelegramBot.choosers.ChooserConfig
 import com.github.insanusmokrassar.TimingPostsTelegramBot.choosers.choosers
 import com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.Plugin
 import com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.PluginConfig
-import com.github.insanusmokrassar.TimingPostsTelegramBot.triggers.Trigger
 import com.github.insanusmokrassar.TimingPostsTelegramBot.utils.ProxySettings
 import org.h2.Driver
 

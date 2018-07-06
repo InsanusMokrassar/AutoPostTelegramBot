@@ -9,7 +9,6 @@ import com.github.insanusmokrassar.TimingPostsTelegramBot.models.PostMessage
 import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.model.request.ParseMode
 import com.pengrad.telegrambot.request.*
-import java.io.*
 import java.lang.ref.WeakReference
 
 class PostPublisher(

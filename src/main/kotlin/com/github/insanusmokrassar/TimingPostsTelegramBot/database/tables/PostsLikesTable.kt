@@ -1,7 +1,6 @@
 package com.github.insanusmokrassar.TimingPostsTelegramBot.database.tables
 
 import kotlinx.coroutines.experimental.channels.BroadcastChannel
-import kotlinx.coroutines.experimental.channels.Channel
 import kotlinx.coroutines.experimental.launch
 import org.h2.jdbc.JdbcSQLException
 import org.jetbrains.exposed.sql.*
