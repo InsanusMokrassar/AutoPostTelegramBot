@@ -1,5 +1,8 @@
-package com.github.insanusmokrassar.TimingPostsTelegramBot.database.tables
+package com.github.insanusmokrassar.TimingPostsTelegramBot.database
 
+import com.github.insanusmokrassar.TimingPostsTelegramBot.database.exceptions.NothingToSaveException
+import com.github.insanusmokrassar.TimingPostsTelegramBot.database.tables.PostsMessagesTable
+import com.github.insanusmokrassar.TimingPostsTelegramBot.database.tables.PostsTable
 import com.github.insanusmokrassar.TimingPostsTelegramBot.models.PostMessage
 
 object PostTransactionTable {
@@ -24,17 +27,23 @@ object PostTransactionTable {
         messages.add(message)
     }
 
-    fun completeTransaction(): List<PostMessage> {
+    private fun completeTransaction(): List<PostMessage> {
         return listOf(*messages.toTypedArray()).also {
             messages.clear()
             inTransaction = false
         }
     }
 
-    fun saveWithPostId(postId: Int = PostsTable.allocatePost()) {
+    @Throws(NothingToSaveException::class)
+    fun saveNewPost() {
+        val messagesIds = completeTransaction().toTypedArray()
+        if (messagesIds.isEmpty()) {
+            throw NothingToSaveException("No messages for saving")
+        }
+        val postId = PostsTable.allocatePost()
         PostsMessagesTable.addMessagesToPost(
             postId,
-            *completeTransaction().toTypedArray()
+            *messagesIds
         )
     }
 }
