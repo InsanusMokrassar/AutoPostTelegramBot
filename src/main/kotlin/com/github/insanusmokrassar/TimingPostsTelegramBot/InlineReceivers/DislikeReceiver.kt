@@ -5,7 +5,6 @@ import com.github.insanusmokrassar.IObjectK.interfaces.IObject
 import com.github.insanusmokrassar.IObjectKRealisations.toIObject
 import com.github.insanusmokrassar.TimingPostsTelegramBot.database.tables.PostsLikesTable
 import com.github.insanusmokrassar.TimingPostsTelegramBot.extensions.queryAnswer
-import com.github.insanusmokrassar.TimingPostsTelegramBot.utils.refreshRegisteredMessage
 import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.model.CallbackQuery
 import java.lang.ref.WeakReference
@@ -34,17 +33,9 @@ class DislikeReceiver(
             postId
         )
 
-        botWR.get() ?. let {
-            bot ->
-            bot.queryAnswer(
-                query.id(),
-                "Voted"
-            )
-            refreshRegisteredMessage(
-                query.message().chat(),
-                postId,
-                bot
-            )
-        }
+        botWR.get() ?. queryAnswer(
+            query.id(),
+            "Voted"
+        )
     }
 }

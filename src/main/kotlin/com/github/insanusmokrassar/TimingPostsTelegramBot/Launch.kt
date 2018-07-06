@@ -12,6 +12,7 @@ import com.github.insanusmokrassar.TimingPostsTelegramBot.forwarders.*
 import com.github.insanusmokrassar.TimingPostsTelegramBot.publishers.PostPublisher
 import com.github.insanusmokrassar.TimingPostsTelegramBot.triggers.TimerStrategy
 import com.github.insanusmokrassar.TimingPostsTelegramBot.triggers.Trigger
+import com.github.insanusmokrassar.TimingPostsTelegramBot.utils.initSubscription
 import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.request.GetChat
 import kotlinx.coroutines.experimental.launch
@@ -126,12 +127,8 @@ fun main(args: Array<String>) {
     )
     trigger.start()
 
-    PostsLikesTable.subscribeChannel.openSubscription().let {
-        launch {
-            while (isActive) {
-                println(it.receive())
-            }
-            it.cancel()
-        }
-    }
+    initSubscription(
+        config.sourceChatId.toLong(),
+        bot
+    )
 }

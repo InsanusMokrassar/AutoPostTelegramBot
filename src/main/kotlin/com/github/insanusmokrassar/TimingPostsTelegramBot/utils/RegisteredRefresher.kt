@@ -6,10 +6,12 @@ import com.github.insanusmokrassar.TimingPostsTelegramBot.database.tables.*
 import com.github.insanusmokrassar.TimingPostsTelegramBot.extensions.executeAsync
 import com.github.insanusmokrassar.TimingPostsTelegramBot.extensions.toTable
 import com.pengrad.telegrambot.TelegramBot
-import com.pengrad.telegrambot.model.Chat
 import com.pengrad.telegrambot.model.request.*
 import com.pengrad.telegrambot.request.EditMessageText
 import com.pengrad.telegrambot.request.SendMessage
+import kotlinx.coroutines.experimental.channels.ReceiveChannel
+import kotlinx.coroutines.experimental.launch
+import java.lang.ref.WeakReference
 
 const val like = "\uD83D\uDC4D"
 const val dislike = "\uD83D\uDC4E"
@@ -17,10 +19,51 @@ const val dislike = "\uD83D\uDC4E"
 private fun makeLikeText(likes: Int) = "$like $likes"
 private fun makeDisikeText(dislikes: Int) = "$dislike $dislikes"
 
-fun refreshRegisteredMessage(
-    chat: Chat,
-    postId: Int,
+private var likesSubscription: ReceiveChannel<PostIdRatingPair>? = null
+private var messagesSubscription: ReceiveChannel<PostIdToMessagesIds>? = null
+
+fun initSubscription(
+    chatId: Long,
     bot: TelegramBot
+) {
+    val botWR = WeakReference(bot)
+    likesSubscription = PostsLikesTable.subscribeChannel.openSubscription().also {
+        launch {
+            while (isActive) {
+                val bot = botWR.get() ?: break
+                val update = it.receive()
+                refreshRegisteredMessage(
+                    chatId,
+                    bot,
+                    update.first,
+                    update.second
+                )
+            }
+            it.cancel()
+        }
+    }
+    messagesSubscription = PostsMessagesTable.addedMessagesToPost.openSubscription().also {
+        launch {
+            while (isActive) {
+                val bot = botWR.get() ?: break
+                val update = it.receive()
+                refreshRegisteredMessage(
+                    chatId,
+                    bot,
+                    update.first
+                )
+            }
+            it.cancel()
+        }
+    }
+}
+
+fun refreshRegisteredMessage(
+    chatId: Long,
+    bot: TelegramBot,
+    postId: Int,
+    postRating: Int = PostsLikesTable.getPostRating(postId),
+    username: String? = null
 ) {
     val buttons = mutableListOf<MutableList<InlineKeyboardButton>>(
         mutableListOf(
@@ -43,7 +86,7 @@ fun refreshRegisteredMessage(
 
     val messages = PostsMessagesTable.getMessagesOfPost(postId)
 
-    chat.username() ?.let {
+    username ?.let {
         chatUsername ->
         messages.map {
             makeLinkToMessage(
@@ -71,13 +114,13 @@ fun refreshRegisteredMessage(
         }.toTypedArray()
     )
 
-    val message = "Post registered. Rating: ${PostsLikesTable.getPostRating(postId)}"
+    val message = "Post registered. Rating: $postRating"
 
     val registeredMessageId = PostsTable.postRegisteredMessage(postId)
 
     if (registeredMessageId == null) {
         SendMessage(
-            chat.id(),
+            chatId,
             message
         ).parseMode(
             ParseMode.Markdown
@@ -96,7 +139,7 @@ fun refreshRegisteredMessage(
         }
     } else {
         EditMessageText(
-            chat.id(),
+            chatId,
             registeredMessageId,
             message
         ).replyMarkup(

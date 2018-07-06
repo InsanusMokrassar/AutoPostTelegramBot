@@ -37,8 +37,8 @@ object PostsLikesTable : Table() {
         return transaction {
             try {
                 exec("SELECT (likes-dislikes) as $resultColumnName FROM " +
-                    "(SELECT count(*) as likes FROM ${nameInDatabaseCase()} WHERE ${this@PostsLikesTable.postId.name}=$postId AND \"${like.name.toUpperCase()}\"=${like.columnType.valueToString(true)}), " +
-                    "(SELECT count(*) as dislikes FROM ${nameInDatabaseCase()} WHERE ${this@PostsLikesTable.postId.name}=$postId AND \"${like.name.toUpperCase()}\"=${like.columnType.valueToString(false)});") {
+                    "(SELECT count(*) as likes FROM ${nameInDatabaseCase()} WHERE ${this@PostsLikesTable.postId.name}=$postId AND \"${like.name}\"=${like.columnType.valueToString(true)}), " +
+                    "(SELECT count(*) as dislikes FROM ${nameInDatabaseCase()} WHERE ${this@PostsLikesTable.postId.name}=$postId AND \"${like.name}\"=${like.columnType.valueToString(false)});") {
                     if (it.first()) {
                         it.getInt(it.findColumn(resultColumnName))
                     } else {
