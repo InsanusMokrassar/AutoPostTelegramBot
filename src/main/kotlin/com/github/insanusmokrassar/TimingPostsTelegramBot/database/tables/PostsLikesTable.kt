@@ -3,6 +3,7 @@ package com.github.insanusmokrassar.TimingPostsTelegramBot.database.tables
 import kotlinx.coroutines.experimental.channels.BroadcastChannel
 import kotlinx.coroutines.experimental.channels.Channel
 import kotlinx.coroutines.experimental.launch
+import org.h2.jdbc.JdbcSQLException
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -10,6 +11,8 @@ import org.jetbrains.exposed.sql.transactions.transaction
 typealias PostIdRatingPair = Pair<Int, Int>
 
 private const val countOfSubscriptions = 256
+
+private const val resultColumnName = "result"
 
 object PostsLikesTable : Table() {
     val subscribeChannel = BroadcastChannel<PostIdRatingPair>(countOfSubscriptions)
@@ -32,11 +35,23 @@ object PostsLikesTable : Table() {
 
     fun getPostRating(postId: Int): Int {
         return transaction {
-            select {
-                createChooser(postId, like = true)
-            }.count() - select {
-                createChooser(postId, like = false)
-            }.count()
+            try {
+                exec("SELECT (likes-dislikes) as $resultColumnName FROM " +
+                    "(SELECT count(*) as likes FROM ${nameInDatabaseCase()} WHERE ${this@PostsLikesTable.postId.name}=$postId AND \"${like.name.toUpperCase()}\"=${like.columnType.valueToString(true)}), " +
+                    "(SELECT count(*) as dislikes FROM ${nameInDatabaseCase()} WHERE ${this@PostsLikesTable.postId.name}=$postId AND \"${like.name.toUpperCase()}\"=${like.columnType.valueToString(false)});") {
+                    if (it.first()) {
+                        it.getInt(it.findColumn(resultColumnName))
+                    } else {
+                        0
+                    }
+                } ?: 0
+            } catch (e: JdbcSQLException) {
+                select {
+                    createChooser(postId, like = true)
+                }.count() - select {
+                    createChooser(postId, like = false)
+                }.count()
+            }
         }
     }
 
