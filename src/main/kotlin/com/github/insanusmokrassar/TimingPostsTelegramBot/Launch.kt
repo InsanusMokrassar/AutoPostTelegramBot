@@ -4,7 +4,6 @@ import com.github.insanusmokrassar.BotIncomeMessagesListener.BotIncomeMessagesLi
 import com.github.insanusmokrassar.IObjectKRealisations.load
 import com.github.insanusmokrassar.IObjectKRealisations.toObject
 import com.github.insanusmokrassar.TimingPostsTelegramBot.callbacks.*
-import com.github.insanusmokrassar.TimingPostsTelegramBot.choosers.MostRatedChooser
 import com.github.insanusmokrassar.TimingPostsTelegramBot.choosers.initChooser
 import com.github.insanusmokrassar.TimingPostsTelegramBot.commands.*
 import com.github.insanusmokrassar.TimingPostsTelegramBot.database.tables.*
@@ -15,7 +14,6 @@ import com.github.insanusmokrassar.TimingPostsTelegramBot.triggers.Trigger
 import com.github.insanusmokrassar.TimingPostsTelegramBot.utils.initSubscription
 import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.request.GetChat
-import kotlinx.coroutines.experimental.launch
 import okhttp3.Credentials
 import okhttp3.OkHttpClient
 import org.jetbrains.exposed.sql.Database
@@ -137,6 +135,7 @@ fun main(args: Array<String>) {
 
     config.plugins.forEach {
         it.init(
+            config,
             chooser,
             publisher,
             trigger,
