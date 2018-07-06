@@ -2,17 +2,28 @@ package com.github.insanusmokrassar.TimingPostsTelegramBot.database.tables
 
 import com.github.insanusmokrassar.TimingPostsTelegramBot.database.exceptions.CreationException
 import com.github.insanusmokrassar.TimingPostsTelegramBot.database.exceptions.NoRowFoundException
+import kotlinx.coroutines.experimental.channels.BroadcastChannel
+import kotlinx.coroutines.experimental.launch
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 
+private const val countOfSubscriptions = 256
+
 object PostsTable : Table() {
+    val postAllocatedChannel = BroadcastChannel<Int>(countOfSubscriptions)
+    val postRemovedChannel = BroadcastChannel<Int>(countOfSubscriptions)
+
     internal val id = integer("id").primaryKey().autoIncrement()
     private val postRegisteredMessageId = integer("postRegistered").nullable()
 
     @Throws(CreationException::class)
     fun allocatePost(): Int {
         return transaction {
-            insert {  }[id]
+            insert {  }[id] ?.also {
+                launch {
+                    postAllocatedChannel.send(it)
+                }
+            }
         } ?: throw CreationException("Can't allocate new post")
     }
 
@@ -41,6 +52,9 @@ object PostsTable : Table() {
             }
             PostsLikesTable.clearPostMarks(postId)
             deleteWhere { id.eq(postId) }
+            launch {
+                postRemovedChannel.send(postId)
+            }
         }
     }
 

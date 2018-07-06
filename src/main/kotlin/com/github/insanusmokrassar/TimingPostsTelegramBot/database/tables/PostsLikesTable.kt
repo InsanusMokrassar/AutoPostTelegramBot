@@ -1,12 +1,19 @@
 package com.github.insanusmokrassar.TimingPostsTelegramBot.database.tables
 
+import kotlinx.coroutines.experimental.channels.BroadcastChannel
+import kotlinx.coroutines.experimental.channels.Channel
+import kotlinx.coroutines.experimental.launch
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.transactions.transaction
 
 typealias PostIdRatingPair = Pair<Int, Int>
 
+private const val countOfSubscriptions = 256
+
 object PostsLikesTable : Table() {
+    val subscribeChannel = BroadcastChannel<PostIdRatingPair>(countOfSubscriptions)
+
     private val userId = long("userId").primaryKey()
     private val postId = integer("postId").references(PostsTable.id).primaryKey()
     private val like = bool("like").default(false)
@@ -110,6 +117,11 @@ object PostsLikesTable : Table() {
                 }
             } ?:let {
                 addUser(userId, postId, like)
+            }
+            launch {
+                subscribeChannel.send(
+                    PostIdRatingPair(postId, getPostRating(postId))
+                )
             }
         }
     }
