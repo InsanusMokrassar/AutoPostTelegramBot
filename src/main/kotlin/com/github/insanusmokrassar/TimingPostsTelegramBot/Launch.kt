@@ -101,34 +101,48 @@ fun main(args: Array<String>) {
         )
     )
 
-    val trigger: Trigger = TimerStrategy(
-        config.postDelay,
-        initChooser(
-            config.chooser.name,
-            config.chooser.params
-        ),
-        PostPublisher(
-            config.targetChatId.toLong(),
-            config.sourceChatId.toLong(),
-            bot,
-            listOf(
-                PhotoForwarder(),
-                VideoForwarder(),
-                MediaGroupForwarder(),
-                AudioForwarder(),
-                VoiceForwarder(),
-                DocumentForwarder(),
-                TextForwarder(),
-                LocationForwarder(),
-                ContactForwarder(),
-                SimpleForwarder()
-            )
+    val chooser = initChooser(
+        config.chooser.name,
+        config.chooser.params
+    )
+
+    val publisher = PostPublisher(
+        config.targetChatId.toLong(),
+        config.sourceChatId.toLong(),
+        bot,
+        listOf(
+            PhotoForwarder(),
+            VideoForwarder(),
+            MediaGroupForwarder(),
+            AudioForwarder(),
+            VoiceForwarder(),
+            DocumentForwarder(),
+            TextForwarder(),
+            LocationForwarder(),
+            ContactForwarder(),
+            SimpleForwarder()
         )
     )
-    trigger.start()
+
+    val trigger: Trigger = TimerStrategy(
+        config.postDelay,
+        chooser,
+        publisher
+    )
 
     initSubscription(
         config.sourceChatId.toLong(),
         bot
     )
+
+    config.plugins.forEach {
+        it.init(
+            chooser,
+            publisher,
+            trigger,
+            bot
+        )
+    }
+
+    trigger.start()
 }

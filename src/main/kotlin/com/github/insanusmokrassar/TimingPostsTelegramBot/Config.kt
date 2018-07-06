@@ -2,6 +2,9 @@ package com.github.insanusmokrassar.TimingPostsTelegramBot
 
 import com.github.insanusmokrassar.TimingPostsTelegramBot.choosers.ChooserConfig
 import com.github.insanusmokrassar.TimingPostsTelegramBot.choosers.choosers
+import com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.Plugin
+import com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.PluginConfig
+import com.github.insanusmokrassar.TimingPostsTelegramBot.triggers.Trigger
 import com.github.insanusmokrassar.TimingPostsTelegramBot.utils.ProxySettings
 import org.h2.Driver
 
@@ -20,6 +23,7 @@ class Config (
         choosers.keys.first()
     ),
     val proxy: ProxySettings? = null,
+    val plugins: List<PluginConfig> = emptyList(),
     val debug: Boolean = false
 ) {
     val finalConfig: FinalConfig
@@ -32,6 +36,7 @@ class Config (
             postDelay,
             chooser,
             proxy,
+            plugins.mapNotNull { it.newInstance() },
             debug
         )
 }
@@ -51,5 +56,6 @@ class FinalConfig (
     val postDelay: Long = 60 * 60 * 1000,
     val chooser: ChooserConfig,
     val proxy: ProxySettings? = null,
+    val plugins: List<Plugin> = emptyList(),
     val debug: Boolean = false
 )
