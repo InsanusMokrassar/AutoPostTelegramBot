@@ -1,7 +1,6 @@
 package com.github.insanusmokrassar.TimingPostsTelegramBot.publishers
 
 import com.github.insanusmokrassar.TimingPostsTelegramBot.commands.deletePost
-import com.github.insanusmokrassar.TimingPostsTelegramBot.database.exceptions.NoRowFoundException
 import com.github.insanusmokrassar.TimingPostsTelegramBot.database.tables.*
 import com.github.insanusmokrassar.TimingPostsTelegramBot.extensions.executeAsync
 import com.github.insanusmokrassar.TimingPostsTelegramBot.forwarders.Forwarder
