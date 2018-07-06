@@ -46,9 +46,9 @@ class PostPublisher(
                         ).disableNotification(
                             true
                         )
-                    ).also {
-                        messagesToDelete.add(it.message().messageId())
-                        message.message = it.message()
+                    ) ?.message() ?.also {
+                        messagesToDelete.add(it.messageId())
+                        message.message = it
                     }
                 }
             }
