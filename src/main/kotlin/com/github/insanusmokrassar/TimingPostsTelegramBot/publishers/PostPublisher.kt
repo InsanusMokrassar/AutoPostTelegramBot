@@ -34,28 +34,27 @@ class PostPublisher(
                 messagesToDelete.add(it)
             }
 
-            val messageToPost = try {
-                PostsMessagesTable.getMessagesOfPost(postId).also {
-                    it.forEach { message ->
-                        messagesToDelete.add(message.messageId)
+            val messageToPost = PostsMessagesTable.getMessagesOfPost(postId).also {
+                if (it.isEmpty()) {
+                    PostsTable.removePost(postId)
+                    return
+                }
+                it.forEach { message ->
+                    messagesToDelete.add(message.messageId)
 
-                        bot.execute(
-                            ForwardMessage(
-                                sourceChatId,
-                                sourceChatId,
-                                message.messageId
-                            ).disableNotification(
-                                true
-                            )
-                        ) ?.message() ?.also {
-                            messagesToDelete.add(it.messageId())
-                            message.message = it
-                        }
+                    bot.execute(
+                        ForwardMessage(
+                            sourceChatId,
+                            sourceChatId,
+                            message.messageId
+                        ).disableNotification(
+                            true
+                        )
+                    ) ?.message() ?.also {
+                        messagesToDelete.add(it.messageId())
+                        message.message = it
                     }
                 }
-            } catch (e: NoRowFoundException) {
-                PostsTable.removePost(postId)
-                return
             }
 
             val mapOfExecution = mutableListOf<Pair<Forwarder, MutableList<PostMessage>>>()
