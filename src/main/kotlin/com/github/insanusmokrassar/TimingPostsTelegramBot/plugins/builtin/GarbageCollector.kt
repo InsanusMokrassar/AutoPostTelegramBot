@@ -67,7 +67,6 @@ class GarbageCollector(
             deletePost(
                 bot,
                 baseConfig.sourceChatId,
-                baseConfig.logsChatId,
                 dataPair.first
             )
         }
