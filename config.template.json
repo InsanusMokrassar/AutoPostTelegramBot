@@ -1,7 +1,6 @@
 {
-  "targetChatId": -12345678901,
-  "sourceChatId": -12345678901,
-  "logsChatId": -12345678901,
+  "targetChatId": "",
+  "sourceChatId": "",
   "botToken": "",
   "proxy": {
     "host": "default.localhost",

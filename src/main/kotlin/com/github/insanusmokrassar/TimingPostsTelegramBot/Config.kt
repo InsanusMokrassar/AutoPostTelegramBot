@@ -8,9 +8,8 @@ import com.github.insanusmokrassar.TimingPostsTelegramBot.utils.ProxySettings
 import org.h2.Driver
 
 class Config (
-    val targetChatId: Long? = null,
-    val sourceChatId: Long? = null,
-    val logsChatId: Long? = null,
+    val targetChatId: String? = null,
+    val sourceChatId: String? = null,
     val botToken: String? = null,
     val databaseConfig: DatabaseConfig = DatabaseConfig(
         "jdbc:h2:mem:test;DB_CLOSE_DELAY=-1",
@@ -30,7 +29,6 @@ class Config (
         get() = FinalConfig(
             targetChatId ?: throw IllegalArgumentException("Target chat id (field \"targetChatId\") can't be null"),
             sourceChatId ?: throw IllegalArgumentException("Source chat id (field \"sourceChatId\") can't be null"),
-            logsChatId ?: sourceChatId,
             botToken ?: throw IllegalArgumentException("Bot token (field \"botToken\") can't be null"),
             databaseConfig,
             chooser,
@@ -48,9 +46,8 @@ data class DatabaseConfig(
 )
 
 class FinalConfig (
-    val targetChatId: Long,
-    val sourceChatId: Long,
-    val logsChatId: Long,
+    val targetChatId: String,
+    val sourceChatId: String,
     val botToken: String,
     val databaseConfig: DatabaseConfig,
     val chooser: ChooserConfig,

@@ -66,7 +66,7 @@ class GarbageCollector(
         if (dataPair.second < config.minimalRate) {
             deletePost(
                 bot,
-                baseConfig.sourceChatId,
+                baseConfig.sourceChatId.toLong(),
                 dataPair.first
             )
         }

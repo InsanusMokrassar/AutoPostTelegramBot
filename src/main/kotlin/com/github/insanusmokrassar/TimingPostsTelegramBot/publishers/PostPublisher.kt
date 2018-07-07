@@ -10,13 +10,10 @@ import com.pengrad.telegrambot.model.request.ParseMode
 import com.pengrad.telegrambot.request.*
 import java.lang.ref.WeakReference
 
-private typealias ChatIdMessageIdPair = Pair<Long, Int>
-
 class PostPublisher(
     private val targetChatId: Long,
     private val sourceChatId: Long,
     bot: TelegramBot,
-    private val logsChatId: Long = sourceChatId,
     private val forwardersList: List<Forwarder>
 ) : Publisher {
     private val botWR = WeakReference(bot)
@@ -24,16 +21,16 @@ class PostPublisher(
     override fun publishPost(postId: Int) {
         val bot = botWR.get() ?: return
 
-        val messagesToDelete = mutableListOf<ChatIdMessageIdPair>()
+        val messagesToDelete = mutableListOf<Int>()
 
         try {
             bot.execute(
                 SendMessage(
-                    logsChatId,
+                    sourceChatId,
                     "Start post"
                 )
-            )?.message() ?.let {
-                messagesToDelete.add(it.chat().id() to it.messageId())
+            )?.message()?.messageId()?.let {
+                messagesToDelete.add(it)
             }
 
             val messageToPost = PostsMessagesTable.getMessagesOfPost(postId).also {
@@ -41,20 +38,19 @@ class PostPublisher(
                     PostsTable.removePost(postId)
                     return
                 }
-                it.forEach {
-                    message ->
-                    messagesToDelete.add(sourceChatId to message.messageId)
+                it.forEach { message ->
+                    messagesToDelete.add(message.messageId)
 
                     bot.execute(
                         ForwardMessage(
-                            logsChatId,
+                            sourceChatId,
                             sourceChatId,
                             message.messageId
                         ).disableNotification(
                             true
                         )
                     ) ?.message() ?.also {
-                        messagesToDelete.add(it.chat().id() to it.messageId())
+                        messagesToDelete.add(it.messageId())
                         message.message = it
                     }
                 }
@@ -93,7 +89,7 @@ class PostPublisher(
             }.let {
                 bot.execute(
                     SendMessage(
-                        logsChatId,
+                        sourceChatId,
                         "Post published. Rating: ${PostsLikesTable.getPostRating(postId)}"
                     ).parseMode(
                         ParseMode.Markdown
@@ -102,7 +98,7 @@ class PostPublisher(
                 it.forEach {
                     bot.execute(
                         ForwardMessage(
-                            logsChatId,
+                            sourceChatId,
                             targetChatId,
                             it
                         )
@@ -129,8 +125,8 @@ class PostPublisher(
             messagesToDelete.forEach {
                 bot.executeAsync(
                     DeleteMessage(
-                        it.first,
-                        it.second
+                        sourceChatId,
+                        it
                     )
                 )
             }
