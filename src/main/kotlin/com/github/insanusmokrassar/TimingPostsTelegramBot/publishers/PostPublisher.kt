@@ -113,6 +113,7 @@ class PostPublisher(
             deletePost(
                 bot,
                 sourceChatId,
+                logsChatId,
                 postId
             )
         } catch (e: Exception) {
