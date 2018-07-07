@@ -9,8 +9,6 @@ import com.github.insanusmokrassar.TimingPostsTelegramBot.commands.*
 import com.github.insanusmokrassar.TimingPostsTelegramBot.database.tables.*
 import com.github.insanusmokrassar.TimingPostsTelegramBot.forwarders.*
 import com.github.insanusmokrassar.TimingPostsTelegramBot.publishers.PostPublisher
-import com.github.insanusmokrassar.TimingPostsTelegramBot.triggers.TimerStrategy
-import com.github.insanusmokrassar.TimingPostsTelegramBot.triggers.Trigger
 import com.github.insanusmokrassar.TimingPostsTelegramBot.utils.initSubscription
 import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.request.GetChat
@@ -122,12 +120,6 @@ fun main(args: Array<String>) {
         )
     )
 
-    val trigger: Trigger = TimerStrategy(
-        config.postDelay,
-        chooser,
-        publisher
-    )
-
     initSubscription(
         config.sourceChatId.toLong(),
         bot
@@ -138,10 +130,7 @@ fun main(args: Array<String>) {
             config,
             chooser,
             publisher,
-            trigger,
             bot
         )
     }
-
-    trigger.start()
 }

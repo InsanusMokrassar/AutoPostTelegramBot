@@ -8,7 +8,6 @@ import com.github.insanusmokrassar.TimingPostsTelegramBot.commands.deletePost
 import com.github.insanusmokrassar.TimingPostsTelegramBot.database.tables.*
 import com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.Plugin
 import com.github.insanusmokrassar.TimingPostsTelegramBot.publishers.Publisher
-import com.github.insanusmokrassar.TimingPostsTelegramBot.triggers.Trigger
 import com.pengrad.telegrambot.TelegramBot
 import kotlinx.coroutines.experimental.delay
 import kotlinx.coroutines.experimental.launch
@@ -28,7 +27,6 @@ class GarbageCollector(
         baseConfig: FinalConfig,
         chooser: Chooser,
         publisher: Publisher,
-        trigger: Trigger,
         bot: TelegramBot
     ) {
         val botWR = WeakReference(bot)

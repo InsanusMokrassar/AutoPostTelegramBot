@@ -2,7 +2,6 @@
   "targetChatId": "",
   "sourceChatId": "",
   "botToken": "",
-  "postDelay": 60000,
   "proxy": {
     "host": "default.localhost",
     "port": 1080,
@@ -26,6 +25,12 @@
       "classname": "class.name",
       "params": {
 
+      }
+    },
+    {
+      "classname": "com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.builtin.triggers.TimerTriggerStrategy",
+      "params": {
+        "delay": 1000
       }
     }
   ]

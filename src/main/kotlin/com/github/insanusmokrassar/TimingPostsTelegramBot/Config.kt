@@ -11,7 +11,6 @@ class Config (
     val targetChatId: String? = null,
     val sourceChatId: String? = null,
     val botToken: String? = null,
-    val postDelay: Long = 60 * 60 * 1000,
     val databaseConfig: DatabaseConfig = DatabaseConfig(
         "jdbc:h2:mem:test;DB_CLOSE_DELAY=-1",
         Driver::class.java.canonicalName,
@@ -32,7 +31,6 @@ class Config (
             sourceChatId ?: throw IllegalArgumentException("Source chat id (field \"sourceChatId\") can't be null"),
             botToken ?: throw IllegalArgumentException("Bot token (field \"botToken\") can't be null"),
             databaseConfig,
-            postDelay,
             chooser,
             proxy,
             plugins.mapNotNull { it.newInstance() },
@@ -52,7 +50,6 @@ class FinalConfig (
     val sourceChatId: String,
     val botToken: String,
     val databaseConfig: DatabaseConfig,
-    val postDelay: Long = 60 * 60 * 1000,
     val chooser: ChooserConfig,
     val proxy: ProxySettings? = null,
     val plugins: List<Plugin> = emptyList(),
