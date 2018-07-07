@@ -80,7 +80,7 @@ fun main(args: Array<String>) {
     val startPost = StartPost()
     val fixPost = FixPost(bot)
     val mostRated = MostRated(bot)
-    val deletePost = DeletePost(bot, config.logsChatId)
+    val deletePost = DeletePost(bot)
     val availableRates = AvailableRates(bot)
 
     val messagesListener = OnMessage(config, startPost, fixPost, mostRated, deletePost, availableRates)

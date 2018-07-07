@@ -8,13 +8,13 @@ import com.github.insanusmokrassar.TimingPostsTelegramBot.extensions.executeAsyn
 import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.model.Message
 import com.pengrad.telegrambot.model.request.ParseMode
-import com.pengrad.telegrambot.request.*
+import com.pengrad.telegrambot.request.DeleteMessage
+import com.pengrad.telegrambot.request.SendMessage
 import java.lang.ref.WeakReference
 
 fun deletePost(
     bot: TelegramBot,
     chatId: Long,
-    logsChatId: Long,
     postId: Int,
     vararg additionalMessagesIdsToDelete: Int
 ) {
@@ -35,24 +35,14 @@ fun deletePost(
             {
                 _, ioException ->
                 bot.executeAsync(
-                    ForwardMessage(
-                        logsChatId,
+                    SendMessage(
                         chatId,
+                        "Can't delete message. Reason:\n```\n${ioException?.message}\n```\n\nPlease, delete manually"
+                    ).parseMode(
+                        ParseMode.Markdown
+                    ).replyToMessageId(
                         currentMessageToDeleteId
-                    ),
-                    onResponse = {
-                        _, response ->
-                        bot.executeAsync(
-                            SendMessage(
-                                logsChatId,
-                                "Can't delete message. Reason:\n```\n${ioException?.message}\n```\n\nPlease, delete manually"
-                            ).parseMode(
-                                ParseMode.Markdown
-                            ).replyToMessageId(
-                                response.message().messageId()
-                            )
-                        )
-                    }
+                    )
                 )
             }
         )
@@ -60,8 +50,7 @@ fun deletePost(
 }
 
 class DeletePost(
-    bot: TelegramBot,
-    private val logsChatId: Long
+    bot: TelegramBot
 ) : UpdateCallback<Message> {
     private val bot = WeakReference(bot)
     override fun invoke(updateId: Int, update: IObject<Any>, message: Message) {
@@ -74,7 +63,6 @@ class DeletePost(
                 deletePost(
                     bot,
                     chatId,
-                    logsChatId,
                     postId,
                     messageId,
                     message.messageId()
