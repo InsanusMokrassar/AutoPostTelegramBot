@@ -103,9 +103,10 @@ fun main(args: Array<String>) {
     )
 
     val publisher = PostPublisher(
-        config.targetChatId.toLong(),
-        config.sourceChatId.toLong(),
+        config.targetChatId,
+        config.sourceChatId,
         bot,
+        config.logsChatId,
         listOf(
             PhotoForwarder(),
             VideoForwarder(),
@@ -121,7 +122,7 @@ fun main(args: Array<String>) {
     )
 
     initSubscription(
-        config.sourceChatId.toLong(),
+        config.sourceChatId,
         bot
     )
 

@@ -16,10 +16,7 @@ class OnMediaGroup(
 ) : MediaGroupCallback {
     override fun invoke(mediaGroupId: String, updates: List<IObject<Any>>, messages: List<Message>) {
         val first = messages.first()
-        if (
-            first.chat().id().toString() == config.sourceChatId
-            || first.chat().username() == config.sourceChatId
-        ) {
+        if (first.chat().id() == config.sourceChatId) {
             if (PostTransactionTable.inTransaction) {
                 messages.forEach {
                     PostTransactionTable.addMessageId(
