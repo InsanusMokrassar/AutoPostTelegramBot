@@ -112,8 +112,8 @@ private class SmartChooserConfigItem (
                     DateTimeZone.getDefault()
                 )
             } ?.let {
-                it.withMillisOfDay(
-                    it.millisOfDay
+                it.withDate(
+                    zeroHour.toLocalDate()
                 )
             }
             currentPair ?.let {
