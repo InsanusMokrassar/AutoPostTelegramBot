@@ -28,8 +28,7 @@ class OnMessage(
     )
 
     override fun invoke(id: Int, update: IObject<Any>, message: Message) {
-        if (message.chat().id().toString() == config.sourceChatId
-            || message.chat().username() == config.sourceChatId) {
+        if (message.chat().id() == config.sourceChatId) {
             message.text() ?. let {
                 if (it.startsWith("/")) {
                     val command = commandRegex.find(it) ?. value
