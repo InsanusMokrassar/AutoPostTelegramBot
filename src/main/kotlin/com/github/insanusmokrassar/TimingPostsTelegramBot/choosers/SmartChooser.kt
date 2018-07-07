@@ -7,33 +7,13 @@ import com.github.insanusmokrassar.TimingPostsTelegramBot.database.tables.PostsL
 import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
 import org.joda.time.format.DateTimeFormat
+import org.joda.time.format.DateTimeFormatter
 import java.util.*
 
-private val timeFormat = DateTimeFormat.forPattern("HH:mm")
+private val defaultTimeZone = DateTimeZone.getDefault()
+private val timeFormat: DateTimeFormatter = DateTimeFormat.forPattern("HH:mm")
 
-private fun String.toTime(offset: String = "+00:00"): DateTime {
-    return timeFormat.withZone(
-        DateTimeZone.forID(offset)
-    ).parseDateTime(
-        this
-    )
-}
-
-private fun Long.fromTime(offset: String = "+00:00"): String {
-    return timeFormat.withZone(
-        DateTimeZone.forID(offset)
-    ).print(
-        this
-    )
-}
-
-private fun getZeroHour(offset: String = "+00:00"): Long {
-    return timeFormat.withZone(DateTimeZone.forID(offset)).parseDateTime("00:00").millis
-}
-
-private fun get24Hour(offset: String = "+00:00"): Long {
-    return getZeroHour(offset) + (24 * 60 * 60 * 1000)
-}
+private val coverFormat: DateTimeFormatter = DateTimeFormat.forPattern("HH:mm:ss:SS")
 
 private const val ascendSort = "ascend"
 private const val descendSort = "descend"
@@ -97,7 +77,7 @@ private val commonInnerChoosers = mapOf<String, InnerChooser>(
 private class SmartChooserConfigItem (
     val minRate: Int? = null,
     val maxRate: Int? = null,
-    val timeOffset: String = "+00:00",
+    val timeOffset: String = defaultTimeZone.id,
     val time: Array<String?> = arrayOf(
         "00:00",
         null
@@ -105,25 +85,41 @@ private class SmartChooserConfigItem (
     val sort: String = defaultSort,
     val count: Int = 1
 ) {
-    private var realTimePairs: List<Pair<Long, Long>>? = null
-
-    private val zeroHour: Long by lazy {
-        getZeroHour(timeOffset)
+    private val zeroHour: DateTime by lazy {
+        timeFormat.parseDateTime("00:00")
     }
 
-    private val nextDayZeroHour: Long by lazy {
-        get24Hour(timeOffset)
+    private val nextDayZeroHour: DateTime by lazy {
+        zeroHour.plusDays(1)
     }
 
-    private val timePairs: List<Pair<Long, Long>> by lazy {
-        val pairs = mutableListOf<Pair<Long, Long>>()
-        var currentPair: Pair<Long?, Long?>? = null
+    private val timeZone by lazy {
+        DateTimeZone.forID(timeOffset)
+    }
+
+    private val timePairs: List<Pair<DateTime, DateTime>> by lazy {
+        val pairs = mutableListOf<Pair<DateTime, DateTime>>()
+        var currentPair: Pair<DateTime?, DateTime?>? = null
+
+        val timeFormatWithConfigTimeZone = timeFormat.withZone(timeZone)
+
         time.forEach {
             s ->
+            val dateTime = s ?.let {
+                timeFormatWithConfigTimeZone.parseDateTime(
+                    it
+                ).withZone(
+                    DateTimeZone.getDefault()
+                )
+            } ?.let {
+                it.withMillisOfDay(
+                    it.millisOfDay
+                )
+            }
             currentPair ?.let {
                 currentPairNN ->
                 val first = currentPairNN.first ?: zeroHour
-                val second = s ?. toTime(timeOffset) ?. millis ?: nextDayZeroHour
+                val second = dateTime ?: nextDayZeroHour
 
                 if (first > second) {
                     pairs.add(first to nextDayZeroHour)
@@ -134,29 +130,24 @@ private class SmartChooserConfigItem (
 
                 currentPair = null
             } ?:let {
-                currentPair = s ?. toTime(timeOffset) ?. millis to null
+                currentPair = dateTime to null
             }
         }
-        realTimePairs = pairs
         pairs
     }
 
-    val actual: Boolean
-        get() {
-            DateTime.now().let {
-                timeFormat.withZone(DateTimeZone.forID(timeOffset)).print(it.millis)
-            }.let {
-                timeFormat.parseDateTime(it).millis
-            }.let {
-                now ->
-                timePairs.forEach {
-                    if (it.first <= now && now < it.second) {
-                        return true
-                    }
-                }
+    fun actual(
+        now: Long = timeFormat.parseMillis(
+            timeFormat.print(DateTime.now())
+        )
+    ): Boolean {
+        timePairs.forEach {
+            if ((it.first.isBefore(now) || it.first.isEqual(now)) && it.second.isAfter(now)) {
+                return true
             }
-            return false
         }
+        return false
+    }
 
     val chooser: InnerChooser?
         get() = commonInnerChoosers[sort]
@@ -166,7 +157,7 @@ private class SmartChooserConfigItem (
         stringBuilder.append("Rating: ${minRate ?: "any low"} - ${maxRate ?: "any big"}\n")
         stringBuilder.append("Time:\n")
         timePairs.forEach {
-            stringBuilder.append("  ${it.first.fromTime(timeOffset)} - ${it.second.fromTime(timeOffset)}\n")
+            stringBuilder.append("  ${timeFormat.print(it.first)} - ${timeFormat.print(it.second)}\n")
         }
         return stringBuilder.toString()
     }
@@ -183,11 +174,21 @@ class SmartChooser(
 
     init {
         println("Smart chooser inited: ${this.config.times.joinToString(separator = "\n") { it.toString() }}")
-        println("Actual: ${this.config.times.firstOrNull { it.actual } ?.toString() ?: "Nothing"}")
+
+        checkCover().let {
+            if (it.isNotEmpty()) {
+                println("Uncovered time:")
+                it.forEach {
+                    println("${coverFormat.print(it.first)} - ${coverFormat.print(it.second)}")
+                }
+            } else {
+                println("All day covered")
+            }
+        }
     }
 
     override fun triggerChoose(): Collection<Int> {
-        val actualItem = config.times.firstOrNull { it.actual }
+        val actualItem = config.times.firstOrNull { it.actual() }
         return actualItem ?.let {
             PostsLikesTable.getRateRange(
                 it.minRate,
@@ -200,5 +201,27 @@ class SmartChooser(
                 actualItem.count
             )
         } ?: emptyList()
+    }
+
+    private fun checkCover(): List<Pair<Long, Long>> {
+        var currentFirst: Long? = null
+        val result = mutableListOf<Pair<Long, Long>>()
+        (timeFormat.parseMillis("00:00") .. timeFormat.parseDateTime("00:00").plusDays(1).millis).forEach {
+            now ->
+            currentFirst ?.let {
+                first ->
+                config.times.firstOrNull { it.actual(now) } ?.let {
+                    if (first != now) {
+                        result.add(first to now)
+                    }
+                    currentFirst = null
+                }
+            } ?:let {
+                config.times.firstOrNull { it.actual(now) } ?:let {
+                    currentFirst = now
+                }
+            }
+        }
+        return result
     }
 }
