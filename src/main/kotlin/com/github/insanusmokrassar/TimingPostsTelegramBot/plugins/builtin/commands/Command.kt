@@ -54,5 +54,5 @@ abstract class Command : UpdateCallback<Message>, Plugin {
         }
     }
 
-    protected abstract fun onCommand(updateId: Int, message: Message)
+    abstract fun onCommand(updateId: Int, message: Message)
 }
