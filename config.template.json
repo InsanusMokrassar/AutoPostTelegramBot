@@ -60,6 +60,9 @@
     },
     {
       "classname": "com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.builtin.CallbackQueryReceivers.DislikeReceiver"
+    },
+    {
+      "classname": "com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.builtin.commands.PublishPost"
     }
   ]
 }
