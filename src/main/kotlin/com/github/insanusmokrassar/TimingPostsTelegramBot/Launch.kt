@@ -5,10 +5,9 @@ import com.github.insanusmokrassar.IObjectKRealisations.load
 import com.github.insanusmokrassar.IObjectKRealisations.toObject
 import com.github.insanusmokrassar.TimingPostsTelegramBot.callbacks.*
 import com.github.insanusmokrassar.TimingPostsTelegramBot.choosers.initChooser
-import com.github.insanusmokrassar.TimingPostsTelegramBot.commands.*
 import com.github.insanusmokrassar.TimingPostsTelegramBot.database.tables.*
 import com.github.insanusmokrassar.TimingPostsTelegramBot.forwarders.*
-import com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.builtin.commands.FixPost
+import com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.builtin.commands.StartPost
 import com.github.insanusmokrassar.TimingPostsTelegramBot.publishers.PostPublisher
 import com.github.insanusmokrassar.TimingPostsTelegramBot.utils.initSubscription
 import com.pengrad.telegrambot.TelegramBot
@@ -85,10 +84,8 @@ fun main(args: Array<String>) {
         throw IllegalArgumentException("Can't check chats availability")
     }
 
-    val startPost = StartPost()
-
     messagesListener.broadcastChannel.openSubscription().also {
-        val listener = OnMessage(config, startPost)
+        val listener = OnMessage(config)
         launch {
             while (isActive) {
                 val received = it.receive()
@@ -110,7 +107,7 @@ fun main(args: Array<String>) {
     }
 
     mediaGroupsListener.broadcastChannel.openSubscription().also {
-        val listener = OnMediaGroup(config, startPost)
+        val listener = OnMediaGroup(config)
         launch {
             while (isActive) {
                 val received = it.receive()

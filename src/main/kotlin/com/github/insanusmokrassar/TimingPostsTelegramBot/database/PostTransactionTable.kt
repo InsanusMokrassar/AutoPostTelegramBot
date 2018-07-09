@@ -10,7 +10,6 @@ object PostTransactionTable {
     var inTransaction: Boolean = false
         private set
 
-
     fun startTransaction() {
         if (inTransaction) {
             throw IllegalStateException("Already in transaction")
