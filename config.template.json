@@ -31,8 +31,23 @@
     {
       "classname": "com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.builtin.triggers.TimerTriggerStrategy",
       "params": {
-        "delay": 1000
+        "delay": 3600000
       }
+    },
+    {
+      "classname": "com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.builtin.commands.StartPost"
+    },
+    {
+      "classname": "com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.builtin.commands.FixPost"
+    },
+    {
+      "classname": "com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.builtin.commands.DeletePost"
+    },
+    {
+      "classname": "com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.builtin.commands.AvailableRates"
+    },
+    {
+      "classname": "com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.builtin.commands.MostRated"
     }
   ]
 }
