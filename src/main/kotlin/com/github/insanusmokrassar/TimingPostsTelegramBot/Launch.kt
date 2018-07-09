@@ -7,7 +7,6 @@ import com.github.insanusmokrassar.TimingPostsTelegramBot.callbacks.*
 import com.github.insanusmokrassar.TimingPostsTelegramBot.choosers.initChooser
 import com.github.insanusmokrassar.TimingPostsTelegramBot.database.tables.*
 import com.github.insanusmokrassar.TimingPostsTelegramBot.forwarders.*
-import com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.builtin.commands.StartPost
 import com.github.insanusmokrassar.TimingPostsTelegramBot.publishers.PostPublisher
 import com.github.insanusmokrassar.TimingPostsTelegramBot.utils.initSubscription
 import com.pengrad.telegrambot.TelegramBot
@@ -84,17 +83,6 @@ fun main(args: Array<String>) {
         throw IllegalArgumentException("Can't check chats availability")
     }
 
-    messagesListener.broadcastChannel.openSubscription().also {
-        val listener = OnMessage(config)
-        launch {
-            while (isActive) {
-                val received = it.receive()
-                listener.invoke(received.first, received.second)
-            }
-            it.cancel()
-        }
-    }
-
     callbackQueryListener.broadcastChannel.openSubscription().also {
         val listener = OnCallbackQuery(bot)
         launch {
@@ -116,16 +104,6 @@ fun main(args: Array<String>) {
             it.cancel()
         }
     }
-
-    bot.setUpdatesListener(
-        BotIncomeMessagesListener(
-            messagesListener,
-            onChannelPost = messagesListener,
-            onCallbackQuery = callbackQueryListener,
-            onMessageMediaGroup = mediaGroupsListener,
-            onChannelPostMediaGroup = mediaGroupsListener
-        )
-    )
 
     val chooser = initChooser(
         config.chooser.name,
@@ -164,4 +142,14 @@ fun main(args: Array<String>) {
             bot
         )
     }
+
+    bot.setUpdatesListener(
+        BotIncomeMessagesListener(
+            messagesListener,
+            onChannelPost = messagesListener,
+            onCallbackQuery = callbackQueryListener,
+            onMessageMediaGroup = mediaGroupsListener,
+            onChannelPostMediaGroup = mediaGroupsListener
+        )
+    )
 }
