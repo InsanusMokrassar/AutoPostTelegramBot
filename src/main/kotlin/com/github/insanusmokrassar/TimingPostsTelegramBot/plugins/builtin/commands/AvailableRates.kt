@@ -1,23 +1,17 @@
-package com.github.insanusmokrassar.TimingPostsTelegramBot.commands
+package com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.builtin.commands
 
-import com.github.insanusmokrassar.BotIncomeMessagesListener.UpdateCallback
-import com.github.insanusmokrassar.IObjectK.interfaces.IObject
 import com.github.insanusmokrassar.TimingPostsTelegramBot.database.tables.PostsLikesTable
 import com.github.insanusmokrassar.TimingPostsTelegramBot.database.tables.PostsTable
 import com.github.insanusmokrassar.TimingPostsTelegramBot.extensions.executeAsync
-import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.model.Message
 import com.pengrad.telegrambot.model.request.ParseMode
 import com.pengrad.telegrambot.request.SendMessage
-import java.lang.ref.WeakReference
 
-class AvailableRates(
-    bot: TelegramBot
-) : UpdateCallback<Message> {
-    private val botWR = WeakReference(bot)
+class AvailableRates : Command() {
+    override val commandRegex: Regex = Regex("^/availableRatings$")
 
-    override fun invoke(updateId: Int, message: Message) {
-        val bot = botWR.get() ?: return
+    override fun onCommand(updateId: Int, message: Message) {
+        val bot = botWR ?.get() ?: return
         var maxRatingLength = 0
         var maxCountLength = 0
         var commonCount = 0

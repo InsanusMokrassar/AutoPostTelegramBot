@@ -15,16 +15,14 @@ class OnMessage(
     private val startPost: StartPost,
     private val fixPost: FixPost,
     private val mostRated: MostRated,
-    private val deletePost: DeletePost,
-    private val availableRatings: AvailableRates
+    private val deletePost: DeletePost
 ) : UpdateCallback<Message> {
 
     private val commands = mapOf(
         "/startPost" to startPost,
         "/fixPost" to fixPost,
         "/deletePost" to deletePost,
-        "/mostRated" to mostRated,
-        "/availableRatings" to availableRatings
+        "/mostRated" to mostRated
     )
 
     override fun invoke(id: Int, message: Message) {

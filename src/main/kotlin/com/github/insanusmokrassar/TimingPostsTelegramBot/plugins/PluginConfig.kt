@@ -6,7 +6,7 @@ import com.github.insanusmokrassar.TimingPostsTelegramBot.utils.initObject
 
 class PluginConfig(
     val classname: String? = null,
-    val params: IObject<Any> = SimpleIObject()
+    val params: IObject<Any>?
 ) {
     fun newInstance(): Plugin? {
         return classname ?.let {

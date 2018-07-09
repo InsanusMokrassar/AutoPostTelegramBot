@@ -8,6 +8,7 @@ import com.github.insanusmokrassar.TimingPostsTelegramBot.choosers.initChooser
 import com.github.insanusmokrassar.TimingPostsTelegramBot.commands.*
 import com.github.insanusmokrassar.TimingPostsTelegramBot.database.tables.*
 import com.github.insanusmokrassar.TimingPostsTelegramBot.forwarders.*
+import com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.builtin.commands.AvailableRates
 import com.github.insanusmokrassar.TimingPostsTelegramBot.publishers.PostPublisher
 import com.github.insanusmokrassar.TimingPostsTelegramBot.utils.initSubscription
 import com.pengrad.telegrambot.TelegramBot
@@ -88,10 +89,9 @@ fun main(args: Array<String>) {
     val fixPost = FixPost(bot)
     val mostRated = MostRated(bot)
     val deletePost = DeletePost(bot, config.logsChatId)
-    val availableRates = AvailableRates(bot)
 
     messagesListener.broadcastChannel.openSubscription().also {
-        val listener = OnMessage(config, startPost, fixPost, mostRated, deletePost, availableRates)
+        val listener = OnMessage(config, startPost, fixPost, mostRated, deletePost)
         launch {
             while (isActive) {
                 val received = it.receive()
