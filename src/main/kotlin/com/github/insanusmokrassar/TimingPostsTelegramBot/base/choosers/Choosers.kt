@@ -10,7 +10,7 @@ val choosers = mapOf(
 )
 
 fun initChooser(chooserName: String, paramsSection: IObject<Any>? = null): Chooser {
-    return choosers[chooserName] ?.let {
-        initObject<Chooser>(it, paramsSection)
-    } ?: throw IllegalArgumentException("Wrong name of chooser. Known choosers:\n${choosers.keys.joinToString()}")
+    return (choosers[chooserName] ?: chooserName).let {
+        initObject(it, paramsSection)
+    }
 }
