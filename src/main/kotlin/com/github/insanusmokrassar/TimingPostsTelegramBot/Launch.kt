@@ -3,10 +3,10 @@ package com.github.insanusmokrassar.TimingPostsTelegramBot
 import com.github.insanusmokrassar.BotIncomeMessagesListener.*
 import com.github.insanusmokrassar.IObjectKRealisations.load
 import com.github.insanusmokrassar.IObjectKRealisations.toObject
-import com.github.insanusmokrassar.TimingPostsTelegramBot.callbacks.*
 import com.github.insanusmokrassar.TimingPostsTelegramBot.choosers.initChooser
 import com.github.insanusmokrassar.TimingPostsTelegramBot.database.tables.*
 import com.github.insanusmokrassar.TimingPostsTelegramBot.forwarders.*
+import com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.builtin.callbacks.OnMediaGroup
 import com.github.insanusmokrassar.TimingPostsTelegramBot.publishers.PostPublisher
 import com.github.insanusmokrassar.TimingPostsTelegramBot.utils.initSubscription
 import com.pengrad.telegrambot.TelegramBot
@@ -81,17 +81,6 @@ fun main(args: Array<String>) {
 
     if (!bot.execute(GetChat(config.sourceChatId)).isOk || !bot.execute(GetChat(config.targetChatId)).isOk) {
         throw IllegalArgumentException("Can't check chats availability")
-    }
-
-    mediaGroupsListener.broadcastChannel.openSubscription().also {
-        val listener = OnMediaGroup(config)
-        launch {
-            while (isActive) {
-                val received = it.receive()
-                listener.invoke(received.first, received.second)
-            }
-            it.cancel()
-        }
     }
 
     val chooser = initChooser(
