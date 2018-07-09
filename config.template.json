@@ -53,10 +53,13 @@
       "classname": "com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.builtin.callbacks.OnMessage"
     },
     {
-      "classname": "com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.builtin.callbacks.OnCallbackQuery"
+      "classname": "com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.builtin.callbacks.OnMediaGroup"
     },
     {
-      "classname": "com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.builtin.callbacks.OnMediaGroup"
+      "classname": "com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.builtin.CallbackQueryReceivers.LikeReceiver"
+    },
+    {
+      "classname": "com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.builtin.CallbackQueryReceivers.DislikeReceiver"
     }
   ]
 }
