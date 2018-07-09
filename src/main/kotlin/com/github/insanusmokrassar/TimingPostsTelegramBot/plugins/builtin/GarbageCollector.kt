@@ -4,7 +4,7 @@ import com.github.insanusmokrassar.IObjectK.interfaces.IObject
 import com.github.insanusmokrassar.IObjectKRealisations.toObject
 import com.github.insanusmokrassar.TimingPostsTelegramBot.FinalConfig
 import com.github.insanusmokrassar.TimingPostsTelegramBot.choosers.Chooser
-import com.github.insanusmokrassar.TimingPostsTelegramBot.commands.deletePost
+import com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.builtin.commands.deletePost
 import com.github.insanusmokrassar.TimingPostsTelegramBot.database.tables.*
 import com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.Plugin
 import com.github.insanusmokrassar.TimingPostsTelegramBot.publishers.Publisher

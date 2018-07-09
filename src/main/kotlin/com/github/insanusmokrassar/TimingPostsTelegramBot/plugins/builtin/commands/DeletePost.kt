@@ -1,15 +1,15 @@
-package com.github.insanusmokrassar.TimingPostsTelegramBot.commands
+package com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.builtin.commands
 
-import com.github.insanusmokrassar.BotIncomeMessagesListener.UpdateCallback
-import com.github.insanusmokrassar.IObjectK.interfaces.IObject
+import com.github.insanusmokrassar.TimingPostsTelegramBot.FinalConfig
+import com.github.insanusmokrassar.TimingPostsTelegramBot.choosers.Chooser
 import com.github.insanusmokrassar.TimingPostsTelegramBot.database.tables.PostsMessagesTable
 import com.github.insanusmokrassar.TimingPostsTelegramBot.database.tables.PostsTable
 import com.github.insanusmokrassar.TimingPostsTelegramBot.extensions.executeAsync
+import com.github.insanusmokrassar.TimingPostsTelegramBot.publishers.Publisher
 import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.model.Message
 import com.pengrad.telegrambot.model.request.ParseMode
 import com.pengrad.telegrambot.request.*
-import java.lang.ref.WeakReference
 
 fun deletePost(
     bot: TelegramBot,
@@ -59,13 +59,19 @@ fun deletePost(
     }
 }
 
-class DeletePost(
-    bot: TelegramBot,
-    private val logsChatId: Long
-) : UpdateCallback<Message> {
-    private val bot = WeakReference(bot)
-    override fun invoke(updateId: Int, message: Message) {
-        val bot = bot.get() ?: return
+class DeletePost : Command() {
+    override val commandRegex: Regex = Regex("^/deletePost$")
+
+    private var logsChatId: Long? = null
+
+    override fun init(baseConfig: FinalConfig, chooser: Chooser, publisher: Publisher, bot: TelegramBot) {
+        super.init(baseConfig, chooser, publisher, bot)
+
+        logsChatId = baseConfig.logsChatId
+    }
+
+    override fun onCommand(updateId: Int, message: Message) {
+        val bot = botWR ?.get() ?: return
         message.replyToMessage() ?.let {
             val messageId = it.messageId() ?: return@let null
             try {
@@ -74,7 +80,7 @@ class DeletePost(
                 deletePost(
                     bot,
                     chatId,
-                    logsChatId,
+                    logsChatId ?: return,
                     postId,
                     messageId,
                     message.messageId()
