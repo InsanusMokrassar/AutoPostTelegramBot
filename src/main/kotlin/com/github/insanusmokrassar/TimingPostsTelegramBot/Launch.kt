@@ -83,17 +83,6 @@ fun main(args: Array<String>) {
         throw IllegalArgumentException("Can't check chats availability")
     }
 
-    callbackQueryListener.broadcastChannel.openSubscription().also {
-        val listener = OnCallbackQuery(bot)
-        launch {
-            while (isActive) {
-                val received = it.receive()
-                listener.invoke(received.first, received.second)
-            }
-            it.cancel()
-        }
-    }
-
     mediaGroupsListener.broadcastChannel.openSubscription().also {
         val listener = OnMediaGroup(config)
         launch {
