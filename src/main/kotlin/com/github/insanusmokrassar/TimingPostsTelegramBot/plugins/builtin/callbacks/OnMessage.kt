@@ -21,7 +21,7 @@ class OnMessage : Plugin {
         publisher: Publisher,
         bot: TelegramBot
     ) {
-        messagesListener.broadcastChannel.openSubscription().also {
+        messagesListener.openSubscription().also {
             launch {
                 while (isActive) {
                     val received = it.receive()

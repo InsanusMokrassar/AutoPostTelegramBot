@@ -19,7 +19,7 @@ abstract class Command : UpdateCallback<Message>, Plugin {
     protected var botWR: WeakReference<TelegramBot>? = null
 
     init {
-        messagesListener.broadcastChannel.openSubscription().also {
+        messagesListener.openSubscription().also {
             launch {
                 while (isActive) {
                     val received = it.receive()

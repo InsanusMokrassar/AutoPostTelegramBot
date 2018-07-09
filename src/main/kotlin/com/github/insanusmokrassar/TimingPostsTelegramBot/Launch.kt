@@ -13,6 +13,7 @@ import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.model.CallbackQuery
 import com.pengrad.telegrambot.model.Message
 import com.pengrad.telegrambot.request.GetChat
+import kotlinx.coroutines.experimental.channels.BroadcastChannel
 import kotlinx.coroutines.experimental.launch
 import okhttp3.Credentials
 import okhttp3.OkHttpClient
@@ -22,9 +23,16 @@ import org.jetbrains.exposed.sql.transactions.transaction
 import java.net.InetSocketAddress
 import java.net.Proxy
 
-val messagesListener = UpdateCallbackChannel<Message>()
-val callbackQueryListener = UpdateCallbackChannel<CallbackQuery>()
-val mediaGroupsListener = MediaGroupCallbackChannel()
+
+private val realMessagesListener = UpdateCallbackChannel<Message>()
+private val realCallbackQueryListener = UpdateCallbackChannel<CallbackQuery>()
+private val realMediaGroupsListener = MediaGroupCallbackChannel()
+
+private const val subscriptionsCount = 256
+
+val messagesListener = BroadcastChannel<Pair<Int, Message>>(subscriptionsCount)
+val callbackQueryListener = BroadcastChannel<Pair<Int, CallbackQuery>>(subscriptionsCount)
+val mediaGroupsListener = BroadcastChannel<Pair<String, List<Message>>>(subscriptionsCount)
 
 fun main(args: Array<String>) {
     val config = load(args[0]).toObject(Config::class.java).finalConfig
@@ -121,13 +129,61 @@ fun main(args: Array<String>) {
         )
     }
 
+    realMessagesListener.broadcastChannel.openSubscription().also {
+        launch {
+            while (isActive) {
+                val received = it.receive()
+                try {
+                    if (received.second.chat().id() == config.sourceChatId) {
+                        messagesListener.send(received)
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+            it.cancel()
+        }
+    }
+
+    realCallbackQueryListener.broadcastChannel.openSubscription().also {
+        launch {
+            while (isActive) {
+                val received = it.receive()
+                try {
+                    if (received.second.message().chat().id() == config.sourceChatId) {
+                        callbackQueryListener.send(received)
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+            it.cancel()
+        }
+    }
+
+    realMediaGroupsListener.broadcastChannel.openSubscription().also {
+        launch {
+            while (isActive) {
+                val received = it.receive()
+                try {
+                    if (received.second.firstOrNull { it.chat().id() != config.sourceChatId } == null) {
+                        mediaGroupsListener.send(received)
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+            it.cancel()
+        }
+    }
+
     bot.setUpdatesListener(
         BotIncomeMessagesListener(
-            messagesListener,
-            onChannelPost = messagesListener,
-            onCallbackQuery = callbackQueryListener,
-            onMessageMediaGroup = mediaGroupsListener,
-            onChannelPostMediaGroup = mediaGroupsListener
+            realMessagesListener,
+            onChannelPost = realMessagesListener,
+            onCallbackQuery = realCallbackQueryListener,
+            onMessageMediaGroup = realMediaGroupsListener,
+            onChannelPostMediaGroup = realMediaGroupsListener
         )
     )
 }

@@ -14,7 +14,7 @@ abstract class CallbackQueryReceiverPlugin : Plugin {
     override fun init(baseConfig: FinalConfig, chooser: Chooser, publisher: Publisher, bot: TelegramBot) {
         val botWR = WeakReference(bot)
 
-        callbackQueryListener.broadcastChannel.openSubscription().also {
+        callbackQueryListener.openSubscription().also {
             launch {
                 while (isActive) {
                     val received = it.receive()

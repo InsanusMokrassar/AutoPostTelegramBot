@@ -22,7 +22,7 @@ class OnMediaGroup : Plugin {
         publisher: Publisher,
         bot: TelegramBot
     ) {
-        mediaGroupsListener.broadcastChannel.openSubscription().also {
+        mediaGroupsListener.openSubscription().also {
             launch {
                 while (isActive) {
                     val received = it.receive()
