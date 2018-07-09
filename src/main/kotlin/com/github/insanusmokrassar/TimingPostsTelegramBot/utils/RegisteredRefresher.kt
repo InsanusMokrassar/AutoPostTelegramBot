@@ -7,8 +7,7 @@ import com.github.insanusmokrassar.TimingPostsTelegramBot.utils.extensions.execu
 import com.github.insanusmokrassar.TimingPostsTelegramBot.utils.extensions.toTable
 import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.model.request.*
-import com.pengrad.telegrambot.request.EditMessageText
-import com.pengrad.telegrambot.request.SendMessage
+import com.pengrad.telegrambot.request.*
 import kotlinx.coroutines.experimental.channels.ReceiveChannel
 import kotlinx.coroutines.experimental.launch
 import java.lang.ref.WeakReference
@@ -151,7 +150,14 @@ fun refreshRegisteredMessage(
                 it,
                 onResponse = {
                     _, sendResponse ->
-                    PostsTable.postRegistered(postId, sendResponse.message().messageId())
+                    if (!PostsTable.postRegistered(postId, sendResponse.message().messageId())) {
+                        bot.executeAsync(
+                            DeleteMessage(
+                                chatId,
+                                sendResponse.message().messageId()
+                            )
+                        )
+                    }
                 }
             )
         }
