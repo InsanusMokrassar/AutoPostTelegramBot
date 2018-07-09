@@ -1,8 +1,8 @@
 package com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.builtin.commands
 
-import com.github.insanusmokrassar.TimingPostsTelegramBot.database.tables.PostsLikesTable
-import com.github.insanusmokrassar.TimingPostsTelegramBot.database.tables.PostsTable
-import com.github.insanusmokrassar.TimingPostsTelegramBot.extensions.executeAsync
+import com.github.insanusmokrassar.TimingPostsTelegramBot.base.database.tables.PostsLikesTable
+import com.github.insanusmokrassar.TimingPostsTelegramBot.base.database.tables.PostsTable
+import com.github.insanusmokrassar.TimingPostsTelegramBot.utils.extensions.executeAsync
 import com.pengrad.telegrambot.model.Message
 import com.pengrad.telegrambot.model.request.ParseMode
 import com.pengrad.telegrambot.request.SendMessage

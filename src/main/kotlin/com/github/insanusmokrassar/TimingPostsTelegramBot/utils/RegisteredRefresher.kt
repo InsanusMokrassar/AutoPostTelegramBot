@@ -2,9 +2,9 @@ package com.github.insanusmokrassar.TimingPostsTelegramBot.utils
 
 import com.github.insanusmokrassar.IObjectK.exceptions.ReadException
 import com.github.insanusmokrassar.IObjectKRealisations.toIObject
-import com.github.insanusmokrassar.TimingPostsTelegramBot.database.tables.*
-import com.github.insanusmokrassar.TimingPostsTelegramBot.extensions.executeAsync
-import com.github.insanusmokrassar.TimingPostsTelegramBot.extensions.toTable
+import com.github.insanusmokrassar.TimingPostsTelegramBot.base.database.tables.*
+import com.github.insanusmokrassar.TimingPostsTelegramBot.utils.extensions.executeAsync
+import com.github.insanusmokrassar.TimingPostsTelegramBot.utils.extensions.toTable
 import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.model.request.*
 import com.pengrad.telegrambot.request.EditMessageText

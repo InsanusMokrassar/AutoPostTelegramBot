@@ -1,12 +1,12 @@
 package com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.builtin.callbacks
 
-import com.github.insanusmokrassar.TimingPostsTelegramBot.models.FinalConfig
-import com.github.insanusmokrassar.TimingPostsTelegramBot.choosers.Chooser
-import com.github.insanusmokrassar.TimingPostsTelegramBot.database.PostTransactionTable
+import com.github.insanusmokrassar.TimingPostsTelegramBot.base.models.FinalConfig
+import com.github.insanusmokrassar.TimingPostsTelegramBot.base.choosers.Chooser
+import com.github.insanusmokrassar.TimingPostsTelegramBot.base.database.PostTransactionTable
 import com.github.insanusmokrassar.TimingPostsTelegramBot.mediaGroupsListener
-import com.github.insanusmokrassar.TimingPostsTelegramBot.models.PostMessage
+import com.github.insanusmokrassar.TimingPostsTelegramBot.base.models.PostMessage
 import com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.Plugin
-import com.github.insanusmokrassar.TimingPostsTelegramBot.publishers.Publisher
+import com.github.insanusmokrassar.TimingPostsTelegramBot.base.publishers.Publisher
 import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.model.Message
 import kotlinx.coroutines.experimental.launch

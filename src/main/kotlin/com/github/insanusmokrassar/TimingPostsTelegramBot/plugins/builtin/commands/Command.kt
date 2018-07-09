@@ -1,11 +1,11 @@
 package com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.builtin.commands
 
 import com.github.insanusmokrassar.BotIncomeMessagesListener.UpdateCallback
-import com.github.insanusmokrassar.TimingPostsTelegramBot.models.FinalConfig
-import com.github.insanusmokrassar.TimingPostsTelegramBot.choosers.Chooser
+import com.github.insanusmokrassar.TimingPostsTelegramBot.base.models.FinalConfig
+import com.github.insanusmokrassar.TimingPostsTelegramBot.base.choosers.Chooser
 import com.github.insanusmokrassar.TimingPostsTelegramBot.messagesListener
 import com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.Plugin
-import com.github.insanusmokrassar.TimingPostsTelegramBot.publishers.Publisher
+import com.github.insanusmokrassar.TimingPostsTelegramBot.base.publishers.Publisher
 import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.model.Message
 import kotlinx.coroutines.experimental.launch

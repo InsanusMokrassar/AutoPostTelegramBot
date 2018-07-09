@@ -3,11 +3,11 @@ package com.github.insanusmokrassar.TimingPostsTelegramBot
 import com.github.insanusmokrassar.BotIncomeMessagesListener.*
 import com.github.insanusmokrassar.IObjectKRealisations.load
 import com.github.insanusmokrassar.IObjectKRealisations.toObject
-import com.github.insanusmokrassar.TimingPostsTelegramBot.choosers.initChooser
-import com.github.insanusmokrassar.TimingPostsTelegramBot.database.tables.*
-import com.github.insanusmokrassar.TimingPostsTelegramBot.forwarders.*
-import com.github.insanusmokrassar.TimingPostsTelegramBot.models.Config
-import com.github.insanusmokrassar.TimingPostsTelegramBot.publishers.PostPublisher
+import com.github.insanusmokrassar.TimingPostsTelegramBot.base.choosers.initChooser
+import com.github.insanusmokrassar.TimingPostsTelegramBot.base.database.tables.*
+import com.github.insanusmokrassar.TimingPostsTelegramBot.base.forwarders.*
+import com.github.insanusmokrassar.TimingPostsTelegramBot.base.models.Config
+import com.github.insanusmokrassar.TimingPostsTelegramBot.base.publishers.PostPublisher
 import com.github.insanusmokrassar.TimingPostsTelegramBot.utils.initSubscription
 import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.model.CallbackQuery

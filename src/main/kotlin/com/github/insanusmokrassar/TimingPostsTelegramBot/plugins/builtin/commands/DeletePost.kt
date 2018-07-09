@@ -1,11 +1,11 @@
 package com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.builtin.commands
 
-import com.github.insanusmokrassar.TimingPostsTelegramBot.models.FinalConfig
-import com.github.insanusmokrassar.TimingPostsTelegramBot.choosers.Chooser
-import com.github.insanusmokrassar.TimingPostsTelegramBot.database.tables.PostsMessagesTable
-import com.github.insanusmokrassar.TimingPostsTelegramBot.database.tables.PostsTable
-import com.github.insanusmokrassar.TimingPostsTelegramBot.extensions.executeAsync
-import com.github.insanusmokrassar.TimingPostsTelegramBot.publishers.Publisher
+import com.github.insanusmokrassar.TimingPostsTelegramBot.base.models.FinalConfig
+import com.github.insanusmokrassar.TimingPostsTelegramBot.base.choosers.Chooser
+import com.github.insanusmokrassar.TimingPostsTelegramBot.base.database.tables.PostsMessagesTable
+import com.github.insanusmokrassar.TimingPostsTelegramBot.base.database.tables.PostsTable
+import com.github.insanusmokrassar.TimingPostsTelegramBot.utils.extensions.executeAsync
+import com.github.insanusmokrassar.TimingPostsTelegramBot.base.publishers.Publisher
 import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.model.Message
 import com.pengrad.telegrambot.model.request.ParseMode

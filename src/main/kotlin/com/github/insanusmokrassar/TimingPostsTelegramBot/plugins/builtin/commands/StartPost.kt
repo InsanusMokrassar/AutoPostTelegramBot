@@ -1,6 +1,6 @@
 package com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.builtin.commands
 
-import com.github.insanusmokrassar.TimingPostsTelegramBot.database.PostTransactionTable
+import com.github.insanusmokrassar.TimingPostsTelegramBot.base.database.PostTransactionTable
 import com.pengrad.telegrambot.model.Message
 
 class StartPost : Command() {

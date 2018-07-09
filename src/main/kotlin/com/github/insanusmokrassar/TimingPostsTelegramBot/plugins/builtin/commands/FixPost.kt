@@ -1,8 +1,8 @@
 package com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.builtin.commands
 
-import com.github.insanusmokrassar.TimingPostsTelegramBot.database.PostTransactionTable
-import com.github.insanusmokrassar.TimingPostsTelegramBot.database.exceptions.NothingToSaveException
-import com.github.insanusmokrassar.TimingPostsTelegramBot.extensions.executeAsync
+import com.github.insanusmokrassar.TimingPostsTelegramBot.base.database.PostTransactionTable
+import com.github.insanusmokrassar.TimingPostsTelegramBot.base.database.exceptions.NothingToSaveException
+import com.github.insanusmokrassar.TimingPostsTelegramBot.utils.extensions.executeAsync
 import com.pengrad.telegrambot.model.Message
 import com.pengrad.telegrambot.request.SendMessage
 
