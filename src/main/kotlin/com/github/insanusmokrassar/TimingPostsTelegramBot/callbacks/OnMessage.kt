@@ -27,12 +27,12 @@ class OnMessage(
         "/availableRatings" to availableRatings
     )
 
-    override fun invoke(id: Int, update: IObject<Any>, message: Message) {
+    override fun invoke(id: Int, message: Message) {
         if (message.chat().id() == config.sourceChatId) {
             message.text() ?. let {
                 if (it.startsWith("/")) {
                     val command = commandRegex.find(it) ?. value
-                    commands[command] ?. invoke(id, update, message) ?: return
+                    commands[command] ?. invoke(id, message) ?: return
                 } else {
                     null
                 }
@@ -42,11 +42,11 @@ class OnMessage(
                         PostMessage(message)
                     )
                 } else {
-                    startPost(id, update, message)
+                    startPost(id, message)
                     PostTransactionTable.addMessageId(
                         PostMessage(message)
                     )
-                    fixPost(id, update, message)
+                    fixPost(id, message)
                 }
             }
         }

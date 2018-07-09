@@ -64,7 +64,7 @@ class DeletePost(
     private val logsChatId: Long
 ) : UpdateCallback<Message> {
     private val bot = WeakReference(bot)
-    override fun invoke(updateId: Int, update: IObject<Any>, message: Message) {
+    override fun invoke(updateId: Int, message: Message) {
         val bot = bot.get() ?: return
         message.replyToMessage() ?.let {
             val messageId = it.messageId() ?: return@let null

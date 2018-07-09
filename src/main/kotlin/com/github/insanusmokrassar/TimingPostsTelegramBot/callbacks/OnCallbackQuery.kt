@@ -16,12 +16,12 @@ class OnCallbackQuery(
         getDeleteReceiverPair(bot)
     )
 
-    override fun invoke(updateId: Int, queryIObject: IObject<Any>, query: CallbackQuery) {
+    override fun invoke(updateId: Int, query: CallbackQuery) {
         query.data().toIObject().let {
             it.keys().mapNotNull {
                 queriesMap[it]
             }.forEach {
-                it(updateId, queryIObject, query)
+                it(updateId, query)
             }
         }
     }

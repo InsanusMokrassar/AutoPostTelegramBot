@@ -14,7 +14,7 @@ class FixPost(
     bot: TelegramBot
 ) : UpdateCallback<Message> {
     private val bot = WeakReference(bot)
-    override fun invoke(updateId: Int, update: IObject<Any>, message: Message) {
+    override fun invoke(updateId: Int, message: Message) {
         try {
             PostTransactionTable.saveNewPost()
         } catch (e: NothingToSaveException) {

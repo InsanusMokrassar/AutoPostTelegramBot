@@ -19,7 +19,7 @@ class MostRated (
     bot: TelegramBot
 ) : UpdateCallback<Message> {
     private val bot = WeakReference(bot)
-    override fun invoke(updateId: Int, update: IObject<Any>, message: Message) {
+    override fun invoke(updateId: Int, message: Message) {
         val bot = bot.get() ?: return
         val mostRated = PostsLikesTable.getMostRated()
         val chatId = message.chat().id()

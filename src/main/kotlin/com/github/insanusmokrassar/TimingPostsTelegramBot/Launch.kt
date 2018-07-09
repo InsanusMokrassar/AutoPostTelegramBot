@@ -1,6 +1,6 @@
 package com.github.insanusmokrassar.TimingPostsTelegramBot
 
-import com.github.insanusmokrassar.BotIncomeMessagesListener.BotIncomeMessagesListener
+import com.github.insanusmokrassar.BotIncomeMessagesListener.*
 import com.github.insanusmokrassar.IObjectKRealisations.load
 import com.github.insanusmokrassar.IObjectKRealisations.toObject
 import com.github.insanusmokrassar.TimingPostsTelegramBot.callbacks.*
@@ -11,7 +11,10 @@ import com.github.insanusmokrassar.TimingPostsTelegramBot.forwarders.*
 import com.github.insanusmokrassar.TimingPostsTelegramBot.publishers.PostPublisher
 import com.github.insanusmokrassar.TimingPostsTelegramBot.utils.initSubscription
 import com.pengrad.telegrambot.TelegramBot
+import com.pengrad.telegrambot.model.CallbackQuery
+import com.pengrad.telegrambot.model.Message
 import com.pengrad.telegrambot.request.GetChat
+import kotlinx.coroutines.experimental.launch
 import okhttp3.Credentials
 import okhttp3.OkHttpClient
 import org.jetbrains.exposed.sql.Database
@@ -19,6 +22,10 @@ import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.net.InetSocketAddress
 import java.net.Proxy
+
+val messagesListener = UpdateCallbackChannel<Message>()
+val callbackQueryListener = UpdateCallbackChannel<CallbackQuery>()
+val mediaGroupsListener = MediaGroupCallbackChannel()
 
 fun main(args: Array<String>) {
     val config = load(args[0]).toObject(Config::class.java).finalConfig
@@ -83,15 +90,44 @@ fun main(args: Array<String>) {
     val deletePost = DeletePost(bot, config.logsChatId)
     val availableRates = AvailableRates(bot)
 
-    val messagesListener = OnMessage(config, startPost, fixPost, mostRated, deletePost, availableRates)
-    val mediaGroupsListener = OnMediaGroup(config, startPost, fixPost)
-    val onCallbackQuery = OnCallbackQuery(bot)
+    messagesListener.broadcastChannel.openSubscription().also {
+        val listener = OnMessage(config, startPost, fixPost, mostRated, deletePost, availableRates)
+        launch {
+            while (isActive) {
+                val received = it.receive()
+                listener.invoke(received.first, received.second)
+            }
+            it.cancel()
+        }
+    }
+
+    callbackQueryListener.broadcastChannel.openSubscription().also {
+        val listener = OnCallbackQuery(bot)
+        launch {
+            while (isActive) {
+                val received = it.receive()
+                listener.invoke(received.first, received.second)
+            }
+            it.cancel()
+        }
+    }
+
+    mediaGroupsListener.broadcastChannel.openSubscription().also {
+        val listener = OnMediaGroup(config, startPost, fixPost)
+        launch {
+            while (isActive) {
+                val received = it.receive()
+                listener.invoke(received.first, received.second)
+            }
+            it.cancel()
+        }
+    }
 
     bot.setUpdatesListener(
         BotIncomeMessagesListener(
             messagesListener,
             onChannelPost = messagesListener,
-            onCallbackQuery = onCallbackQuery,
+            onCallbackQuery = callbackQueryListener,
             onMessageMediaGroup = mediaGroupsListener,
             onChannelPostMediaGroup = mediaGroupsListener
         )

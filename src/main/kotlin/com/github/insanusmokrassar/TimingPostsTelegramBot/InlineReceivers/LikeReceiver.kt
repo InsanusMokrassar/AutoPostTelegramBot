@@ -23,7 +23,7 @@ class LikeReceiver(
 ) : UpdateCallback<CallbackQuery> {
     private val botWR = WeakReference(bot)
 
-    override fun invoke(updateId: Int, messageIObject: IObject<Any>, query: CallbackQuery) {
+    override fun invoke(updateId: Int, query: CallbackQuery) {
         val postId = extractLikeInline(
             query.data()
         )

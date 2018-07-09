@@ -218,7 +218,19 @@
         <dependency>
             <groupId>com.github.insanusmokrassar</groupId>
             <artifactId>BotIncomeMessagesListener</artifactId>
-            <version>0.5b</version>
+            <version>0.9b</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.github.insanusmokrassar</groupId>
+            <artifactId>IObjectK</artifactId>
+            <version>1.11.3</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.github.insanusmokrassar</groupId>
+            <artifactId>IObjectKRealisations</artifactId>
+            <version>1.11.1</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.jetbrains.exposed/exposed -->

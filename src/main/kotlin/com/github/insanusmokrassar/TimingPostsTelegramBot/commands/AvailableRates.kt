@@ -16,7 +16,7 @@ class AvailableRates(
 ) : UpdateCallback<Message> {
     private val botWR = WeakReference(bot)
 
-    override fun invoke(updateId: Int, messageIObject: IObject<Any>, message: Message) {
+    override fun invoke(updateId: Int, message: Message) {
         val bot = botWR.get() ?: return
         var maxRatingLength = 0
         var maxCountLength = 0

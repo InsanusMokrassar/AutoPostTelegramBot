@@ -6,7 +6,7 @@ import com.github.insanusmokrassar.TimingPostsTelegramBot.database.PostTransacti
 import com.pengrad.telegrambot.model.Message
 
 class StartPost : UpdateCallback<Message> {
-    override fun invoke(updateId: Int, update: IObject<Any>, message: Message) {
+    override fun invoke(updateId: Int, message: Message) {
         PostTransactionTable.startTransaction()
     }
 }

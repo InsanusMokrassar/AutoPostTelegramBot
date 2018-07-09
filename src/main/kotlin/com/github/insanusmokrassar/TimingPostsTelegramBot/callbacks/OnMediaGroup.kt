@@ -14,7 +14,7 @@ class OnMediaGroup(
     private val startPost: StartPost,
     private val fixPost: FixPost
 ) : MediaGroupCallback {
-    override fun invoke(mediaGroupId: String, updates: List<IObject<Any>>, messages: List<Message>) {
+    override fun invoke(mediaGroupId: String, messages: List<Message>) {
         val first = messages.first()
         if (first.chat().id() == config.sourceChatId) {
             if (PostTransactionTable.inTransaction) {
@@ -27,7 +27,7 @@ class OnMediaGroup(
                     )
                 }
             } else {
-                startPost(-1, updates.first(), messages.first())
+                startPost(-1, messages.first())
                 messages.forEach {
                     PostTransactionTable.addMessageId(
                         PostMessage(
@@ -36,7 +36,7 @@ class OnMediaGroup(
                         )
                     )
                 }
-                fixPost(-1, updates.last(), messages.last())
+                fixPost(-1, messages.last())
             }
         }
     }
