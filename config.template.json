@@ -48,6 +48,15 @@
     },
     {
       "classname": "com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.builtin.commands.MostRated"
+    },
+    {
+      "classname": "com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.builtin.callbacks.OnMessage"
+    },
+    {
+      "classname": "com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.builtin.callbacks.OnCallbackQuery"
+    },
+    {
+      "classname": "com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.builtin.callbacks.OnMediaGroup"
     }
   ]
 }
