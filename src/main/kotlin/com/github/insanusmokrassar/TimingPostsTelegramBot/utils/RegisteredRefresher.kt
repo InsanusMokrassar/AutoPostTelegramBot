@@ -1,7 +1,8 @@
 package com.github.insanusmokrassar.TimingPostsTelegramBot.utils
 
-import com.github.insanusmokrassar.TimingPostsTelegramBot.InlineReceivers.makeDislikeInline
-import com.github.insanusmokrassar.TimingPostsTelegramBot.InlineReceivers.makeLikeInline
+import com.github.insanusmokrassar.IObjectK.exceptions.ReadException
+import com.github.insanusmokrassar.IObjectKRealisations.toIObject
+import com.github.insanusmokrassar.TimingPostsTelegramBot.InlineReceivers.*
 import com.github.insanusmokrassar.TimingPostsTelegramBot.database.tables.*
 import com.github.insanusmokrassar.TimingPostsTelegramBot.extensions.executeAsync
 import com.github.insanusmokrassar.TimingPostsTelegramBot.extensions.toTable
@@ -56,6 +57,24 @@ fun initSubscription(
             it.cancel()
         }
     }
+}
+
+private const val likeIdentifier = "like"
+
+fun makeLikeInline(postId: Int): String = "$likeIdentifier: $postId"
+fun extractLikeInline(from: String): Int? = try {
+    from.toIObject().get<String>(likeIdentifier).toInt()
+} catch (e: ReadException) {
+    null
+}
+
+private const val dislikeIdentifier = "dislike"
+
+fun makeDislikeInline(postId: Int): String = "$dislikeIdentifier: $postId"
+fun extractDislikeInline(from: String): Int? = try {
+    from.toIObject().get<String>(dislikeIdentifier).toInt()
+} catch (e: ReadException) {
+    null
 }
 
 fun refreshRegisteredMessage(
