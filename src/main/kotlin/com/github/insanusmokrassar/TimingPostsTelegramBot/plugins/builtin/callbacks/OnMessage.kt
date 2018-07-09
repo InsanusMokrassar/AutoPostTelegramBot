@@ -1,6 +1,6 @@
 package com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.builtin.callbacks
 
-import com.github.insanusmokrassar.TimingPostsTelegramBot.FinalConfig
+import com.github.insanusmokrassar.TimingPostsTelegramBot.models.FinalConfig
 import com.github.insanusmokrassar.TimingPostsTelegramBot.choosers.Chooser
 import com.github.insanusmokrassar.TimingPostsTelegramBot.database.PostTransactionTable
 import com.github.insanusmokrassar.TimingPostsTelegramBot.messagesListener

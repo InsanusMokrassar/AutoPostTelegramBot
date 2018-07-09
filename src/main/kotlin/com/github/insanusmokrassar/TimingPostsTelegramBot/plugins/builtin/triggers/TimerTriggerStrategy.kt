@@ -3,7 +3,7 @@ package com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.builtin.trigg
 import com.github.insanusmokrassar.IObjectK.interfaces.IObject
 import com.github.insanusmokrassar.IObjectK.realisations.SimpleIObject
 import com.github.insanusmokrassar.IObjectKRealisations.toObject
-import com.github.insanusmokrassar.TimingPostsTelegramBot.FinalConfig
+import com.github.insanusmokrassar.TimingPostsTelegramBot.models.FinalConfig
 import com.github.insanusmokrassar.TimingPostsTelegramBot.choosers.Chooser
 import com.github.insanusmokrassar.TimingPostsTelegramBot.database.tables.*
 import com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.Plugin

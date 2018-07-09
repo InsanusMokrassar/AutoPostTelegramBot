@@ -6,7 +6,7 @@ import com.github.insanusmokrassar.IObjectKRealisations.toObject
 import com.github.insanusmokrassar.TimingPostsTelegramBot.choosers.initChooser
 import com.github.insanusmokrassar.TimingPostsTelegramBot.database.tables.*
 import com.github.insanusmokrassar.TimingPostsTelegramBot.forwarders.*
-import com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.builtin.callbacks.OnMediaGroup
+import com.github.insanusmokrassar.TimingPostsTelegramBot.models.Config
 import com.github.insanusmokrassar.TimingPostsTelegramBot.publishers.PostPublisher
 import com.github.insanusmokrassar.TimingPostsTelegramBot.utils.initSubscription
 import com.pengrad.telegrambot.TelegramBot
@@ -97,10 +97,8 @@ fun main(args: Array<String>) {
     )
 
     val publisher = PostPublisher(
-        config.targetChatId,
-        config.sourceChatId,
+        config,
         bot,
-        config.logsChatId,
         listOf(
             PhotoForwarder(),
             VideoForwarder(),

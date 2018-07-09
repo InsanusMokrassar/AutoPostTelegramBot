@@ -4,6 +4,7 @@ import com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.builtin.comman
 import com.github.insanusmokrassar.TimingPostsTelegramBot.database.tables.*
 import com.github.insanusmokrassar.TimingPostsTelegramBot.extensions.executeAsync
 import com.github.insanusmokrassar.TimingPostsTelegramBot.forwarders.Forwarder
+import com.github.insanusmokrassar.TimingPostsTelegramBot.models.FinalConfig
 import com.github.insanusmokrassar.TimingPostsTelegramBot.models.PostMessage
 import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.model.request.ParseMode
@@ -13,13 +14,15 @@ import java.lang.ref.WeakReference
 private typealias ChatIdMessageIdPair = Pair<Long, Int>
 
 class PostPublisher(
-    private val targetChatId: Long,
-    private val sourceChatId: Long,
+    config: FinalConfig,
     bot: TelegramBot,
-    private val logsChatId: Long = sourceChatId,
     private val forwardersList: List<Forwarder>
 ) : Publisher {
     private val botWR = WeakReference(bot)
+
+    private val sourceChatId: Long = config.sourceChatId
+    private val targetChatId: Long = config.targetChatId
+    private val logsChatId: Long = config.logsChatId
 
     override fun publishPost(postId: Int) {
         val bot = botWR.get() ?: return

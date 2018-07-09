@@ -1,4 +1,4 @@
-package com.github.insanusmokrassar.TimingPostsTelegramBot.utils
+package com.github.insanusmokrassar.TimingPostsTelegramBot.models
 
 data class ProxySettings(
     val host: String = "localhost",
