@@ -12,7 +12,45 @@
   "chooser": {
     "name": "mostRated|mostRatedRandom|smartChooser|custom.class.name",
     "params": {
-      "in future": "will be given to other choosers"
+      "times": [
+        {
+          "minRate": -2,
+          "sort": "ascend",
+          "time": [
+            "01:00",
+            "07:00"
+          ],
+          "timeOffset": "+03:00"
+        },
+        {
+          "minRate": -2,
+          "maxRate": 1,
+          "sort": "descend",
+          "time": [
+            "07:00",
+            "12:00"
+          ],
+          "timeOffset": "+03:00"
+        },
+        {
+          "minRate": 0,
+          "sort": "ascend",
+          "time": [
+            "12:00",
+            "16:00"
+          ],
+          "timeOffset": "+03:00"
+        },
+        {
+          "minRate": -2,
+          "sort": "descend",
+          "time": [
+            "16:00",
+            "01:00"
+          ],
+          "timeOffset": "+03:00"
+        }
+      ]
     }
   },
   "databaseConfig": {
