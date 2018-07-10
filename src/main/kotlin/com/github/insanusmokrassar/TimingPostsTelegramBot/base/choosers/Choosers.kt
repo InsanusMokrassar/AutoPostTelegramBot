@@ -6,7 +6,8 @@ import com.github.insanusmokrassar.TimingPostsTelegramBot.utils.initObject
 val choosers = mapOf(
     "mostRated" to MostRatedChooser::class.java.canonicalName,
     "mostRatedRandom" to MostRatedRandomChooser::class.java.canonicalName,
-    "smartChooser" to SmartChooser::class.java.canonicalName
+    "smartChooser" to SmartChooser::class.java.canonicalName,
+    "none" to NoneChooser::class.java.canonicalName
 )
 
 fun initChooser(chooserName: String, paramsSection: IObject<Any>? = null): Chooser {
