@@ -23,10 +23,10 @@ import org.jetbrains.exposed.sql.transactions.transaction
 import java.net.InetSocketAddress
 import java.net.Proxy
 
-
-private val realMessagesListener = UpdateCallbackChannel<Message>()
-private val realCallbackQueryListener = UpdateCallbackChannel<CallbackQuery>()
-private val realMediaGroupsListener = MediaGroupCallbackChannel()
+// SUBSCRIBE WITH CAUTION
+val realMessagesListener = UpdateCallbackChannel<Message>()
+val realCallbackQueryListener = UpdateCallbackChannel<CallbackQuery>()
+val realMediaGroupsListener = MediaGroupCallbackChannel()
 
 private const val subscriptionsCount = 256
 
