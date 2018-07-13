@@ -2,13 +2,13 @@ package com.github.insanusmokrassar.TimingPostsTelegramBot.utils
 
 import com.github.insanusmokrassar.IObjectK.exceptions.ReadException
 import com.github.insanusmokrassar.IObjectKRealisations.toIObject
+import com.github.insanusmokrassar.TimingPostsTelegramBot.base.database.PostTransactionTable
 import com.github.insanusmokrassar.TimingPostsTelegramBot.base.database.tables.*
 import com.github.insanusmokrassar.TimingPostsTelegramBot.utils.extensions.executeAsync
 import com.github.insanusmokrassar.TimingPostsTelegramBot.utils.extensions.toTable
 import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.model.request.*
 import com.pengrad.telegrambot.request.*
-import kotlinx.coroutines.experimental.channels.ReceiveChannel
 import kotlinx.coroutines.experimental.launch
 import java.lang.ref.WeakReference
 
@@ -16,17 +16,14 @@ const val like = "\uD83D\uDC4D"
 const val dislike = "\uD83D\uDC4E"
 
 private fun makeLikeText(likes: Int) = "$like $likes"
-private fun makeDisikeText(dislikes: Int) = "$dislike $dislikes"
-
-private var likesSubscription: ReceiveChannel<PostIdRatingPair>? = null
-private var messagesSubscription: ReceiveChannel<PostIdToMessagesIds>? = null
+private fun makeDislikeText(dislikes: Int) = "$dislike $dislikes"
 
 fun initSubscription(
     chatId: Long,
     bot: TelegramBot
 ) {
     val botWR = WeakReference(bot)
-    likesSubscription = PostsLikesTable.subscribeChannel.openSubscription().also {
+    PostsLikesTable.subscribeChannel.openSubscription().also {
         launch {
             while (isActive) {
                 val bot = botWR.get() ?: break
@@ -41,15 +38,15 @@ fun initSubscription(
             it.cancel()
         }
     }
-    messagesSubscription = PostsMessagesTable.addedMessagesToPost.openSubscription().also {
+    PostTransactionTable.transactionCompletedChannel.openSubscription().also {
         launch {
             while (isActive) {
                 val bot = botWR.get() ?: break
-                val update = it.receive()
+                val postId = it.receive()
                 refreshRegisteredMessage(
                     chatId,
                     bot,
-                    update.first
+                    postId
                 )
             }
             it.cancel()
@@ -85,7 +82,7 @@ fun refreshRegisteredMessage(
     val buttons = mutableListOf<MutableList<InlineKeyboardButton>>(
         mutableListOf(
             InlineKeyboardButton(
-                makeDisikeText(
+                makeDislikeText(
                     PostsLikesTable.postDislikes(postId)
                 )
             ).callbackData(
