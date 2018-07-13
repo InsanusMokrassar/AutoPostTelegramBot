@@ -12,6 +12,7 @@ private const val broadcastSubscriptions = 256
 object PostTransactionTable {
     val transactionStartedChannel = BroadcastChannel<Unit>(broadcastSubscriptions)
     val transactionMessageAddedChannel = BroadcastChannel<PostMessage>(broadcastSubscriptions)
+    val transactionMessageRemovedChannel = BroadcastChannel<PostMessage>(broadcastSubscriptions)
     val transactionCompletedChannel = BroadcastChannel<Int>(broadcastSubscriptions)
 
     private val messages = ArrayList<PostMessage>()
@@ -39,6 +40,18 @@ object PostTransactionTable {
 
         launch {
             transactionMessageAddedChannel.send(message)
+        }
+    }
+
+    fun removeMessageId(message: PostMessage) {
+        if (!inTransaction) {
+            throw IllegalStateException("Not in transaction")
+        }
+
+        messages.remove(message)
+
+        launch {
+            transactionMessageRemovedChannel.send(message)
         }
     }
 
