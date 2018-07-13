@@ -13,6 +13,37 @@ import java.lang.ref.WeakReference
 
 private typealias ChatIdMessageIdPair = Pair<Long, Int>
 
+fun makeMapOfExecution(
+    messageToPost: List<PostMessage>,
+    forwardersList: List<Forwarder>
+): List<Pair<Forwarder, List<PostMessage>>> {
+    val mapOfExecution = mutableListOf<Pair<Forwarder, MutableList<PostMessage>>>()
+
+    var forwarder: Forwarder? = null
+
+    messageToPost.forEach { message ->
+        if (forwarder?.canForward(message) != true) {
+            val iterator = forwardersList.iterator()
+            while (forwarder?.canForward(message) != true) {
+                if (!iterator.hasNext()) {
+                    return@forEach
+                }
+                forwarder = iterator.next()
+            }
+        }
+        if (mapOfExecution.lastOrNull()?.first != forwarder) {
+            forwarder?.let {
+                mapOfExecution.add(
+                    it to mutableListOf()
+                )
+            }
+        }
+        mapOfExecution.last().second.add(message)
+    }
+
+    return mapOfExecution
+}
+
 class PostPublisher(
     config: FinalConfig,
     bot: TelegramBot,
@@ -63,29 +94,10 @@ class PostPublisher(
                 }
             }
 
-            val mapOfExecution = mutableListOf<Pair<Forwarder, MutableList<PostMessage>>>()
-
-            var forwarder: Forwarder? = null
-
-            messageToPost.forEach { message ->
-                if (forwarder?.canForward(message) != true) {
-                    val iterator = forwardersList.iterator()
-                    while (forwarder?.canForward(message) != true) {
-                        if (!iterator.hasNext()) {
-                            return@forEach
-                        }
-                        forwarder = iterator.next()
-                    }
-                }
-                if (mapOfExecution.lastOrNull()?.first != forwarder) {
-                    forwarder?.let {
-                        mapOfExecution.add(
-                            it to mutableListOf()
-                        )
-                    }
-                }
-                mapOfExecution.last().second.add(message)
-            }
+            val mapOfExecution = makeMapOfExecution(
+                messageToPost,
+                forwardersList
+            )
 
             mapOfExecution.flatMap {
                 it.first.forward(
