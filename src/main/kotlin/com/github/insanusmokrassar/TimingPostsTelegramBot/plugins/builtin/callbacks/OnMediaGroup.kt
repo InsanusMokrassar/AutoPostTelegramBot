@@ -61,10 +61,7 @@ class OnMediaGroup : Plugin {
             } else {
                 PostTransactionTable.startTransaction()
                 messages.map {
-                    PostMessage(
-                        it.messageId(),
-                        it.mediaGroupId()
-                    )
+                    PostMessage(it)
                 }.also {
                     PostTransactionTable.addMessageId(
                         *it.toTypedArray()
