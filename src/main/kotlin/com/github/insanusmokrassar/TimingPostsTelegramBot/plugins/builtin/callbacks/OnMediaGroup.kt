@@ -60,12 +60,14 @@ class OnMediaGroup : Plugin {
                 }
             } else {
                 PostTransactionTable.startTransaction()
-                messages.forEach {
+                messages.map {
+                    PostMessage(
+                        it.messageId(),
+                        it.mediaGroupId()
+                    )
+                }.also {
                     PostTransactionTable.addMessageId(
-                        PostMessage(
-                            it.messageId(),
-                            it.mediaGroupId()
-                        )
+                        *it.toTypedArray()
                     )
                 }
                 PostTransactionTable.saveNewPost()
