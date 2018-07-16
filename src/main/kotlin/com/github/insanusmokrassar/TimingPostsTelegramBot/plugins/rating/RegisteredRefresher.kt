@@ -121,8 +121,6 @@ fun refreshRegisteredMessage(
     postRating: Int = PostsLikesTable.getPostRating(postId),
     username: String? = null
 ) {
-    val postMessageId = PostsTable.postRegisteredMessage(postId) ?: return
-
     val likeButton = InlineKeyboardButton(
         makeDislikeText(
             PostsLikesTable.postDislikes(postId)
@@ -137,19 +135,11 @@ fun refreshRegisteredMessage(
     ).callbackData(
         makeLikeInline(postId)
     )
-    val disableButton = InlineKeyboardButton(
-        makeDisableText()
-    ).callbackData(
-        makeDisableInline(postId)
-    )
 
     val buttons = mutableListOf<MutableList<InlineKeyboardButton>>(
         mutableListOf(
             likeButton,
-            likeButton,
-            dislikeButton,
-            dislikeButton,
-            disableButton
+            dislikeButton
         )
     )
 
@@ -197,7 +187,7 @@ fun refreshRegisteredMessage(
         ).replyMarkup(
             markup
         ).replyToMessageId(
-            postMessageId
+            PostsMessagesTable.getMessagesOfPost(postId).firstOrNull() ?.messageId ?: return
         ).let {
             bot.executeAsync(
                 it,
