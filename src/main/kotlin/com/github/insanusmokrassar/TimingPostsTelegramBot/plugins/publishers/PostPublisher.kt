@@ -126,14 +126,6 @@ class PostPublisher : Publisher {
                     *it.second.toTypedArray()
                 )
             }.let {
-                bot.execute(
-                    SendMessage(
-                        logsChatId,
-                        "Post published. Rating: ${PostsLikesTable.getPostRating(postId)}"
-                    ).parseMode(
-                        ParseMode.Markdown
-                    )
-                )
                 it.forEach {
                     bot.execute(
                         ForwardMessage(

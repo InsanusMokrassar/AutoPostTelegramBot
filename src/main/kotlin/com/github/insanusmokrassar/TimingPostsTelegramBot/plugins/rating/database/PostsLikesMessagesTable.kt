@@ -46,4 +46,14 @@ object PostsLikesMessagesTable : Table() {
             }
         }
     }
+
+    fun getEnabledPostsIdAndRatings(): List<PostIdRatingPair> {
+        return transaction {
+            selectAll().mapNotNull {
+                it[postId]
+            }.map {
+                it to PostsLikesTable.getPostRating(it)
+            }
+        }
+    }
 }
