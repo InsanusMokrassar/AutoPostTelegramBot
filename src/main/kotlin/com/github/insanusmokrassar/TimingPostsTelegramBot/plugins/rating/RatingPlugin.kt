@@ -16,6 +16,7 @@ class RatingPlugin : Plugin {
 
     private var likeReceiver: LikeReceiver? = null
     private var dislikeReceiver: DislikeReceiver? = null
+    private var disableReceiver: DisableReceiver? = null
 
     private var registeredRefresher: RegisteredRefresher? = null
 
@@ -35,6 +36,9 @@ class RatingPlugin : Plugin {
         }
         dislikeReceiver ?: let {
             dislikeReceiver = DislikeReceiver(bot)
+        }
+        disableReceiver ?: let {
+            disableReceiver = DisableReceiver(bot, baseConfig.sourceChatId)
         }
 
         val sourceChatId = baseConfig.sourceChatId

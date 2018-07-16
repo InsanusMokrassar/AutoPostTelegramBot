@@ -16,28 +16,23 @@ import com.pengrad.telegrambot.request.*
 import kotlinx.coroutines.experimental.launch
 import java.lang.ref.WeakReference
 
-const val like = "\uD83D\uDC4D"
-const val dislike = "\uD83D\uDC4E"
+fun clearRatingDataForPostId(
+    postId: Int,
+    bot: TelegramBot,
+    sourceChatId: Long
+) {
+    PostsLikesMessagesTable.messageIdByPostId(postId) ?.let {
+        messageId ->
 
-private fun makeLikeText(likes: Int) = "$like $likes"
-private fun makeDislikeText(dislikes: Int) = "$dislike $dislikes"
+        bot.executeAsync(
+            DeleteMessage(
+                sourceChatId,
+                messageId
+            )
+        )
 
-private const val likeIdentifier = "like"
-
-fun makeLikeInline(postId: Int): String = "$likeIdentifier: $postId"
-fun extractLikeInline(from: String): Int? = try {
-    from.toIObject().get<String>(likeIdentifier).toInt()
-} catch (e: ReadException) {
-    null
-}
-
-private const val dislikeIdentifier = "dislike"
-
-fun makeDislikeInline(postId: Int): String = "$dislikeIdentifier: $postId"
-fun extractDislikeInline(from: String): Int? = try {
-    from.toIObject().get<String>(dislikeIdentifier).toInt()
-} catch (e: ReadException) {
-    null
+        PostsLikesMessagesTable.clearPostIdMessageId(postId)
+    }
 }
 
 class RegisteredRefresher(
@@ -100,18 +95,11 @@ class RegisteredRefresher(
                     val removedPostId = it.receive()
 
                     try {
-                        PostsLikesMessagesTable.messageIdByPostId(removedPostId) ?.let {
-                            messageId ->
-
-                            botWR.get() ?.executeAsync(
-                                DeleteMessage(
-                                    sourceChatId,
-                                    messageId
-                                )
-                            )
-
-                            PostsLikesMessagesTable.clearPostIdMessageId(removedPostId)
-                        }
+                        clearRatingDataForPostId(
+                            removedPostId,
+                            botWR.get() ?: break,
+                            sourceChatId
+                        )
                     } catch (e: Exception) {
                         pluginLogger.throwing(
                             "RegisteredRefresher",
@@ -135,22 +123,33 @@ fun refreshRegisteredMessage(
 ) {
     val postMessageId = PostsTable.postRegisteredMessage(postId) ?: return
 
+    val likeButton = InlineKeyboardButton(
+        makeDislikeText(
+            PostsLikesTable.postDislikes(postId)
+        )
+    ).callbackData(
+        makeDislikeInline(postId)
+    )
+    val dislikeButton = InlineKeyboardButton(
+        makeLikeText(
+            PostsLikesTable.postLikes(postId)
+        )
+    ).callbackData(
+        makeLikeInline(postId)
+    )
+    val disableButton = InlineKeyboardButton(
+        makeDisableText()
+    ).callbackData(
+        makeDisableInline(postId)
+    )
+
     val buttons = mutableListOf<MutableList<InlineKeyboardButton>>(
         mutableListOf(
-            InlineKeyboardButton(
-                makeDislikeText(
-                    PostsLikesTable.postDislikes(postId)
-                )
-            ).callbackData(
-                makeDislikeInline(postId)
-            ),
-            InlineKeyboardButton(
-                makeLikeText(
-                    PostsLikesTable.postLikes(postId)
-                )
-            ).callbackData(
-                makeLikeInline(postId)
-            )
+            likeButton,
+            likeButton,
+            dislikeButton,
+            dislikeButton,
+            disableButton
         )
     )
 
