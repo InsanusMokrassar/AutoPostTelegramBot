@@ -7,6 +7,7 @@ import com.github.insanusmokrassar.TimingPostsTelegramBot.base.models.FinalConfi
 import com.github.insanusmokrassar.TimingPostsTelegramBot.base.database.tables.*
 import com.github.insanusmokrassar.TimingPostsTelegramBot.base.plugins.*
 import com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.publishers.Publisher
+import com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.rating.database.PostsLikesTable
 import com.pengrad.telegrambot.TelegramBot
 import kotlinx.coroutines.experimental.*
 

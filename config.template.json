@@ -17,6 +17,9 @@
   },
   "plugins": [
     {
+      "classname": "com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.DefaultPostRegisteredMessage"
+    },
+    {
       "classname": "class.name",
       "params": {
 

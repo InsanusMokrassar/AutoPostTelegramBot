@@ -1,6 +1,6 @@
 package com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.choosers
 
-import com.github.insanusmokrassar.TimingPostsTelegramBot.base.database.tables.PostsLikesTable
+import com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.rating.database.PostsLikesTable
 import com.github.insanusmokrassar.TimingPostsTelegramBot.base.plugins.PluginVersion
 
 class MostRatedChooser : Chooser {

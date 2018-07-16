@@ -1,10 +1,8 @@
 package com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.rating
 
-import com.github.insanusmokrassar.TimingPostsTelegramBot.base.database.tables.PostsLikesTable
-import com.github.insanusmokrassar.TimingPostsTelegramBot.base.plugins.PluginVersion
 import com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.CallbackQueryReceivers.CallbackQueryReceiver
+import com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.rating.database.PostsLikesTable
 import com.github.insanusmokrassar.TimingPostsTelegramBot.utils.extensions.queryAnswer
-import com.github.insanusmokrassar.TimingPostsTelegramBot.utils.extractLikeInline
 import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.model.CallbackQuery
 
@@ -15,7 +13,7 @@ class LikeReceiver(bot: TelegramBot) : CallbackQueryReceiver(bot) {
     ) {
         extractLikeInline(
             query.data()
-        ) ?.let {
+        )?.let {
             postId ->
 
             PostsLikesTable.userLikePost(

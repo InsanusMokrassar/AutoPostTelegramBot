@@ -1,12 +1,14 @@
 package com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.rating
 
 import com.github.insanusmokrassar.TimingPostsTelegramBot.base.database.PostTransactionTable
-import com.github.insanusmokrassar.TimingPostsTelegramBot.base.database.tables.PostsLikesTable
 import com.github.insanusmokrassar.TimingPostsTelegramBot.base.models.FinalConfig
 import com.github.insanusmokrassar.TimingPostsTelegramBot.base.plugins.*
-import com.github.insanusmokrassar.TimingPostsTelegramBot.utils.refreshRegisteredMessage
+import com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.rating.database.PostsLikesMessagesTable
+import com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.rating.database.PostsLikesTable
 import com.pengrad.telegrambot.TelegramBot
 import kotlinx.coroutines.experimental.launch
+import org.jetbrains.exposed.sql.SchemaUtils
+import org.jetbrains.exposed.sql.transactions.transaction
 import java.lang.ref.WeakReference
 
 class RatingPlugin : Plugin {
@@ -14,6 +16,14 @@ class RatingPlugin : Plugin {
 
     private var likeReceiver: LikeReceiver? = null
     private var dislikeReceiver: DislikeReceiver? = null
+
+    private var registeredRefresher: RegisteredRefresher? = null
+
+    init {
+        transaction {
+            SchemaUtils.createMissingTablesAndColumns(PostsLikesTable, PostsLikesMessagesTable)
+        }
+    }
 
     override fun onInit(
         bot: TelegramBot,
@@ -28,6 +38,11 @@ class RatingPlugin : Plugin {
         }
 
         val sourceChatId = baseConfig.sourceChatId
+
+        registeredRefresher = RegisteredRefresher(
+            baseConfig.sourceChatId,
+            bot
+        )
 
         val botWR = WeakReference(bot)
         PostsLikesTable.ratingsChannel.openSubscription().also {

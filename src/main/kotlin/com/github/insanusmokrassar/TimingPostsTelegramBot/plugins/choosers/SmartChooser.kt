@@ -2,8 +2,8 @@ package com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.choosers
 
 import com.github.insanusmokrassar.IObjectK.interfaces.IObject
 import com.github.insanusmokrassar.IObjectKRealisations.toObject
-import com.github.insanusmokrassar.TimingPostsTelegramBot.base.database.tables.PostIdRatingPair
-import com.github.insanusmokrassar.TimingPostsTelegramBot.base.database.tables.PostsLikesTable
+import com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.rating.database.PostIdRatingPair
+import com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.rating.database.PostsLikesTable
 import com.github.insanusmokrassar.TimingPostsTelegramBot.base.plugins.PluginVersion
 import org.joda.time.DateTime
 import org.joda.time.DateTimeZone

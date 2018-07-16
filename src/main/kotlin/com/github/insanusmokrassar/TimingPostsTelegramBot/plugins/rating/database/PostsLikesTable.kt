@@ -1,5 +1,7 @@
-package com.github.insanusmokrassar.TimingPostsTelegramBot.base.database.tables
+package com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.rating.database
 
+import com.github.insanusmokrassar.TimingPostsTelegramBot.base.database.tables.PostsTable
+import com.github.insanusmokrassar.TimingPostsTelegramBot.base.plugins.pluginLogger
 import kotlinx.coroutines.experimental.channels.BroadcastChannel
 import kotlinx.coroutines.experimental.launch
 import org.h2.jdbc.JdbcSQLException
@@ -22,6 +24,26 @@ object PostsLikesTable : Table() {
     private val userId = long("userId").primaryKey()
     private val postId = integer("postId").references(PostsTable.id).primaryKey()
     private val like = bool("like").default(false)
+
+    init {
+        PostsTable.postRemovedChannel.openSubscription().also {
+            launch {
+                while (isActive) {
+                    val removedPostId = it.receive()
+                    try {
+                        clearPostMarks(removedPostId)
+                    } catch (e: Exception) {
+                        pluginLogger.throwing(
+                            "PostsLikesTable",
+                            "Clear likes",
+                            e
+                        )
+                    }
+                }
+                it.cancel()
+            }
+        }
+    }
 
     fun userLikePost(userId: Long, postId: Int) {
         userLike(userId, postId, true)
@@ -47,8 +69,8 @@ object PostsLikesTable : Table() {
         return transaction {
             try {
                 exec("SELECT (likes-dislikes) as $resultColumnName FROM " +
-                    "(SELECT count(*) as likes FROM ${nameInDatabaseCase()} WHERE ${this@PostsLikesTable.postId.name}=$postId AND \"${like.name}\"=${like.columnType.valueToString(true)}), " +
-                    "(SELECT count(*) as dislikes FROM ${nameInDatabaseCase()} WHERE ${this@PostsLikesTable.postId.name}=$postId AND \"${like.name}\"=${like.columnType.valueToString(false)});") {
+                    "(SELECT count(*) as likes FROM ${nameInDatabaseCase()} WHERE ${PostsLikesTable.postId.name}=$postId AND \"${like.name}\"=${like.columnType.valueToString(true)}), " +
+                    "(SELECT count(*) as dislikes FROM ${nameInDatabaseCase()} WHERE ${PostsLikesTable.postId.name}=$postId AND \"${like.name}\"=${like.columnType.valueToString(false)});") {
                     if (it.first()) {
                         it.getInt(it.findColumn(resultColumnName))
                     } else {

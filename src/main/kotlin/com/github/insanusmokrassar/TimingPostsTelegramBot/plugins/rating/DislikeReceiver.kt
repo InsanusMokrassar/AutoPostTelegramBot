@@ -1,9 +1,8 @@
 package com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.rating
 
-import com.github.insanusmokrassar.TimingPostsTelegramBot.base.database.tables.PostsLikesTable
 import com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.CallbackQueryReceivers.CallbackQueryReceiver
+import com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.rating.database.PostsLikesTable
 import com.github.insanusmokrassar.TimingPostsTelegramBot.utils.extensions.queryAnswer
-import com.github.insanusmokrassar.TimingPostsTelegramBot.utils.extractDislikeInline
 import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.model.CallbackQuery
 
@@ -14,7 +13,7 @@ class DislikeReceiver(bot: TelegramBot) : CallbackQueryReceiver(bot) {
     ) {
         extractDislikeInline(
             query.data()
-        ) ?.let {
+        )?.let {
             postId ->
 
             PostsLikesTable.userDislikePost(

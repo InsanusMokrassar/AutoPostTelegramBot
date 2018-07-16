@@ -2,6 +2,7 @@ package com.github.insanusmokrassar.TimingPostsTelegramBot.base.database
 
 import com.github.insanusmokrassar.TimingPostsTelegramBot.base.database.tables.*
 import com.github.insanusmokrassar.TimingPostsTelegramBot.base.models.PostMessage
+import com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.rating.database.PostsLikesTable
 import org.h2.Driver
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction

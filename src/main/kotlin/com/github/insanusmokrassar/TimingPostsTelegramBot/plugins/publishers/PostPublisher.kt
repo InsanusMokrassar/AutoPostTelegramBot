@@ -8,6 +8,7 @@ import com.github.insanusmokrassar.TimingPostsTelegramBot.base.models.FinalConfi
 import com.github.insanusmokrassar.TimingPostsTelegramBot.base.models.PostMessage
 import com.github.insanusmokrassar.TimingPostsTelegramBot.base.plugins.*
 import com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.forwarders.correctSort
+import com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.rating.database.PostsLikesTable
 import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.model.request.ParseMode
 import com.pengrad.telegrambot.request.*

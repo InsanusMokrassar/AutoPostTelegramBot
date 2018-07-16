@@ -6,7 +6,7 @@ import com.github.insanusmokrassar.IObjectKRealisations.toObject
 import com.github.insanusmokrassar.TimingPostsTelegramBot.base.database.tables.*
 import com.github.insanusmokrassar.TimingPostsTelegramBot.base.models.Config
 import com.github.insanusmokrassar.TimingPostsTelegramBot.base.plugins.DefaultPluginManager
-import com.github.insanusmokrassar.TimingPostsTelegramBot.utils.initSubscription
+import com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.rating.database.PostsLikesTable
 import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.model.CallbackQuery
 import com.pengrad.telegrambot.model.Message
@@ -81,18 +81,13 @@ fun main(args: Array<String>) {
         )
 
         transaction {
-            SchemaUtils.createMissingTablesAndColumns(PostsTable, PostsLikesTable, PostsMessagesTable)
+            SchemaUtils.createMissingTablesAndColumns(PostsTable, PostsMessagesTable)
         }
     }
 
     if (!bot.execute(GetChat(config.sourceChatId)).isOk || !bot.execute(GetChat(config.targetChatId)).isOk) {
         throw IllegalArgumentException("Can't check chats availability")
     }
-
-    initSubscription(
-        config.sourceChatId,
-        bot
-    )
 
     val pluginManager = DefaultPluginManager(
         config.pluginsConfigs

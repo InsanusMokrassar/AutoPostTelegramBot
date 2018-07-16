@@ -9,9 +9,12 @@ import org.jetbrains.exposed.sql.transactions.transaction
 
 private const val countOfSubscriptions = 256
 
+typealias PostIdMessageId = Pair<Int, Int>
+
 object PostsTable : Table() {
     val postAllocatedChannel = BroadcastChannel<Int>(countOfSubscriptions)
     val postRemovedChannel = BroadcastChannel<Int>(countOfSubscriptions)
+    val postMessageRegisteredChannel = BroadcastChannel<PostIdMessageId>(countOfSubscriptions)
 
     internal val id = integer("id").primaryKey().autoIncrement()
     private val postRegisteredMessageId = integer("postRegistered").nullable()
@@ -36,6 +39,12 @@ object PostsTable : Table() {
                     it[postRegisteredMessageId] = messageId
                 } > 0
             }
+        }.also {
+            if (it) {
+                launch {
+                    postMessageRegisteredChannel.send(postId to messageId)
+                }
+            }
         }
     }
 
@@ -50,7 +59,6 @@ object PostsTable : Table() {
             PostsMessagesTable.getMessagesOfPost(postId).forEach {
                 PostsMessagesTable.removeMessageOfPost(it.messageId)
             }
-            PostsLikesTable.clearPostMarks(postId)
             deleteWhere { id.eq(postId) }
             launch {
                 postRemovedChannel.send(postId)
