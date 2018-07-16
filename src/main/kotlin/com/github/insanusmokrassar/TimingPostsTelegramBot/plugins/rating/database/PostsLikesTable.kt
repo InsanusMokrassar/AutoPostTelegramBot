@@ -89,17 +89,17 @@ object PostsLikesTable : Table() {
 
     fun getMostRated(): List<Int> {
         return transaction {
-            PostsTable.getAll().let {
+            PostsLikesMessagesTable.getEnabledPostsIdAndRatings().let {
                 var maxRating = Int.MIN_VALUE
                 ArrayList<Int>().apply {
                     it.forEach {
-                        val currentRating = getPostRating(it)
+                        val currentRating = it.second
                         if (currentRating > maxRating) {
                             maxRating = currentRating
                             clear()
                         }
                         if (currentRating == maxRating) {
-                            add(it)
+                            add(it.first)
                         }
                     }
                 }
@@ -114,9 +114,7 @@ object PostsLikesTable : Table() {
      * @return Pairs with postId to Rate
      */
     fun getRateRange(min: Int?, max: Int?): List<PostIdRatingPair> {
-        return PostsTable.getAll().map {
-            it to getPostRating(it)
-        }.sortedByDescending {
+        return PostsLikesMessagesTable.getEnabledPostsIdAndRatings().sortedByDescending {
             it.second
         }.filter {
             pair ->
