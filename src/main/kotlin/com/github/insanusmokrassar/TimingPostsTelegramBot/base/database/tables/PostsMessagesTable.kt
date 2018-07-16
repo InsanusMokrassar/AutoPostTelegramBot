@@ -11,7 +11,8 @@ private const val countOfSubscriptions = 256
 typealias PostIdToMessagesIds = Pair<Int, Collection<Int>>
 
 object PostsMessagesTable : Table() {
-    val addedMessagesToPost = BroadcastChannel<PostIdToMessagesIds>(countOfSubscriptions)
+    val newMessagesOfPost = BroadcastChannel<PostIdToMessagesIds>(countOfSubscriptions)
+    val removeMessageOfPost = BroadcastChannel<Int>(countOfSubscriptions)
 
     private val messageId = integer("messageId").primaryKey()
     private val mediaGroupId = text("mediaGroupId").nullable()
@@ -42,7 +43,7 @@ object PostsMessagesTable : Table() {
                 message.messageId
             }.let {
                 launch {
-                    addedMessagesToPost.send(PostIdToMessagesIds(postId, it))
+                    newMessagesOfPost.send(PostIdToMessagesIds(postId, it))
                 }
             }
         }
@@ -50,7 +51,11 @@ object PostsMessagesTable : Table() {
 
     fun removeMessageOfPost(messageId: Int) {
         transaction {
-            deleteWhere { PostsMessagesTable.messageId.eq(messageId) }
+            if (deleteWhere { PostsMessagesTable.messageId.eq(messageId) } > 0) {
+                launch {
+                    removeMessageOfPost.send(messageId)
+                }
+            }
         }
     }
 }

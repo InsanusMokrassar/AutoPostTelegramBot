@@ -31,7 +31,7 @@ class GarbageCollector(
     ) {
         val botWR = WeakReference(bot)
 
-        PostsLikesTable.subscribeChannel.openSubscription().let {
+        PostsLikesTable.ratingsChannel.openSubscription().let {
             launch {
                 while (isActive) {
                     val bot = botWR.get() ?: break

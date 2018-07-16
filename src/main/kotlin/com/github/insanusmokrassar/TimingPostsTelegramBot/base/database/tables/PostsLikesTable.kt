@@ -8,13 +8,16 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.transactions.transaction
 
 typealias PostIdRatingPair = Pair<Int, Int>
+typealias PostIdUserId = Pair<Int, Long>
 
 private const val countOfSubscriptions = 256
 
 private const val resultColumnName = "result"
 
 object PostsLikesTable : Table() {
-    val subscribeChannel = BroadcastChannel<PostIdRatingPair>(countOfSubscriptions)
+    val likesChannel = BroadcastChannel<PostIdUserId>(countOfSubscriptions)
+    val dislikesChannel = BroadcastChannel<PostIdUserId>(countOfSubscriptions)
+    val ratingsChannel = BroadcastChannel<PostIdRatingPair>(countOfSubscriptions)
 
     private val userId = long("userId").primaryKey()
     private val postId = integer("postId").references(PostsTable.id).primaryKey()
@@ -22,10 +25,18 @@ object PostsLikesTable : Table() {
 
     fun userLikePost(userId: Long, postId: Int) {
         userLike(userId, postId, true)
+
+        launch {
+            likesChannel.send(postId to userId)
+        }
     }
 
     fun userDislikePost(userId: Long, postId: Int) {
         userLike(userId, postId, false)
+
+        launch {
+            dislikesChannel.send(postId to userId)
+        }
     }
 
     fun postLikes(postId: Int): Int = postLikeCount(postId, true)
@@ -133,7 +144,7 @@ object PostsLikesTable : Table() {
                 addUser(userId, postId, like)
             }
             launch {
-                subscribeChannel.send(
+                ratingsChannel.send(
                     PostIdRatingPair(postId, getPostRating(postId))
                 )
             }

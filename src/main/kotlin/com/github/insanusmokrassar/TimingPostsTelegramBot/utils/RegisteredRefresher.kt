@@ -23,7 +23,7 @@ fun initSubscription(
     bot: TelegramBot
 ) {
     val botWR = WeakReference(bot)
-    PostsLikesTable.subscribeChannel.openSubscription().also {
+    PostsLikesTable.ratingsChannel.openSubscription().also {
         launch {
             while (isActive) {
                 val bot = botWR.get() ?: break
