@@ -1,15 +1,15 @@
 package com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.CallbackQueryReceivers
 
-import com.github.insanusmokrassar.TimingPostsTelegramBot.base.models.FinalConfig
 import com.github.insanusmokrassar.TimingPostsTelegramBot.callbackQueryListener
-import com.github.insanusmokrassar.TimingPostsTelegramBot.base.plugins.*
 import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.model.CallbackQuery
 import kotlinx.coroutines.experimental.launch
 import java.lang.ref.WeakReference
 
-abstract class CallbackQueryReceiverPlugin : Plugin {
-    override fun onInit(bot: TelegramBot, baseConfig: FinalConfig, pluginManager: PluginManager) {
+abstract class CallbackQueryReceiver(
+    bot: TelegramBot
+) {
+    init {
         val botWR = WeakReference(bot)
 
         callbackQueryListener.openSubscription().also {

@@ -50,10 +50,7 @@
       "classname": "com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.callbacks.OnMediaGroup"
     },
     {
-      "classname": "com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.rating.LikeReceiver"
-    },
-    {
-      "classname": "com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.rating.DislikeReceiver"
+      "classname": "com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.rating.RatingPlugin"
     },
     {
       "classname": "com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.commands.PublishPost"
