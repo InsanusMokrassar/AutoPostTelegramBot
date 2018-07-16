@@ -3,11 +3,9 @@ package com.github.insanusmokrassar.TimingPostsTelegramBot
 import com.github.insanusmokrassar.BotIncomeMessagesListener.*
 import com.github.insanusmokrassar.IObjectKRealisations.load
 import com.github.insanusmokrassar.IObjectKRealisations.toObject
-import com.github.insanusmokrassar.TimingPostsTelegramBot.base.choosers.initChooser
 import com.github.insanusmokrassar.TimingPostsTelegramBot.base.database.tables.*
-import com.github.insanusmokrassar.TimingPostsTelegramBot.base.forwarders.*
 import com.github.insanusmokrassar.TimingPostsTelegramBot.base.models.Config
-import com.github.insanusmokrassar.TimingPostsTelegramBot.base.publishers.PostPublisher
+import com.github.insanusmokrassar.TimingPostsTelegramBot.base.plugins.DefaultPluginManager
 import com.github.insanusmokrassar.TimingPostsTelegramBot.utils.initSubscription
 import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.model.CallbackQuery
@@ -91,41 +89,19 @@ fun main(args: Array<String>) {
         throw IllegalArgumentException("Can't check chats availability")
     }
 
-    val chooser = initChooser(
-        config.chooser.name,
-        config.chooser.params
-    )
-
-    val publisher = PostPublisher(
-        config,
-        bot,
-        listOf(
-            PhotoForwarder(),
-            VideoForwarder(),
-            MediaGroupForwarder(),
-            AudioForwarder(),
-            VoiceForwarder(),
-            DocumentForwarder(),
-            TextForwarder(),
-            LocationForwarder(),
-            ContactForwarder(),
-            SimpleForwarder()
-        )
-    )
-
     initSubscription(
         config.sourceChatId,
         bot
     )
 
-    config.plugins.forEach {
-        it.init(
-            config,
-            chooser,
-            publisher,
-            bot
-        )
-    }
+    val pluginManager = DefaultPluginManager(
+        config.pluginsConfigs
+    )
+
+    pluginManager.onInit(
+        bot,
+        config
+    )
 
     realMessagesListener.broadcastChannel.openSubscription().also {
         launch {

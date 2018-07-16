@@ -1,9 +1,6 @@
 package com.github.insanusmokrassar.TimingPostsTelegramBot.base.models
 
-import com.github.insanusmokrassar.TimingPostsTelegramBot.base.choosers.ChooserConfig
-import com.github.insanusmokrassar.TimingPostsTelegramBot.base.choosers.choosers
-import com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.Plugin
-import com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.PluginConfig
+import com.github.insanusmokrassar.TimingPostsTelegramBot.base.plugins.PluginConfig
 import org.h2.Driver
 
 class Config (
@@ -17,9 +14,6 @@ class Config (
         "sa",
         ""
     ),
-    val chooser: ChooserConfig = ChooserConfig(
-        choosers.keys.first()
-    ),
     val proxy: ProxySettings? = null,
     val plugins: List<PluginConfig> = emptyList(),
     val debug: Boolean = false
@@ -32,9 +26,8 @@ class Config (
             logsChatId ?: sourceChatId,
             botToken ?: throw IllegalArgumentException("Bot token (field \"botToken\") can't be null"),
             databaseConfig,
-            chooser,
             proxy,
-            plugins.mapNotNull { it.newInstance() },
+            plugins,
             debug
         )
 }
@@ -52,8 +45,7 @@ class FinalConfig (
     val logsChatId: Long,
     val botToken: String,
     val databaseConfig: DatabaseConfig,
-    val chooser: ChooserConfig,
     val proxy: ProxySettings? = null,
-    val plugins: List<Plugin> = emptyList(),
+    val pluginsConfigs: List<PluginConfig> = emptyList(),
     val debug: Boolean = false
 )

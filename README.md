@@ -144,14 +144,14 @@
     использования драйвера `h2`
 * `plugins` - список подключенных плагинов. Каждый плагин имеет следующие поля:
     * `classname` - полное пакетное имя класса плагина. Например,
-    `com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.builtin.triggers.TimerTriggerStrategy`
+    `com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.triggers.TimerTriggerStrategy`
     для подключения плагина триггеринга постов по времени
     * `params` - объект настроек плагина. Например, в таком объекте для
     плагина из предыдущего пункта будет только одно поле и конфигурация
     будет выглядеть следующим образом:
         ```json
         {
-          "classname": "com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.builtin.triggers.TimerTriggerStrategy",
+          "classname": "com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.triggers.TimerTriggerStrategy",
           "params": {
             "delay": 3600000
           }
@@ -162,31 +162,51 @@
 
 ### Строго рекомендуемые к подключению
 
-* `com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.builtin.callbacks.OnMessage` - подключение
+* `com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.callbacks.OnMessage` - подключение
 реакции бота на сообщение по-умолчанию, то есть сохранение сообщения как части поста и фиксации
 поста если начало поста было положено не в этом плагине (например, с помощью команды `/startPost`)
-* `com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.builtin.callbacks.OnMediaGroup` - подключение
+* `com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.callbacks.OnMediaGroup` - подключение
 реакции бота на сообщения, состоящие из медиагрупп (галереи), то есть сохранение сообщений как части ОДНОГО
 поста и фиксации поста если начало поста было положено не в этом плагине (например, с помощью команды `/startPost`)
-* `com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.builtin.CallbackQueryReceivers.LikeReceiver` - плагин
+* `com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.CallbackQueryReceivers.LikeReceiver` - плагин
 стандартной реакции на на нажатие кнопки одобрения поста
-* `com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.builtin.CallbackQueryReceivers.DislikeReceiver` - плагин
+* `com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.CallbackQueryReceivers.DislikeReceiver` - плагин
 стандартной реакции на на нажатие кнопки неодобрения поста
-* `com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.builtin.commands.StartPost` - подключение
+* `com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.commands.StartPost` - подключение
 команды `/startPost`, используемой для начала записи поста, состоящего из нескольких сообщений
-* `com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.builtin.commands.FixPost` - подключение
+* `com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.commands.FixPost` - подключение
 команды `/fixPost`, используемой для окончания записи поста, состоящего из нескольких сообщений и
 фиксации в памяти бота
-* `com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.builtin.commands.DeletePost` -  - подключение
+* `com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.commands.DeletePost` - подключение
 команды `/deletePost`, используемой для удаления поста бота
+* `com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.choosers.SmartChooser` - "smart" плагин выборщика
+для постинга, имеет следующую структуру для параметра `params`:
+    * `times` - список временнЫх настроек для выборщика, каждый объект
+    которого содержит следующие параметры:
+        * `minRate` - минимальный рейтинг для попадания в список
+        кандидатов на выбор, если не указано - считается, что
+        минимума нет
+        * `maxRate` - максимальный рейтинг для попадания в список
+        кандидатов на выбор, если не указано - считается, что
+        максимума нет
+        * `sort` - режим сортировки кандидатов на выборку
+        * `time` - массив, в котором каждый первый элемент - начало
+        времени, когда этот объект конфигурации применим, а каждый
+        второй - конец такого времени
+        * `timeOffset` - опциональное поле формата `+HH:mm`, где
+            * `+` - знак смещения относительно `UTC`
+            * `HH` - часы смещения
+            * `mm` - минуты смещения
+        * `count` - число постов, производимых за раз
+* Плагины, `classname` которых оканчивается на `Forwarder` (например, `TextForwarder`) - форвардеры для публикации в целевом канале
 
 ### Опциональные плагины
 
-* `com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.builtin.commands.AvailableRates` - подключение
+* `com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.commands.AvailableRates` - подключение
 команды `availableRatings`, выдающей список из пар `рейтинг` : `число постов`
-* `com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.builtin.commands.MostRated` - команда
+* `com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.commands.MostRated` - команда
 `mostRated`, выдающая список из наиболее одобренных постов
-* `com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.builtin.commands.PublishPost` - команда
+* `com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.commands.PublishPost` - команда
 для немедленной публикации поста
 
 ## Описание команд, доступных после подключения плагинов
