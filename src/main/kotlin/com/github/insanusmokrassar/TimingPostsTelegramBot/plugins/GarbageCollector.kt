@@ -2,10 +2,11 @@ package com.github.insanusmokrassar.TimingPostsTelegramBot.plugins
 
 import com.github.insanusmokrassar.IObjectK.interfaces.IObject
 import com.github.insanusmokrassar.IObjectKRealisations.toObject
+import com.github.insanusmokrassar.TimingPostsTelegramBot.base.database.tables.PostsMessagesTable
+import com.github.insanusmokrassar.TimingPostsTelegramBot.base.database.tables.PostsTable
 import com.github.insanusmokrassar.TimingPostsTelegramBot.base.models.FinalConfig
-import com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.commands.deletePost
-import com.github.insanusmokrassar.TimingPostsTelegramBot.base.database.tables.*
 import com.github.insanusmokrassar.TimingPostsTelegramBot.base.plugins.*
+import com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.commands.deletePost
 import com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.rating.database.PostIdRatingPair
 import com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.rating.database.PostsLikesTable
 import com.pengrad.telegrambot.TelegramBot

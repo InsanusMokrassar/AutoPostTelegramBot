@@ -1,6 +1,7 @@
 package com.github.insanusmokrassar.TimingPostsTelegramBot.base.database
 
-import com.github.insanusmokrassar.TimingPostsTelegramBot.base.database.tables.*
+import com.github.insanusmokrassar.TimingPostsTelegramBot.base.database.tables.PostsMessagesTable
+import com.github.insanusmokrassar.TimingPostsTelegramBot.base.database.tables.PostsTable
 import com.github.insanusmokrassar.TimingPostsTelegramBot.base.models.PostMessage
 import com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.rating.database.PostsLikesTable
 import org.h2.Driver

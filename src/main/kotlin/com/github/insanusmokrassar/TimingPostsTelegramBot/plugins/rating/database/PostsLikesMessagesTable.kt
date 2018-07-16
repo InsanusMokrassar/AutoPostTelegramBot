@@ -1,7 +1,5 @@
 package com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.rating.database
 
-import com.github.insanusmokrassar.TimingPostsTelegramBot.base.database.tables.PostsTable
-import kotlinx.coroutines.experimental.launch
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 

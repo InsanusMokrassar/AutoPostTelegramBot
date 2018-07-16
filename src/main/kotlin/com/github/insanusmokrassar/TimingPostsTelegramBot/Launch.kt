@@ -3,10 +3,10 @@ package com.github.insanusmokrassar.TimingPostsTelegramBot
 import com.github.insanusmokrassar.BotIncomeMessagesListener.*
 import com.github.insanusmokrassar.IObjectKRealisations.load
 import com.github.insanusmokrassar.IObjectKRealisations.toObject
-import com.github.insanusmokrassar.TimingPostsTelegramBot.base.database.tables.*
+import com.github.insanusmokrassar.TimingPostsTelegramBot.base.database.tables.PostsMessagesTable
+import com.github.insanusmokrassar.TimingPostsTelegramBot.base.database.tables.PostsTable
 import com.github.insanusmokrassar.TimingPostsTelegramBot.base.models.Config
 import com.github.insanusmokrassar.TimingPostsTelegramBot.base.plugins.DefaultPluginManager
-import com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.rating.database.PostsLikesTable
 import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.model.CallbackQuery
 import com.pengrad.telegrambot.model.Message
