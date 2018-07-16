@@ -6,7 +6,7 @@
     1. Убедитесь, что у вас установлена `Java` (>= 1.7) и `Maven`
     1. Склонируйте проект с [Github](https://github.com/InsanusMokrassar/TimingPostsTelegramBot)
     2. В каталоге с проектом:
-        1. `mvn clean package`
+        1. Собираем проект с помощью команды для Maven `mvn clean package`
         2. Копируем файл из пути `$PROJECT_DIR/target/TimingPostsTelegramBot-1.0-jar-with-dependencies.jar` туда, где
         должен лежать бот
 3. Настройте проект через написание конфига (шаблон конфигурации есть в корне 
