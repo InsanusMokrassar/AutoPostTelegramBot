@@ -1,12 +1,13 @@
 package com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.rating
 
-import com.github.insanusmokrassar.TimingPostsTelegramBot.base.database.PostTransactionTable
 import com.github.insanusmokrassar.TimingPostsTelegramBot.base.models.FinalConfig
 import com.github.insanusmokrassar.TimingPostsTelegramBot.base.plugins.*
+import com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.rating.commands.AvailableRates
+import com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.rating.commands.MostRated
 import com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.rating.database.PostsLikesMessagesTable
 import com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.rating.database.PostsLikesTable
+import com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.rating.receivers.*
 import com.pengrad.telegrambot.TelegramBot
-import kotlinx.coroutines.experimental.launch
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.lang.ref.WeakReference
@@ -20,6 +21,9 @@ class RatingPlugin : Plugin {
     private var enableReceiver: EnableReceiver? = null
 
     private var registeredRefresher: RegisteredRefresher? = null
+
+    private var availableRates: AvailableRates? = null
+    private var mostRated: MostRated? = null
 
     val postsLikesTable = PostsLikesTable()
     val postsLikesMessagesTable = PostsLikesMessagesTable(postsLikesTable).also {
@@ -37,6 +41,8 @@ class RatingPlugin : Plugin {
         baseConfig: FinalConfig,
         pluginManager: PluginManager
     ) {
+        val botWR = WeakReference(bot)
+
         likeReceiver ?: let {
             likeReceiver = LikeReceiver(bot, postsLikesTable)
         }
@@ -48,6 +54,13 @@ class RatingPlugin : Plugin {
         }
         enableReceiver ?: let {
             enableReceiver = EnableReceiver(bot, baseConfig.sourceChatId, postsLikesTable, postsLikesMessagesTable)
+        }
+
+        mostRated ?:let {
+            mostRated = MostRated(botWR, postsLikesTable)
+        }
+        availableRates ?:let {
+            availableRates = AvailableRates(botWR, postsLikesMessagesTable)
         }
 
         registeredRefresher = RegisteredRefresher(

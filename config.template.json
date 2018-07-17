@@ -41,12 +41,6 @@
       "classname": "com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.commands.DeletePost"
     },
     {
-      "classname": "com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.commands.AvailableRates"
-    },
-    {
-      "classname": "com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.commands.MostRated"
-    },
-    {
       "classname": "com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.callbacks.OnMessage"
     },
     {

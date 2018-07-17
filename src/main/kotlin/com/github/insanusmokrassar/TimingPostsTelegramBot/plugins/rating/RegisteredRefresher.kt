@@ -6,6 +6,7 @@ import com.github.insanusmokrassar.TimingPostsTelegramBot.base.database.tables.P
 import com.github.insanusmokrassar.TimingPostsTelegramBot.base.plugins.pluginLogger
 import com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.rating.database.PostsLikesMessagesTable
 import com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.rating.database.PostsLikesTable
+import com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.rating.receivers.*
 import com.github.insanusmokrassar.TimingPostsTelegramBot.utils.extensions.executeAsync
 import com.github.insanusmokrassar.TimingPostsTelegramBot.utils.extensions.toTable
 import com.github.insanusmokrassar.TimingPostsTelegramBot.utils.makeLinkToMessage

@@ -1,4 +1,4 @@
-package com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.rating
+package com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.rating.receivers
 
 import com.github.insanusmokrassar.IObjectK.exceptions.ReadException
 import com.github.insanusmokrassar.IObjectKRealisations.toIObject
@@ -7,6 +7,7 @@ import com.github.insanusmokrassar.TimingPostsTelegramBot.base.database.tables.P
 import com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.CallbackQueryReceivers.CallbackQueryReceiver
 import com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.rating.database.PostsLikesMessagesTable
 import com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.rating.database.PostsLikesTable
+import com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.rating.refreshRegisteredMessage
 import com.github.insanusmokrassar.TimingPostsTelegramBot.realMessagesListener
 import com.github.insanusmokrassar.TimingPostsTelegramBot.utils.extensions.executeAsync
 import com.github.insanusmokrassar.TimingPostsTelegramBot.utils.extensions.queryAnswer
@@ -102,7 +103,7 @@ class EnableReceiver(
         bot: TelegramBot?
     ) {
         bot ?: return
-        extractDisableInline(query.data()) ?.let {
+        extractDisableInline(query.data())?.let {
             awaitApprove[query.from().id().toLong()] = it
             bot.queryAnswer(
                 query.id(),

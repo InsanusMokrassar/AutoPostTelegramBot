@@ -1,24 +1,28 @@
-package com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.commands
+package com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.rating.commands
 
-import com.github.insanusmokrassar.TimingPostsTelegramBot.base.plugins.PluginVersion
+import com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.commands.Command
 import com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.rating.database.PostsLikesMessagesTable
 import com.github.insanusmokrassar.TimingPostsTelegramBot.utils.extensions.executeAsync
+import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.model.Message
 import com.pengrad.telegrambot.model.request.ParseMode
 import com.pengrad.telegrambot.request.SendMessage
+import java.lang.ref.WeakReference
 
-class AvailableRates : RateCommand() {
-    override val version: PluginVersion = 0L
+class AvailableRates(
+    private val botWR: WeakReference<TelegramBot>,
+    private val postsLikesMessagesTable: PostsLikesMessagesTable
+) : Command() {
     override val commandRegex: Regex = Regex("^/availableRatings$")
 
     override fun onCommand(updateId: Int, message: Message) {
-        val bot = botWR ?.get() ?: return
+        val bot = botWR.get() ?: return
         var maxRatingLength = 0
         var maxCountLength = 0
         var commonCount = 0
 
         val ratingCountMap = mutableMapOf<Int, Int>()
-        postsLikesMessagesTable ?.getEnabledPostsIdAndRatings() ?.map { it.second } ?.also {
+        postsLikesMessagesTable.getEnabledPostsIdAndRatings() ?.map { it.second } ?.also {
             commonCount = it.size
             maxRatingLength = it.maxBy {
                 rating ->

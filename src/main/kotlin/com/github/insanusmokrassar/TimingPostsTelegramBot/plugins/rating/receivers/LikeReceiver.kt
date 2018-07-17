@@ -1,4 +1,4 @@
-package com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.rating
+package com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.rating.receivers
 
 import com.github.insanusmokrassar.IObjectK.exceptions.ReadException
 import com.github.insanusmokrassar.IObjectKRealisations.toIObject

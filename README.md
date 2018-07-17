@@ -172,9 +172,9 @@
 
 ### Опциональные плагины
 
-* `com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.commands.AvailableRates` - подключение
+* `com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.rating.commands.AvailableRates` - подключение
 команды `availableRatings`, выдающей список из пар `рейтинг` : `число постов`
-* `com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.commands.MostRated` - команда
+* `com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.rating.commands.MostRated` - команда
 `mostRated`, выдающая список из наиболее одобренных постов
 * `com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.commands.PublishPost` - команда
 для немедленной публикации поста
