@@ -34,14 +34,17 @@ class GarbageCollector(
     ) {
         val botWR = WeakReference(bot)
 
-        val postsLikesTable = (pluginManager.plugins.firstOrNull {
+        val ratingPlugin = (pluginManager.plugins.firstOrNull {
             it is RatingPlugin
-        } as? RatingPlugin) ?.postsLikesTable ?:let {
+        } as? RatingPlugin) ?:let {
             pluginLogger.warning(
                 "Plugin $name was not correctly inited: can't get data about ratings"
             )
             return
         }
+
+        val postsLikesTable = ratingPlugin.postsLikesTable
+        val postsLikesMessagesTable = ratingPlugin.postsLikesMessagesTable
 
         postsLikesTable.ratingsChannel.openSubscription().let {
             launch {
@@ -59,9 +62,7 @@ class GarbageCollector(
             launch {
                 while (isActive) {
                     val bot = botWR.get() ?: break
-                    PostsTable.getAll().map {
-                        PostIdRatingPair(it, postsLikesTable.getPostRating(it))
-                    }.forEach {
+                    postsLikesMessagesTable.getEnabledPostsIdAndRatings().forEach {
                         check(it, bot, baseConfig)
                     }
                     delay(it)
