@@ -1,5 +1,6 @@
 package com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.scheduler
 
+import com.github.insanusmokrassar.TimingPostsTelegramBot.base.database.tables.PostsTable
 import kotlinx.coroutines.experimental.channels.BroadcastChannel
 import kotlinx.coroutines.experimental.launch
 import org.jetbrains.exposed.sql.*
@@ -16,6 +17,24 @@ class PostsSchedulesTable : Table() {
     val postTimeRegisteredChannel = BroadcastChannel<PostIdPostTime>(broadcastsCount)
     val postTimeChangedChannel = BroadcastChannel<PostIdPostTime>(broadcastsCount)
     val postTimeRemovedChannel = BroadcastChannel<Int>(broadcastsCount)
+
+    init {
+        PostsTable.postRemovedChannel.openSubscription().also {
+            launch {
+                while (isActive) {
+                    val removedPostId = it.receive()
+
+                    try {
+                        unregisterPost(removedPostId)
+                    } catch (e: Exception) {
+                        // TODO:: FIX IT
+                        e.printStackTrace()
+                    }
+                }
+                it.cancel()
+            }
+        }
+    }
 
     fun postTime(postId: Int): DateTime? {
         return transaction {
