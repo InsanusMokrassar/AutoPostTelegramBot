@@ -1,13 +1,15 @@
 package com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.scheduler
 
 import com.github.insanusmokrassar.TimingPostsTelegramBot.base.database.exceptions.NoRowFoundException
+import com.github.insanusmokrassar.TimingPostsTelegramBot.base.database.tables.PostsMessagesTable
 import com.github.insanusmokrassar.TimingPostsTelegramBot.base.database.tables.PostsTable
+import com.github.insanusmokrassar.TimingPostsTelegramBot.base.models.PostMessage
 import com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.commands.Command
 import com.github.insanusmokrassar.TimingPostsTelegramBot.utils.extensions.executeAsync
 import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.model.Message
 import com.pengrad.telegrambot.model.request.ParseMode
-import com.pengrad.telegrambot.request.SendMessage
+import com.pengrad.telegrambot.request.*
 import org.joda.time.DateTime
 import java.lang.ref.WeakReference
 
@@ -36,7 +38,8 @@ private fun sendHelpForUsage(
 
 class EnableTimerCommand(
     private val postsSchedulesTable: PostsSchedulesTable,
-    private val botWR: WeakReference<TelegramBot>
+    private val botWR: WeakReference<TelegramBot>,
+    private val logsChatId: Long
 ) : Command() {
     override val commandRegex: Regex = Regex("^/$setPostTimeCommandName.*")
     private val removeCommand: Regex = Regex("^/$setPostTimeCommandName ?")
@@ -80,16 +83,24 @@ class EnableTimerCommand(
                 parsed ?.also {
                     parsed ->
                     postsSchedulesTable.registerPostTime(postId, parsed)
+
+                    bot.execute(
+                        ForwardMessage(
+                            logsChatId,
+                            chatId,
+                            PostsMessagesTable.getMessagesOfPost(
+                                postId
+                            ).firstOrNull() ?.messageId ?: replyToMessage.messageId()
+                        )
+                    )
                     bot.executeAsync(
                         SendMessage(
-                            chatId,
+                            logsChatId,
                             "Chosen format: ${converter.formatPattern} (${converter.timeZoneId})\n" +
                                 "Parsed time: $parsed\n" +
                                 "Post saved with timer"
                         ).parseMode(
                             ParseMode.Markdown
-                        ).replyToMessageId(
-                            replyToMessage.messageId()
                         )
                     )
                 }
@@ -98,6 +109,13 @@ class EnableTimerCommand(
             sendHelpForUsage(
                 bot,
                 message.chat().id()
+            )
+        } finally {
+            bot.executeAsync(
+                DeleteMessage(
+                    message.chat().id(),
+                    message.messageId()
+                )
             )
         }
     }

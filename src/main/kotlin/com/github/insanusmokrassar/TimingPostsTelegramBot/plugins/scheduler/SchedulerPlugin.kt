@@ -30,7 +30,8 @@ class SchedulerPlugin : Plugin {
         )
         enableTimerCommand = EnableTimerCommand(
             timerSchedulesTable,
-            WeakReference(bot)
+            WeakReference(bot),
+            baseConfig.logsChatId
         )
     }
 }
