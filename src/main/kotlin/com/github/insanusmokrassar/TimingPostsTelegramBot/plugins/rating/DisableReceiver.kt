@@ -32,7 +32,8 @@ private fun makeTextToApproveRemove(postId: Int) =
 
 class DisableReceiver(
     bot: TelegramBot,
-    sourceChatId: Long
+    sourceChatId: Long,
+    postsLikesMessagesTable: PostsLikesMessagesTable
 ) : CallbackQueryReceiver(bot) {
     private val awaitApprove = HashMap<Long, Int>()
 
@@ -52,7 +53,8 @@ class DisableReceiver(
                             clearRatingDataForPostId(
                                 it,
                                 bot,
-                                sourceChatId
+                                sourceChatId,
+                                postsLikesMessagesTable
                             )
 
                             bot.executeAsync(
@@ -67,7 +69,7 @@ class DisableReceiver(
                     } ?:let {
                         val forwardFrom = message.second.forwardFromChat()
                         if (forwardFrom != null && forwardFrom.id() == sourceChatId) {
-                            val postId = PostsLikesMessagesTable.postIdByMessage(
+                            val postId = postsLikesMessagesTable.postIdByMessage(
                                 message.second.forwardFromMessageId()
                             ) ?: return@let
                             bot.executeAsync(

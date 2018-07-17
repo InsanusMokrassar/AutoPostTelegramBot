@@ -21,7 +21,10 @@ fun extractLikeInline(from: String): Int? = try {
     null
 }
 
-class LikeReceiver(bot: TelegramBot) : CallbackQueryReceiver(bot) {
+class LikeReceiver(
+    bot: TelegramBot,
+    private val postsLikesTable: PostsLikesTable
+) : CallbackQueryReceiver(bot) {
     override fun invoke(
         query: CallbackQuery,
         bot: TelegramBot?
@@ -31,7 +34,7 @@ class LikeReceiver(bot: TelegramBot) : CallbackQueryReceiver(bot) {
         )?.let {
             postId ->
 
-            PostsLikesTable.userLikePost(
+            postsLikesTable.userLikePost(
                 query.from().id().toLong(),
                 postId
             )

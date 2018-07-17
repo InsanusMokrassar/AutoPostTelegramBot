@@ -12,13 +12,13 @@ import com.pengrad.telegrambot.model.request.InlineKeyboardMarkup
 import com.pengrad.telegrambot.request.ForwardMessage
 import com.pengrad.telegrambot.request.SendMessage
 
-class MostRated : Command() {
+class MostRated : RateCommand() {
     override val version: PluginVersion = 0L
     override val commandRegex: Regex = Regex("^/mostRated$")
 
     override fun onCommand(updateId: Int, message: Message) {
         val bot = botWR ?.get() ?: return
-        val mostRated = PostsLikesTable.getMostRated()
+        val mostRated = postsLikesTable ?.getMostRated() ?: return
         val chatId = message.chat().id()
         message.chat().username() ?.let {
             username ->

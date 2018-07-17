@@ -16,14 +16,16 @@ private const val countOfSubscriptions = 256
 
 private const val resultColumnName = "result"
 
-object PostsLikesTable : Table() {
+class PostsLikesTable : Table() {
     val likesChannel = BroadcastChannel<PostIdUserId>(countOfSubscriptions)
     val dislikesChannel = BroadcastChannel<PostIdUserId>(countOfSubscriptions)
     val ratingsChannel = BroadcastChannel<PostIdRatingPair>(countOfSubscriptions)
 
     private val userId = long("userId").primaryKey()
-    private val postId = integer("postId").references(PostsTable.id).primaryKey()
+    private val postId = integer("postId").primaryKey()
     private val like = bool("like").default(false)
+
+    internal lateinit var postsLikesMessagesTable: PostsLikesMessagesTable
 
     init {
         PostsTable.postRemovedChannel.openSubscription().also {
@@ -69,8 +71,8 @@ object PostsLikesTable : Table() {
         return transaction {
             try {
                 exec("SELECT (likes-dislikes) as $resultColumnName FROM " +
-                    "(SELECT count(*) as likes FROM ${nameInDatabaseCase()} WHERE ${PostsLikesTable.postId.name}=$postId AND \"${like.name}\"=${like.columnType.valueToString(true)}), " +
-                    "(SELECT count(*) as dislikes FROM ${nameInDatabaseCase()} WHERE ${PostsLikesTable.postId.name}=$postId AND \"${like.name}\"=${like.columnType.valueToString(false)});") {
+                    "(SELECT count(*) as likes FROM ${nameInDatabaseCase()} WHERE ${this@PostsLikesTable.postId.name}=$postId AND \"${like.name}\"=${like.columnType.valueToString(true)}), " +
+                    "(SELECT count(*) as dislikes FROM ${nameInDatabaseCase()} WHERE ${this@PostsLikesTable.postId.name}=$postId AND \"${like.name}\"=${like.columnType.valueToString(false)});") {
                     if (it.first()) {
                         it.getInt(it.findColumn(resultColumnName))
                     } else {
@@ -89,7 +91,7 @@ object PostsLikesTable : Table() {
 
     fun getMostRated(): List<Int> {
         return transaction {
-            PostsLikesMessagesTable.getEnabledPostsIdAndRatings().let {
+            postsLikesMessagesTable.getEnabledPostsIdAndRatings().let {
                 var maxRating = Int.MIN_VALUE
                 ArrayList<Int>().apply {
                     it.forEach {
@@ -114,7 +116,7 @@ object PostsLikesTable : Table() {
      * @return Pairs with postId to Rate
      */
     fun getRateRange(min: Int?, max: Int?): List<PostIdRatingPair> {
-        return PostsLikesMessagesTable.getEnabledPostsIdAndRatings().sortedByDescending {
+        return postsLikesMessagesTable.getEnabledPostsIdAndRatings().sortedByDescending {
             it.second
         }.filter {
             pair ->
@@ -124,20 +126,20 @@ object PostsLikesTable : Table() {
 
     private fun postLikeCount(postId: Int, like: Boolean): Int = transaction {
         select {
-            PostsLikesTable.postId.eq(postId).and(PostsLikesTable.like.eq(like))
+            this@PostsLikesTable.postId.eq(postId).and(this@PostsLikesTable.like.eq(like))
         }.count()
     }
 
     private fun createChooser(postId: Int, userId: Long? = null, like: Boolean? = null): Op<Boolean> {
-        return PostsLikesTable.postId.eq(postId).let {
+        return this@PostsLikesTable.postId.eq(postId).let {
             userId ?.let {
                 userId ->
-                it.and(PostsLikesTable.userId.eq(userId))
+                it.and(this@PostsLikesTable.userId.eq(userId))
             } ?: it
         }.let {
             like ?. let {
                 like ->
-                it.and(PostsLikesTable.like.eq(like))
+                it.and(this@PostsLikesTable.like.eq(like))
             } ?: it
         }
     }
@@ -149,7 +151,7 @@ object PostsLikesTable : Table() {
                 chooser
             }.firstOrNull()
             record ?.let {
-                if (it[PostsLikesTable.like] == like) {
+                if (it[this@PostsLikesTable.like] == like) {
                     deleteWhere { chooser }
                 } else {
                     update(
@@ -157,7 +159,7 @@ object PostsLikesTable : Table() {
                             chooser
                         }
                     ) {
-                        it[PostsLikesTable.like] = like
+                        it[this@PostsLikesTable.like] = like
                     }
                 }
             } ?:let {
@@ -174,16 +176,16 @@ object PostsLikesTable : Table() {
     private fun addUser(userId: Long, postId: Int, like: Boolean) {
         transaction {
             insert {
-                it[PostsLikesTable.postId] = postId
-                it[PostsLikesTable.userId] = userId
-                it[PostsLikesTable.like] = like
+                it[this@PostsLikesTable.postId] = postId
+                it[this@PostsLikesTable.userId] = userId
+                it[this@PostsLikesTable.like] = like
             }
         }
     }
 
     internal fun clearPostMarks(postId: Int) {
         transaction {
-            deleteWhere { PostsLikesTable.postId.eq(postId) }
+            deleteWhere { this@PostsLikesTable.postId.eq(postId) }
         }
     }
 }

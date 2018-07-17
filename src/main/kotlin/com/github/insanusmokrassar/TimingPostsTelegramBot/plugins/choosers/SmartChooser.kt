@@ -170,7 +170,7 @@ private class SmartChooserConfig(
 
 class SmartChooser(
     config: IObject<Any>
-) : Chooser {
+) : RateChooser() {
     override val version: PluginVersion = 0L
     private val config = config.toObject(SmartChooserConfig::class.java)
 
@@ -192,7 +192,7 @@ class SmartChooser(
     override fun triggerChoose(): Collection<Int> {
         val actualItem = config.times.firstOrNull { it.actual() }
         return actualItem ?.let {
-            PostsLikesTable.getRateRange(
+            postsLikesTable ?.getRateRange(
                 it.minRate,
                 it.maxRate
             )

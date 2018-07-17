@@ -1,7 +1,6 @@
 package com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.rating
 
-import com.github.insanusmokrassar.IObjectK.exceptions.ReadException
-import com.github.insanusmokrassar.IObjectKRealisations.toIObject
+import com.github.insanusmokrassar.TimingPostsTelegramBot.base.database.PostTransactionTable
 import com.github.insanusmokrassar.TimingPostsTelegramBot.base.database.tables.PostsMessagesTable
 import com.github.insanusmokrassar.TimingPostsTelegramBot.base.database.tables.PostsTable
 import com.github.insanusmokrassar.TimingPostsTelegramBot.base.plugins.pluginLogger
@@ -19,9 +18,10 @@ import java.lang.ref.WeakReference
 fun clearRatingDataForPostId(
     postId: Int,
     bot: TelegramBot,
-    sourceChatId: Long
+    sourceChatId: Long,
+    postsLikesMessagesTable: PostsLikesMessagesTable
 ) {
-    PostsLikesMessagesTable.messageIdByPostId(postId) ?.let {
+    postsLikesMessagesTable.messageIdByPostId(postId) ?.let {
         messageId ->
 
         bot.executeAsync(
@@ -31,18 +31,20 @@ fun clearRatingDataForPostId(
             )
         )
 
-        PostsLikesMessagesTable.clearPostIdMessageId(postId)
+        postsLikesMessagesTable.clearPostIdMessageId(postId)
     }
 }
 
 class RegisteredRefresher(
     sourceChatId: Long,
-    bot: TelegramBot
+    bot: TelegramBot,
+    postsLikesTable: PostsLikesTable,
+    postsLikesMessagesTable: PostsLikesMessagesTable
 ) {
     private val botWR = WeakReference(bot)
 
     init {
-        PostsLikesTable.ratingsChannel.openSubscription().also {
+        postsLikesTable.ratingsChannel.openSubscription().also {
             launch {
                 while (isActive) {
                     val update = it.receive()
@@ -52,6 +54,8 @@ class RegisteredRefresher(
                             sourceChatId,
                             botWR.get() ?: break,
                             update.first,
+                            postsLikesTable,
+                            postsLikesMessagesTable,
                             update.second
                         )
                     } catch (e: Exception) {
@@ -66,24 +70,43 @@ class RegisteredRefresher(
             }
         }
 
-        PostsTable.postMessageRegisteredChannel.openSubscription().also {
+//        PostsTable.postMessageRegisteredChannel.openSubscription().also {
+//            launch {
+//                while (isActive) {
+//                    val postMessageRegistered = it.receive()
+//
+//                    try {
+//                        refreshRegisteredMessage(
+//                            sourceChatId,
+//                            botWR.get() ?: break,
+//                            postMessageRegistered.first,
+//                            postsLikesTable,
+//                            postsLikesMessagesTable
+//                        )
+//                    } catch (e: Exception) {
+//                        pluginLogger.throwing(
+//                            "RegisteredRefresher",
+//                            "updateMessageId",
+//                            e
+//                        )
+//                    }
+//                }
+//                it.cancel()
+//            }
+//        }
+
+        PostTransactionTable.transactionCompletedChannel.openSubscription().also {
             launch {
                 while (isActive) {
-                    val postMessageRegistered = it.receive()
-
-                    try {
-                        refreshRegisteredMessage(
-                            sourceChatId,
-                            botWR.get() ?: break,
-                            postMessageRegistered.first
-                        )
-                    } catch (e: Exception) {
-                        pluginLogger.throwing(
-                            "RegisteredRefresher",
-                            "updateMessageId",
-                            e
-                        )
-                    }
+                    val bot = botWR.get() ?: break
+                    val postId = it.receive()
+                    refreshRegisteredMessage(
+                        sourceChatId,
+                        bot,
+                        postId,
+                        postsLikesTable,
+                        postsLikesMessagesTable
+                    )
                 }
                 it.cancel()
             }
@@ -98,7 +121,8 @@ class RegisteredRefresher(
                         clearRatingDataForPostId(
                             removedPostId,
                             botWR.get() ?: break,
-                            sourceChatId
+                            sourceChatId,
+                            postsLikesMessagesTable
                         )
                     } catch (e: Exception) {
                         pluginLogger.throwing(
@@ -118,19 +142,21 @@ fun refreshRegisteredMessage(
     chatId: Long,
     bot: TelegramBot,
     postId: Int,
-    postRating: Int = PostsLikesTable.getPostRating(postId),
+    postsLikesTable: PostsLikesTable,
+    postsLikesMessagesTable: PostsLikesMessagesTable,
+    postRating: Int = postsLikesTable.getPostRating(postId),
     username: String? = null
 ) {
     val likeButton = InlineKeyboardButton(
         makeDislikeText(
-            PostsLikesTable.postDislikes(postId)
+            postsLikesTable.postDislikes(postId)
         )
     ).callbackData(
         makeDislikeInline(postId)
     )
     val dislikeButton = InlineKeyboardButton(
         makeLikeText(
-            PostsLikesTable.postLikes(postId)
+            postsLikesTable.postLikes(postId)
         )
     ).callbackData(
         makeLikeInline(postId)
@@ -176,7 +202,7 @@ fun refreshRegisteredMessage(
 
     val message = "Rating: $postRating"
 
-    val registeredMessageId = PostsLikesMessagesTable.messageIdByPostId(postId)
+    val registeredMessageId = postsLikesMessagesTable.messageIdByPostId(postId)
 
     if (registeredMessageId == null) {
         SendMessage(
@@ -193,7 +219,7 @@ fun refreshRegisteredMessage(
                 it,
                 onResponse = {
                     _, sendResponse ->
-                    if (!PostsLikesMessagesTable.registerLikeMessageId(postId, sendResponse.message().messageId())) {
+                    if (!postsLikesMessagesTable.registerLikeMessageId(postId, sendResponse.message().messageId())) {
                         bot.executeAsync(
                             DeleteMessage(
                                 chatId,

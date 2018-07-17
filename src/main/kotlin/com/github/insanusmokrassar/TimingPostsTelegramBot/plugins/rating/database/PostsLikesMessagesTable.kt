@@ -3,7 +3,9 @@ package com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.rating.databa
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 
-object PostsLikesMessagesTable : Table() {
+class PostsLikesMessagesTable(
+    private val postsLikesTable: PostsLikesTable
+) : Table() {
     private val postId = integer("postId").primaryKey()
     private val messageId = integer("messageId")
 
@@ -52,7 +54,7 @@ object PostsLikesMessagesTable : Table() {
             selectAll().mapNotNull {
                 it[postId]
             }.map {
-                it to PostsLikesTable.getPostRating(it)
+                it to postsLikesTable.getPostRating(it)
             }
         }
     }

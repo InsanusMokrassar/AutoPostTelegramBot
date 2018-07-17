@@ -20,9 +20,14 @@ class RatingPlugin : Plugin {
 
     private var registeredRefresher: RegisteredRefresher? = null
 
+    val postsLikesTable = PostsLikesTable()
+    val postsLikesMessagesTable = PostsLikesMessagesTable(postsLikesTable).also {
+        postsLikesTable.postsLikesMessagesTable = it
+    }
+
     init {
         transaction {
-            SchemaUtils.createMissingTablesAndColumns(PostsLikesTable, PostsLikesMessagesTable)
+            SchemaUtils.createMissingTablesAndColumns(postsLikesTable, postsLikesMessagesTable)
         }
     }
 
@@ -32,52 +37,21 @@ class RatingPlugin : Plugin {
         pluginManager: PluginManager
     ) {
         likeReceiver ?: let {
-            likeReceiver = LikeReceiver(bot)
+            likeReceiver = LikeReceiver(bot, postsLikesTable)
         }
         dislikeReceiver ?: let {
-            dislikeReceiver = DislikeReceiver(bot)
+            dislikeReceiver = DislikeReceiver(bot, postsLikesTable)
         }
         disableReceiver ?: let {
-            disableReceiver = DisableReceiver(bot, baseConfig.sourceChatId)
+            disableReceiver = DisableReceiver(bot, baseConfig.sourceChatId, postsLikesMessagesTable)
         }
-
-        val sourceChatId = baseConfig.sourceChatId
 
         registeredRefresher = RegisteredRefresher(
             baseConfig.sourceChatId,
-            bot
+            bot,
+            postsLikesTable,
+            postsLikesMessagesTable
         )
-
-        val botWR = WeakReference(bot)
-        PostsLikesTable.ratingsChannel.openSubscription().also {
-            launch {
-                while (isActive) {
-                    val bot = botWR.get() ?: break
-                    val update = it.receive()
-                    refreshRegisteredMessage(
-                        sourceChatId,
-                        bot,
-                        update.first,
-                        update.second
-                    )
-                }
-                it.cancel()
-            }
-        }
-        PostTransactionTable.transactionCompletedChannel.openSubscription().also {
-            launch {
-                while (isActive) {
-                    val bot = botWR.get() ?: break
-                    val postId = it.receive()
-                    refreshRegisteredMessage(
-                        sourceChatId,
-                        bot,
-                        postId
-                    )
-                }
-                it.cancel()
-            }
-        }
     }
 
 }

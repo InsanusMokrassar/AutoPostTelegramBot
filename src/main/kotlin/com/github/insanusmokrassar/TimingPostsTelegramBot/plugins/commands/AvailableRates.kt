@@ -1,15 +1,13 @@
 package com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.commands
 
-import com.github.insanusmokrassar.TimingPostsTelegramBot.base.database.tables.PostsTable
 import com.github.insanusmokrassar.TimingPostsTelegramBot.base.plugins.PluginVersion
 import com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.rating.database.PostsLikesMessagesTable
-import com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.rating.database.PostsLikesTable
 import com.github.insanusmokrassar.TimingPostsTelegramBot.utils.extensions.executeAsync
 import com.pengrad.telegrambot.model.Message
 import com.pengrad.telegrambot.model.request.ParseMode
 import com.pengrad.telegrambot.request.SendMessage
 
-class AvailableRates : Command() {
+class AvailableRates : RateCommand() {
     override val version: PluginVersion = 0L
     override val commandRegex: Regex = Regex("^/availableRatings$")
 
@@ -20,7 +18,7 @@ class AvailableRates : Command() {
         var commonCount = 0
 
         val ratingCountMap = mutableMapOf<Int, Int>()
-        PostsLikesMessagesTable.getEnabledPostsIdAndRatings().map { it.second }.also {
+        postsLikesMessagesTable ?.getEnabledPostsIdAndRatings() ?.map { it.second } ?.also {
             commonCount = it.size
             maxRatingLength = it.maxBy {
                 rating ->

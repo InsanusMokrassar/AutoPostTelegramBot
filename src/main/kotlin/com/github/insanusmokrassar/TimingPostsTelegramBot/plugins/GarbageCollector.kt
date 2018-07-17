@@ -7,6 +7,7 @@ import com.github.insanusmokrassar.TimingPostsTelegramBot.base.database.tables.P
 import com.github.insanusmokrassar.TimingPostsTelegramBot.base.models.FinalConfig
 import com.github.insanusmokrassar.TimingPostsTelegramBot.base.plugins.*
 import com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.commands.deletePost
+import com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.rating.RatingPlugin
 import com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.rating.database.PostIdRatingPair
 import com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.rating.database.PostsLikesTable
 import com.pengrad.telegrambot.TelegramBot
@@ -33,7 +34,16 @@ class GarbageCollector(
     ) {
         val botWR = WeakReference(bot)
 
-        PostsLikesTable.ratingsChannel.openSubscription().let {
+        val postsLikesTable = (pluginManager.plugins.firstOrNull {
+            it is RatingPlugin
+        } as? RatingPlugin) ?.postsLikesTable ?:let {
+            pluginLogger.warning(
+                "Plugin $name was not correctly inited: can't get data about ratings"
+            )
+            return
+        }
+
+        postsLikesTable.ratingsChannel.openSubscription().let {
             launch {
                 while (isActive) {
                     val bot = botWR.get() ?: break
@@ -50,7 +60,7 @@ class GarbageCollector(
                 while (isActive) {
                     val bot = botWR.get() ?: break
                     PostsTable.getAll().map {
-                        PostIdRatingPair(it, PostsLikesTable.getPostRating(it))
+                        PostIdRatingPair(it, postsLikesTable.getPostRating(it))
                     }.forEach {
                         check(it, bot, baseConfig)
                     }

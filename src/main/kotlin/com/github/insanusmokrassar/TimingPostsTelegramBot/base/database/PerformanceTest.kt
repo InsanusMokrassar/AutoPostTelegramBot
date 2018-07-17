@@ -88,7 +88,7 @@ private fun initDb() {
     )
 
     transaction {
-        SchemaUtils.createMissingTablesAndColumns(PostsLikesTable, PostsMessagesTable, PostsTable)
+        SchemaUtils.createMissingTablesAndColumns(PostsMessagesTable, PostsTable)
     }
 }
 
