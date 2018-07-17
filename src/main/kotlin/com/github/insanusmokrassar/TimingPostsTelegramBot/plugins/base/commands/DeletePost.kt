@@ -1,15 +1,18 @@
-package com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.commands
+package com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.base.commands
 
 import com.github.insanusmokrassar.TimingPostsTelegramBot.base.database.tables.PostsMessagesTable
 import com.github.insanusmokrassar.TimingPostsTelegramBot.base.database.tables.PostsTable
 import com.github.insanusmokrassar.TimingPostsTelegramBot.base.models.FinalConfig
 import com.github.insanusmokrassar.TimingPostsTelegramBot.base.plugins.PluginManager
 import com.github.insanusmokrassar.TimingPostsTelegramBot.base.plugins.PluginVersion
+import com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.commands.Command
+import com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.commands.CommandPlugin
 import com.github.insanusmokrassar.TimingPostsTelegramBot.utils.extensions.executeAsync
 import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.model.Message
 import com.pengrad.telegrambot.model.request.ParseMode
 import com.pengrad.telegrambot.request.*
+import java.lang.ref.WeakReference
 
 fun deletePost(
     bot: TelegramBot,
@@ -59,24 +62,14 @@ fun deletePost(
     }
 }
 
-class DeletePost : CommandPlugin() {
-    override val version: PluginVersion = 0L
+class DeletePost(
+    private val logsChatId: Long,
+    private val botWR: WeakReference<TelegramBot>
+) : Command() {
     override val commandRegex: Regex = Regex("^/deletePost$")
 
-    private var logsChatId: Long? = null
-
-    override fun onInit(
-        bot: TelegramBot,
-        baseConfig: FinalConfig,
-        pluginManager: PluginManager
-    ) {
-        super.onInit(bot, baseConfig, pluginManager)
-
-        logsChatId = baseConfig.logsChatId
-    }
-
     override fun onCommand(updateId: Int, message: Message) {
-        val bot = botWR ?.get() ?: return
+        val bot = botWR.get() ?: return
         message.replyToMessage() ?.let {
             val messageId = it.messageId() ?: return@let null
             try {
@@ -85,7 +78,7 @@ class DeletePost : CommandPlugin() {
                 deletePost(
                     bot,
                     chatId,
-                    logsChatId ?: return,
+                    logsChatId,
                     postId,
                     messageId,
                     message.messageId()

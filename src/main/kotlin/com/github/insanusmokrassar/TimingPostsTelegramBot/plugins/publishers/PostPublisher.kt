@@ -6,9 +6,8 @@ import com.github.insanusmokrassar.TimingPostsTelegramBot.base.models.FinalConfi
 import com.github.insanusmokrassar.TimingPostsTelegramBot.base.models.PostMessage
 import com.github.insanusmokrassar.TimingPostsTelegramBot.base.plugins.PluginManager
 import com.github.insanusmokrassar.TimingPostsTelegramBot.base.plugins.PluginVersion
-import com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.commands.deletePost
+import com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.base.commands.deletePost
 import com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.forwarders.*
-import com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.rating.database.PostsLikesTable
 import com.github.insanusmokrassar.TimingPostsTelegramBot.utils.extensions.executeAsync
 import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.model.request.ParseMode

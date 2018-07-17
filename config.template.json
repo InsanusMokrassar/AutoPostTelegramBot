@@ -32,19 +32,7 @@
       }
     },
     {
-      "classname": "com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.commands.StartPost"
-    },
-    {
-      "classname": "com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.commands.FixPost"
-    },
-    {
-      "classname": "com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.commands.DeletePost"
-    },
-    {
-      "classname": "com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.callbacks.OnMessage"
-    },
-    {
-      "classname": "com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.callbacks.OnMediaGroup"
+      "classname": "com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.base.BasePlugin"
     },
     {
       "classname": "com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.rating.RatingPlugin"

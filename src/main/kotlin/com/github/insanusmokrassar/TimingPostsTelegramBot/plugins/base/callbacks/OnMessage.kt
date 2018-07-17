@@ -1,10 +1,10 @@
-package com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.callbacks
+package com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.base.callbacks
 
 import com.github.insanusmokrassar.TimingPostsTelegramBot.base.database.PostTransactionTable
 import com.github.insanusmokrassar.TimingPostsTelegramBot.base.models.FinalConfig
 import com.github.insanusmokrassar.TimingPostsTelegramBot.base.models.PostMessage
 import com.github.insanusmokrassar.TimingPostsTelegramBot.base.plugins.*
-import com.github.insanusmokrassar.TimingPostsTelegramBot.mediaGroupsListener
+import com.github.insanusmokrassar.TimingPostsTelegramBot.messagesListener
 import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.model.Message
 import kotlinx.coroutines.experimental.launch
@@ -12,21 +12,22 @@ import java.util.logging.Logger
 
 private val logger = Logger.getLogger(Plugin::class.java.simpleName)
 
-class OnMediaGroup : Plugin {
-    override val version: PluginVersion = 0L
-    override fun onInit(bot: TelegramBot, baseConfig: FinalConfig, pluginManager: PluginManager) {
-        mediaGroupsListener.openSubscription().also {
+class OnMessage(
+    sourceChatId: Long
+) {
+    init {
+        messagesListener.openSubscription().also {
             launch {
                 while (isActive) {
                     val received = it.receive()
                     try {
                         invoke(
                             received.second,
-                            baseConfig.sourceChatId
+                            sourceChatId
                         )
                     } catch (e: Exception) {
                         logger.throwing(
-                            OnMediaGroup::class.java.canonicalName,
+                            OnMessage::class.java.canonicalName,
                             "Perform message",
                             e
                         )
@@ -38,29 +39,24 @@ class OnMediaGroup : Plugin {
     }
 
     private fun invoke(
-        messages: List<Message>,
+        message: Message,
         sourceChatId: Long
     ) {
-        val first = messages.first()
-        if (first.chat().id() == sourceChatId) {
-            if (PostTransactionTable.inTransaction) {
-                messages.forEach {
-                    PostTransactionTable.addMessageId(
-                        PostMessage(
-                            it.messageId(),
-                            it.mediaGroupId()
-                        )
-                    )
+        if (message.chat().id() == sourceChatId) {
+            message.text() ?. let {
+                if (it.startsWith("/")) {
+                    return
                 }
+            }
+            if (PostTransactionTable.inTransaction) {
+                PostTransactionTable.addMessageId(
+                    PostMessage(message)
+                )
             } else {
                 PostTransactionTable.startTransaction()
-                messages.map {
-                    PostMessage(it)
-                }.also {
-                    PostTransactionTable.addMessageId(
-                        *it.toTypedArray()
-                    )
-                }
+                PostTransactionTable.addMessageId(
+                    PostMessage(message)
+                )
                 PostTransactionTable.saveNewPost()
             }
         }

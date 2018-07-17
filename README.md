@@ -132,22 +132,22 @@
 
 ### Строго рекомендуемые к подключению
 
-* `com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.callbacks.OnMessage` - подключение
+* `com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.base.callbacks.OnMessage` - подключение
 реакции бота на сообщение по-умолчанию, то есть сохранение сообщения как части поста и фиксации
 поста если начало поста было положено не в этом плагине (например, с помощью команды `/startPost`)
-* `com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.callbacks.OnMediaGroup` - подключение
+* `com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.base.callbacks.OnMediaGroup` - подключение
 реакции бота на сообщения, состоящие из медиагрупп (галереи), то есть сохранение сообщений как части ОДНОГО
 поста и фиксации поста если начало поста было положено не в этом плагине (например, с помощью команды `/startPost`)
 * `com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.CallbackQueryReceivers.LikeReceiver` - плагин
 стандартной реакции на на нажатие кнопки одобрения поста
 * `com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.CallbackQueryReceivers.DislikeReceiver` - плагин
 стандартной реакции на на нажатие кнопки неодобрения поста
-* `com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.commands.StartPost` - подключение
+* `com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.base.commands.StartPost` - подключение
 команды `/startPost`, используемой для начала записи поста, состоящего из нескольких сообщений
-* `com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.commands.FixPost` - подключение
+* `com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.base.commands.FixPost` - подключение
 команды `/fixPost`, используемой для окончания записи поста, состоящего из нескольких сообщений и
 фиксации в памяти бота
-* `com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.commands.DeletePost` - подключение
+* `com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.base.commands.DeletePost` - подключение
 команды `/deletePost`, используемой для удаления поста бота
 * `com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.choosers.SmartChooser` - "smart" плагин выборщика
 для постинга, имеет следующую структуру для параметра `params`:
