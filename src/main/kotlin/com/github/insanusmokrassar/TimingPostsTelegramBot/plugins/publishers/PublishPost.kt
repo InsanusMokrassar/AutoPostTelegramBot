@@ -1,12 +1,9 @@
-package com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.commands
+package com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.publishers
 
 import com.github.insanusmokrassar.TimingPostsTelegramBot.base.database.exceptions.NoRowFoundException
 import com.github.insanusmokrassar.TimingPostsTelegramBot.base.database.tables.PostsTable
-import com.github.insanusmokrassar.TimingPostsTelegramBot.base.models.FinalConfig
-import com.github.insanusmokrassar.TimingPostsTelegramBot.base.plugins.PluginManager
-import com.github.insanusmokrassar.TimingPostsTelegramBot.base.plugins.PluginVersion
 import com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.choosers.Chooser
-import com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.publishers.Publisher
+import com.github.insanusmokrassar.TimingPostsTelegramBot.utils.commands.Command
 import com.github.insanusmokrassar.TimingPostsTelegramBot.utils.extensions.executeAsync
 import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.model.Message
@@ -14,27 +11,21 @@ import com.pengrad.telegrambot.model.request.ParseMode
 import com.pengrad.telegrambot.request.SendMessage
 import java.lang.ref.WeakReference
 
-class PublishPost : CommandPlugin() {
-    override val version: PluginVersion = 0L
+class PublishPost(
+    chooser: Chooser,
+    publisher: Publisher,
+    private val botWR: WeakReference<TelegramBot>,
+    private val logsChatId: Long = 0
+) : Command() {
     override val commandRegex: Regex = Regex("^/publishPost( \\d+)?$")
 
     private var publisherWR = WeakReference<Publisher>(null)
     private var chooserWR = WeakReference<Chooser>(null)
-    private var logsChatId: Long = 0
 
-    override fun onInit(
-        bot: TelegramBot,
-        baseConfig: FinalConfig,
-        pluginManager: PluginManager
-    ) {
-        super.onInit(bot, baseConfig, pluginManager)
-        (pluginManager.plugins.firstOrNull { it is Publisher } as? Publisher) ?.also {
-            publisherWR = WeakReference(it)
-        }
-        (pluginManager.plugins.firstOrNull { it is Chooser } as? Chooser) ?.also {
-            chooserWR = WeakReference(it)
-        }
-        logsChatId = baseConfig.logsChatId
+
+    init {
+        publisherWR = WeakReference(publisher)
+        chooserWR = WeakReference(chooser)
     }
 
     override fun onCommand(updateId: Int, message: Message) {
@@ -48,7 +39,7 @@ class PublishPost : CommandPlugin() {
                     PostsTable.findPost(it.messageId())
                 )
             } catch (e: NoRowFoundException) {
-                botWR ?.get() ?.executeAsync(
+                botWR.get() ?.executeAsync(
                     SendMessage(
                         message.chat().id(),
                         "Message is not related to any post"
@@ -92,7 +83,7 @@ class PublishPost : CommandPlugin() {
             }
         }
 
-        botWR ?.get() ?.let {
+        botWR.get() ?.let {
             bot ->
 
             bot.executeAsync(

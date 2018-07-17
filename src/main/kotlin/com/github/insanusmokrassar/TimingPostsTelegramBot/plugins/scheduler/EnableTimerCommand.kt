@@ -3,8 +3,7 @@ package com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.scheduler
 import com.github.insanusmokrassar.TimingPostsTelegramBot.base.database.exceptions.NoRowFoundException
 import com.github.insanusmokrassar.TimingPostsTelegramBot.base.database.tables.PostsMessagesTable
 import com.github.insanusmokrassar.TimingPostsTelegramBot.base.database.tables.PostsTable
-import com.github.insanusmokrassar.TimingPostsTelegramBot.base.models.PostMessage
-import com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.commands.Command
+import com.github.insanusmokrassar.TimingPostsTelegramBot.utils.commands.Command
 import com.github.insanusmokrassar.TimingPostsTelegramBot.utils.extensions.executeAsync
 import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.model.Message

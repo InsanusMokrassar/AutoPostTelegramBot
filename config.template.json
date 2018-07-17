@@ -38,9 +38,6 @@
       "classname": "com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.rating.RatingPlugin"
     },
     {
-      "classname": "com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.commands.PublishPost"
-    },
-    {
       "classname": "com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.forwarders.ForwardersPlugin"
     },
     {

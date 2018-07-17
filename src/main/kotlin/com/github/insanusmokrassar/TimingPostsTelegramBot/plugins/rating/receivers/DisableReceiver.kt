@@ -2,7 +2,7 @@ package com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.rating.receiv
 
 import com.github.insanusmokrassar.IObjectK.exceptions.ReadException
 import com.github.insanusmokrassar.IObjectKRealisations.toIObject
-import com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.CallbackQueryReceivers.CallbackQueryReceiver
+import com.github.insanusmokrassar.TimingPostsTelegramBot.utils.CallbackQueryReceiver
 import com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.rating.clearRatingDataForPostId
 import com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.rating.database.PostsLikesMessagesTable
 import com.github.insanusmokrassar.TimingPostsTelegramBot.realMessagesListener

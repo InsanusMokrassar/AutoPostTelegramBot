@@ -1,4 +1,4 @@
-package com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.CallbackQueryReceivers
+package com.github.insanusmokrassar.TimingPostsTelegramBot.utils
 
 import com.github.insanusmokrassar.TimingPostsTelegramBot.callbackQueryListener
 import com.pengrad.telegrambot.TelegramBot

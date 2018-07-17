@@ -7,6 +7,7 @@ import com.github.insanusmokrassar.TimingPostsTelegramBot.base.models.PostMessag
 import com.github.insanusmokrassar.TimingPostsTelegramBot.base.plugins.PluginManager
 import com.github.insanusmokrassar.TimingPostsTelegramBot.base.plugins.PluginVersion
 import com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.base.commands.deletePost
+import com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.choosers.Chooser
 import com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.forwarders.*
 import com.github.insanusmokrassar.TimingPostsTelegramBot.utils.extensions.executeAsync
 import com.pengrad.telegrambot.TelegramBot
@@ -57,12 +58,21 @@ class PostPublisher : Publisher {
     private var logsChatId: Long? = null
     private var forwardersList: List<Forwarder> = emptyList()
 
+    private var publishPostCommand: PublishPost? = null
+
     override fun onInit(
         bot: TelegramBot,
         baseConfig: FinalConfig,
         pluginManager: PluginManager
     ) {
-        botWR = WeakReference(bot)
+        botWR = WeakReference(bot).also {
+            publishPostCommand = PublishPost(
+                pluginManager.plugins.firstOrNull { it is Chooser } as Chooser,
+                pluginManager.plugins.firstOrNull { it is Publisher } as Publisher,
+                it,
+                baseConfig.logsChatId
+            )
+        }
 
         sourceChatId = baseConfig.sourceChatId
         targetChatId = baseConfig.targetChatId

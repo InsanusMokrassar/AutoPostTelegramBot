@@ -1,6 +1,6 @@
 package com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.rating.commands
 
-import com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.commands.Command
+import com.github.insanusmokrassar.TimingPostsTelegramBot.utils.commands.Command
 import com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.rating.database.PostsLikesMessagesTable
 import com.github.insanusmokrassar.TimingPostsTelegramBot.utils.extensions.executeAsync
 import com.pengrad.telegrambot.TelegramBot

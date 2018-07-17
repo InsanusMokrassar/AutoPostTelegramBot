@@ -1,4 +1,4 @@
-package com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.commands
+package com.github.insanusmokrassar.TimingPostsTelegramBot.utils.commands
 
 import com.github.insanusmokrassar.TimingPostsTelegramBot.base.models.FinalConfig
 import com.github.insanusmokrassar.TimingPostsTelegramBot.base.plugins.PluginManager

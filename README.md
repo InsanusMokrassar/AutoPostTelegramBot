@@ -176,7 +176,7 @@
 команды `availableRatings`, выдающей список из пар `рейтинг` : `число постов`
 * `com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.rating.commands.MostRated` - команда
 `mostRated`, выдающая список из наиболее одобренных постов
-* `com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.commands.PublishPost` - команда
+* `com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.publishers.PublishPost` - команда
 для немедленной публикации поста
 
 ## Описание команд, доступных после подключения плагинов
