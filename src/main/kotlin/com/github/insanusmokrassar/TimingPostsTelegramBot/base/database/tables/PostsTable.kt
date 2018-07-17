@@ -50,7 +50,7 @@ object PostsTable : Table() {
 
     fun postRegisteredMessage(postId: Int): Int? {
         return transaction {
-            select { id.eq(postId) }.first()[postRegisteredMessageId]
+            select { id.eq(postId) }.firstOrNull() ?.get(postRegisteredMessageId)
         }
     }
 
