@@ -30,12 +30,14 @@ fun extractDisableInline(from: String): Int? = try {
 private fun makeTextToApproveRemove(postId: Int) =
     "Please, write to me `${makeDisableInline(postId)}` if you want to disable ratings for this post"
 
+private typealias UserIdPostId = Pair<Long, Int>
+
 class DisableReceiver(
     bot: TelegramBot,
     sourceChatId: Long,
     postsLikesMessagesTable: PostsLikesMessagesTable
 ) : CallbackQueryReceiver(bot) {
-    private val awaitApprove = HashMap<Long, Int>()
+    private val awaitApprove = HashSet<UserIdPostId>()
 
     init {
         realMessagesListener.broadcastChannel.openSubscription().also {
@@ -47,11 +49,12 @@ class DisableReceiver(
                     val userId = message.second.chat().id()
 
                     val bot = botWR.get() ?: break
-                    awaitApprove[userId] ?.let {
-                        if (extractDisableInline(message.second.text()) == it) {
-                            awaitApprove.remove(userId)
+                    awaitApprove.firstOrNull { it.first == userId } ?.let {
+                        val (userId, postId) = it
+                        if (extractDisableInline(message.second.text()) == postId) {
+                            awaitApprove.remove(it)
                             clearRatingDataForPostId(
-                                it,
+                                postId,
                                 bot,
                                 sourceChatId,
                                 postsLikesMessagesTable
@@ -83,7 +86,7 @@ class DisableReceiver(
                                 ),
                                 onResponse = {
                                     _, _ ->
-                                    awaitApprove[userId] = postId
+                                    awaitApprove.add(userId to postId)
                                 }
                             )
                         }
@@ -100,7 +103,8 @@ class DisableReceiver(
     ) {
         bot ?: return
         extractDisableInline(query.data()) ?.let {
-            awaitApprove[query.from().id().toLong()] = it
+            val userId = query.from().id().toLong()
+            awaitApprove.add(userId to it)
             bot.queryAnswer(
                 query.id(),
                 makeTextToApproveRemove(it),
