@@ -59,7 +59,7 @@ fun deletePost(
     }
 }
 
-class DeletePost : Command() {
+class DeletePost : CommandPlugin() {
     override val version: PluginVersion = 0L
     override val commandRegex: Regex = Regex("^/deletePost$")
 

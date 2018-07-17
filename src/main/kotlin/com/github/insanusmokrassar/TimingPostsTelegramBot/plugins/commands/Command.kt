@@ -13,9 +13,8 @@ import java.util.logging.Logger
 
 private val logger = Logger.getLogger(Command::class.java.simpleName)
 
-abstract class Command : UpdateCallback<Message>, Plugin {
+abstract class Command : UpdateCallback<Message> {
     protected abstract val commandRegex: Regex
-    protected var botWR: WeakReference<TelegramBot>? = null
 
     init {
         messagesListener.openSubscription().also {
@@ -34,14 +33,6 @@ abstract class Command : UpdateCallback<Message>, Plugin {
                 }
             }
         }
-    }
-
-    override fun onInit(
-        bot: TelegramBot,
-        baseConfig: FinalConfig,
-        pluginManager: PluginManager
-    ) {
-        botWR = WeakReference(bot)
     }
 
     override fun invoke(p1: Int, p2: Message) {

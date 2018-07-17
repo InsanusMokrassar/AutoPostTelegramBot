@@ -4,7 +4,7 @@ import com.github.insanusmokrassar.TimingPostsTelegramBot.base.database.PostTran
 import com.github.insanusmokrassar.TimingPostsTelegramBot.base.plugins.PluginVersion
 import com.pengrad.telegrambot.model.Message
 
-class StartPost : Command() {
+class StartPost : CommandPlugin() {
     override val version: PluginVersion = 0L
     override val commandRegex: Regex = Regex("^/startPost$")
 

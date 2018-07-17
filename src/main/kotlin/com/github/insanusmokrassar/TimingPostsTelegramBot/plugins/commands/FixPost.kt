@@ -7,7 +7,7 @@ import com.github.insanusmokrassar.TimingPostsTelegramBot.utils.extensions.execu
 import com.pengrad.telegrambot.model.Message
 import com.pengrad.telegrambot.request.SendMessage
 
-class FixPost : Command() {
+class FixPost : CommandPlugin() {
     override val version: PluginVersion = 0L
     override val commandRegex: Regex = Regex("/fixPost")
 

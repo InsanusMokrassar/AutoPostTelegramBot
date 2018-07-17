@@ -7,7 +7,7 @@ import com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.rating.databas
 import com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.rating.database.PostsLikesTable
 import com.pengrad.telegrambot.TelegramBot
 
-abstract class RateCommand : Command() {
+abstract class RateCommand : CommandPlugin() {
     protected var postsLikesTable: PostsLikesTable? = null
         private set
     protected var postsLikesMessagesTable: PostsLikesMessagesTable? = null

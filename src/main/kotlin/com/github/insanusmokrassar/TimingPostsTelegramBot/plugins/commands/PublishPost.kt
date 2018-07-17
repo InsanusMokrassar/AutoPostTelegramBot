@@ -14,7 +14,7 @@ import com.pengrad.telegrambot.model.request.ParseMode
 import com.pengrad.telegrambot.request.SendMessage
 import java.lang.ref.WeakReference
 
-class PublishPost : Command() {
+class PublishPost : CommandPlugin() {
     override val version: PluginVersion = 0L
     override val commandRegex: Regex = Regex("^/publishPost( \\d+)?$")
 
