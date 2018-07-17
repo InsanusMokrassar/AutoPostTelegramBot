@@ -53,34 +53,7 @@
       "classname": "com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.commands.PublishPost"
     },
     {
-      "classname": "com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.forwarders.AudioForwarder"
-    },
-    {
-      "classname": "com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.forwarders.ContactForwarder"
-    },
-    {
-      "classname": "com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.forwarders.DocumentForwarder"
-    },
-    {
-      "classname": "com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.forwarders.LocationForwarder"
-    },
-    {
-      "classname": "com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.forwarders.MediaGroupForwarder"
-    },
-    {
-      "classname": "com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.forwarders.PhotoForwarder"
-    },
-    {
-      "classname": "com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.forwarders.TextForwarder"
-    },
-    {
-      "classname": "com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.forwarders.VideoForwarder"
-    },
-    {
-      "classname": "com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.forwarders.VoiceForwarder"
-    },
-    {
-      "classname": "com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.forwarders.SimpleForwarder"
+      "classname": "com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.forwarders.ForwardersPlugin"
     },
     {
       "classname": "com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.publishers.PostPublisher"

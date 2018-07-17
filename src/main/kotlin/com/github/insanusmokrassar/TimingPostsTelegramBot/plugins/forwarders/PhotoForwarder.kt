@@ -7,7 +7,7 @@ import com.pengrad.telegrambot.model.request.ParseMode
 import com.pengrad.telegrambot.request.SendPhoto
 
 class PhotoForwarder : Forwarder {
-    override val version: PluginVersion = 0L
+
     override val importance: Int = MIDDLE_PRIORITY
 
     override fun canForward(message: PostMessage): Boolean {

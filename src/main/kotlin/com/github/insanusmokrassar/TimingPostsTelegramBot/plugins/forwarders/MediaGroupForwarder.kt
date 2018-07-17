@@ -8,7 +8,7 @@ import com.pengrad.telegrambot.model.request.*
 import com.pengrad.telegrambot.request.SendMediaGroup
 
 class MediaGroupForwarder : Forwarder {
-    override val version: PluginVersion = 0L
+
     override val importance: Int = HIGH_PRIORITY
 
     override fun canForward(message: PostMessage): Boolean {

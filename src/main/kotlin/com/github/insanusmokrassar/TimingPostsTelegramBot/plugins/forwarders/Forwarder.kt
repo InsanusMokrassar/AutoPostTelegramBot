@@ -12,7 +12,7 @@ const val LOW_PRIORITY = Int.MIN_VALUE
 
 fun List<Forwarder>.correctSort(): List<Forwarder> = sortedDescending()
 
-interface Forwarder : Plugin, Comparable<Forwarder> {
+interface Forwarder : Comparable<Forwarder> {
     val importance: Int
     fun canForward(message: PostMessage): Boolean
     fun forward(
@@ -20,11 +20,6 @@ interface Forwarder : Plugin, Comparable<Forwarder> {
         targetChatId: Long,
         vararg messages: PostMessage
     ): List<Int>
-
-    /**
-     * Do nothing by default
-     */
-    override fun onInit(bot: TelegramBot, baseConfig: FinalConfig, pluginManager: PluginManager) { }
 
     override fun compareTo(other: Forwarder): Int {
         return importance.compareTo(other.importance)

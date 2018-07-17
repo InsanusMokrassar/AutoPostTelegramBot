@@ -6,7 +6,7 @@ import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.request.SendAudio
 
 class AudioForwarder : Forwarder {
-    override val version: PluginVersion = 0L
+
     override val importance: Int = MIDDLE_PRIORITY
 
     override fun canForward(message: PostMessage): Boolean {

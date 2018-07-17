@@ -7,8 +7,7 @@ import com.github.insanusmokrassar.TimingPostsTelegramBot.base.models.PostMessag
 import com.github.insanusmokrassar.TimingPostsTelegramBot.base.plugins.PluginManager
 import com.github.insanusmokrassar.TimingPostsTelegramBot.base.plugins.PluginVersion
 import com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.commands.deletePost
-import com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.forwarders.Forwarder
-import com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.forwarders.correctSort
+import com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.forwarders.*
 import com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.rating.database.PostsLikesTable
 import com.github.insanusmokrassar.TimingPostsTelegramBot.utils.extensions.executeAsync
 import com.pengrad.telegrambot.TelegramBot
@@ -69,7 +68,9 @@ class PostPublisher : Publisher {
         sourceChatId = baseConfig.sourceChatId
         targetChatId = baseConfig.targetChatId
         logsChatId = baseConfig.logsChatId
-        forwardersList = pluginManager.plugins.mapNotNull { it as? Forwarder }.correctSort()
+        forwardersList = (pluginManager.plugins.firstOrNull {
+            it is ForwardersPlugin
+        } as? ForwardersPlugin) ?.forwarders ?: emptyList()
     }
 
     override fun publishPost(postId: Int) {
