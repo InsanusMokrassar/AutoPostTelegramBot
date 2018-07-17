@@ -138,7 +138,7 @@ class RegisteredRefresher(
     }
 }
 
-fun refreshRegisteredMessage(
+internal fun refreshRegisteredMessage(
     chatId: Long,
     bot: TelegramBot,
     postId: Int,

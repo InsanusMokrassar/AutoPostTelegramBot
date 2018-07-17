@@ -17,6 +17,7 @@ class RatingPlugin : Plugin {
     private var likeReceiver: LikeReceiver? = null
     private var dislikeReceiver: DislikeReceiver? = null
     private var disableReceiver: DisableReceiver? = null
+    private var enableReceiver: EnableReceiver? = null
 
     private var registeredRefresher: RegisteredRefresher? = null
 
@@ -44,6 +45,9 @@ class RatingPlugin : Plugin {
         }
         disableReceiver ?: let {
             disableReceiver = DisableReceiver(bot, baseConfig.sourceChatId, postsLikesMessagesTable)
+        }
+        enableReceiver ?: let {
+            enableReceiver = EnableReceiver(bot, baseConfig.sourceChatId, postsLikesTable, postsLikesMessagesTable)
         }
 
         registeredRefresher = RegisteredRefresher(
