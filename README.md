@@ -7,11 +7,11 @@
     1. Склонируйте проект с [Github](https://github.com/InsanusMokrassar/AutoPostTelegramBot)
     2. В каталоге с проектом:
         1. Собираем проект с помощью команды для Maven `mvn clean package`
-        2. Копируем файл из пути `$PROJECT_DIR/target/AutoPostTelegramBot-1.0-jar-with-dependencies.jar` туда, где
+        2. Копируем файл из пути `$PROJECT_DIR/target/AutoPostTelegramBot-$version-jar-with-dependencies.jar` туда, где
         должен лежать бот
 3. Настройте проект через написание конфига (шаблон конфигурации есть в корне 
 [проекта на Github](https://github.com/InsanusMokrassar/AutoPostTelegramBot))
-4. Запустите командой `java -jar ./AutoPostTelegramBot-1.0-jar-with-dependencies.jar
+4. Запустите командой `java -jar ./AutoPostTelegramBot-$version-jar-with-dependencies.jar
 %ПУТЬ ДО КОНФИГУРАЦИОННОГО ФАЙЛА%`
 5. Profit
 
