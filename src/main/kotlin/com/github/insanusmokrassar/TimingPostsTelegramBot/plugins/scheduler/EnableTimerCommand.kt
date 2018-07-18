@@ -16,7 +16,7 @@ private val availableConvertersText = converters.joinToString("\n") {
     "${it.formatPattern} (${it.timeZoneId})"
 }
 
-private const val setPostTimeCommandName = "setPostTime"
+private const val setPostTimeCommandName = "setPublishTime"
 
 private fun sendHelpForUsage(
     bot: TelegramBot,

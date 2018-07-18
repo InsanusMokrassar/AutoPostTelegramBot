@@ -16,7 +16,7 @@ import com.pengrad.telegrambot.request.*
 import kotlinx.coroutines.experimental.launch
 import java.lang.ref.WeakReference
 
-fun clearRatingDataForPostId(
+fun disableLikesForPost(
     postId: Int,
     bot: TelegramBot,
     sourceChatId: Long,
@@ -119,7 +119,7 @@ class RegisteredRefresher(
                     val removedPostId = it.receive()
 
                     try {
-                        clearRatingDataForPostId(
+                        disableLikesForPost(
                             removedPostId,
                             botWR.get() ?: break,
                             sourceChatId,

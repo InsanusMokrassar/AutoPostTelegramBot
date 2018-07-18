@@ -3,7 +3,7 @@ package com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.rating.receiv
 import com.github.insanusmokrassar.IObjectK.exceptions.ReadException
 import com.github.insanusmokrassar.IObjectKRealisations.toIObject
 import com.github.insanusmokrassar.TimingPostsTelegramBot.utils.CallbackQueryReceiver
-import com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.rating.clearRatingDataForPostId
+import com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.rating.disableLikesForPost
 import com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.rating.database.PostsLikesMessagesTable
 import com.github.insanusmokrassar.TimingPostsTelegramBot.realMessagesListener
 import com.github.insanusmokrassar.TimingPostsTelegramBot.utils.extensions.executeAsync
@@ -54,7 +54,7 @@ class DisableReceiver(
                         val (userId, postId) = it
                         if (extractDisableInline(message.second.text()) == postId) {
                             awaitApprove.remove(it)
-                            clearRatingDataForPostId(
+                            disableLikesForPost(
                                 postId,
                                 bot,
                                 sourceChatId,

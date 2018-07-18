@@ -1,11 +1,19 @@
 package com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.rating.database
 
+import com.github.insanusmokrassar.TimingPostsTelegramBot.base.database.tables.PostIdMessageId
+import kotlinx.coroutines.experimental.channels.BroadcastChannel
+import kotlinx.coroutines.experimental.launch
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
+
+private const val subscriptionsCount = 256
 
 class PostsLikesMessagesTable(
     private val postsLikesTable: PostsLikesTable
 ) : Table() {
+    val ratingMessageRegisteredChannel = BroadcastChannel<PostIdMessageId>(subscriptionsCount)
+    val ratingMessageUnregisteredChannel = BroadcastChannel<Int>(subscriptionsCount)
+
     private val postId = integer("postId").primaryKey()
     private val messageId = integer("messageId")
 
@@ -34,6 +42,9 @@ class PostsLikesMessagesTable(
                     it[this@PostsLikesMessagesTable.postId] = postId
                     it[this@PostsLikesMessagesTable.messageId] = messageId
                 }
+                launch {
+                    ratingMessageRegisteredChannel.send(postId to messageId)
+                }
                 true
             } else {
                 false
@@ -43,8 +54,14 @@ class PostsLikesMessagesTable(
 
     fun clearPostIdMessageId(postId: Int) {
         transaction {
-            deleteWhere {
+            (deleteWhere {
                 this@PostsLikesMessagesTable.postId.eq(postId)
+            } > 0).also {
+                if (it) {
+                    launch {
+                        ratingMessageUnregisteredChannel.send(postId)
+                    }
+                }
             }
         }
     }

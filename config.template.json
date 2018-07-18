@@ -44,6 +44,9 @@
       "classname": "com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.publishers.PostPublisher"
     },
     {
+      "classname": "com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.RatingTimerAutoDisablePlugin"
+    },
+    {
       "classname": "com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.choosers.SmartChooser",
       "params": {
         "times": [

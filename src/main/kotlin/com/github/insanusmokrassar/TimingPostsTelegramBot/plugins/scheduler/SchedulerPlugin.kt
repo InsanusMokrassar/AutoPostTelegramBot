@@ -11,7 +11,7 @@ import java.lang.ref.WeakReference
 class SchedulerPlugin : Plugin {
     override val version: PluginVersion = 0L
 
-    private val timerSchedulesTable = PostsSchedulesTable()
+    val timerSchedulesTable = PostsSchedulesTable()
 
     private lateinit var enableTimerCommand: EnableTimerCommand
 
