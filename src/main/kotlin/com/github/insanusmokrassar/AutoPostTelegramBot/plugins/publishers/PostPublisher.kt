@@ -67,7 +67,7 @@ class PostPublisher : Publisher {
     ) {
         botWR = WeakReference(bot).also {
             publishPostCommand = PublishPost(
-                pluginManager.plugins.firstOrNull { it is Chooser } as Chooser,
+                pluginManager.plugins.firstOrNull { it is Chooser? } as? Chooser,
                 pluginManager.plugins.firstOrNull { it is Publisher } as Publisher,
                 it,
                 baseConfig.logsChatId

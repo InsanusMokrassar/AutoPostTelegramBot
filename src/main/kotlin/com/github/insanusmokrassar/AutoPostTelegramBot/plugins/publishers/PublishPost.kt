@@ -12,7 +12,7 @@ import com.pengrad.telegrambot.request.SendMessage
 import java.lang.ref.WeakReference
 
 class PublishPost(
-    chooser: Chooser,
+    chooser: Chooser?,
     publisher: Publisher,
     private val botWR: WeakReference<TelegramBot>,
     private val logsChatId: Long = 0
@@ -25,7 +25,9 @@ class PublishPost(
 
     init {
         publisherWR = WeakReference(publisher)
-        chooserWR = WeakReference(chooser)
+        chooser ?.let {
+            chooserWR = WeakReference(it)
+        }
     }
 
     override fun onCommand(updateId: Int, message: Message) {
