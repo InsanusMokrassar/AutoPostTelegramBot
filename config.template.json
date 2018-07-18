@@ -17,15 +17,6 @@
   },
   "plugins": [
     {
-      "classname": "com.github.insanusmokrassar.AutoPostTelegramBot.plugins.DefaultPostRegisteredMessage"
-    },
-    {
-      "classname": "class.name",
-      "params": {
-
-      }
-    },
-    {
       "classname": "com.github.insanusmokrassar.AutoPostTelegramBot.plugins.triggers.TimerTriggerStrategy",
       "params": {
         "delay": 3600000
