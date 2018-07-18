@@ -2,56 +2,12 @@
   "targetChatId": -12345678901,
   "sourceChatId": -12345678901,
   "logsChatId": -12345678901,
-  "botToken": "",
+  "botToken": "123456789:ABCDEFGHIGKLMNOPQRSTUVWXYZabcdefghi",
   "proxy": {
-    "host": "default.localhost",
+    "host": "localhost",
     "port": 1080,
-    "username": "optional",
-    "password": "optional"
-  },
-  "chooser": {
-    "name": "mostRated|mostRatedRandom|smartChooser|custom.class.name",
-    "params": {
-      "times": [
-        {
-          "minRate": -2,
-          "sort": "ascend",
-          "time": [
-            "01:00",
-            "07:00"
-          ],
-          "timeOffset": "+03:00"
-        },
-        {
-          "minRate": -2,
-          "maxRate": 1,
-          "sort": "descend",
-          "time": [
-            "07:00",
-            "12:00"
-          ],
-          "timeOffset": "+03:00"
-        },
-        {
-          "minRate": 0,
-          "sort": "ascend",
-          "time": [
-            "12:00",
-            "16:00"
-          ],
-          "timeOffset": "+03:00"
-        },
-        {
-          "minRate": -2,
-          "sort": "descend",
-          "time": [
-            "16:00",
-            "01:00"
-          ],
-          "timeOffset": "+03:00"
-        }
-      ]
-    }
+    "username": "optional, default - null",
+    "password": "optional, default - null"
   },
   "databaseConfig": {
     "username": "sa",
@@ -61,46 +17,69 @@
   },
   "plugins": [
     {
-      "classname": "class.name",
-      "params": {
-
-      }
-    },
-    {
-      "classname": "com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.builtin.triggers.TimerTriggerStrategy",
+      "classname": "com.github.insanusmokrassar.AutoPostTelegramBot.plugins.triggers.TimerTriggerStrategy",
       "params": {
         "delay": 3600000
       }
     },
     {
-      "classname": "com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.builtin.commands.StartPost"
+      "classname": "com.github.insanusmokrassar.AutoPostTelegramBot.plugins.base.BasePlugin"
     },
     {
-      "classname": "com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.builtin.commands.FixPost"
+      "classname": "com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.RatingPlugin"
     },
     {
-      "classname": "com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.builtin.commands.DeletePost"
+      "classname": "com.github.insanusmokrassar.AutoPostTelegramBot.plugins.forwarders.ForwardersPlugin"
     },
     {
-      "classname": "com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.builtin.commands.AvailableRates"
+      "classname": "com.github.insanusmokrassar.AutoPostTelegramBot.plugins.publishers.PostPublisher"
     },
     {
-      "classname": "com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.builtin.commands.MostRated"
+      "classname": "com.github.insanusmokrassar.AutoPostTelegramBot.plugins.RatingTimerAutoDisablePlugin"
     },
     {
-      "classname": "com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.builtin.callbacks.OnMessage"
-    },
-    {
-      "classname": "com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.builtin.callbacks.OnMediaGroup"
-    },
-    {
-      "classname": "com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.builtin.CallbackQueryReceivers.LikeReceiver"
-    },
-    {
-      "classname": "com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.builtin.CallbackQueryReceivers.DislikeReceiver"
-    },
-    {
-      "classname": "com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.builtin.commands.PublishPost"
+      "classname": "com.github.insanusmokrassar.AutoPostTelegramBot.plugins.choosers.SmartChooser",
+      "params": {
+        "times": [
+          {
+            "minRate": -2,
+            "sort": "ascend",
+            "time": [
+              "01:00",
+              "07:00"
+            ],
+            "timeOffset": "+03:00"
+          },
+          {
+            "minRate": -2,
+            "maxRate": 1,
+            "sort": "descend",
+            "time": [
+              "07:00",
+              "12:00"
+            ],
+            "timeOffset": "+03:00"
+          },
+          {
+            "minRate": 0,
+            "sort": "ascend",
+            "time": [
+              "12:00",
+              "16:00"
+            ],
+            "timeOffset": "+03:00"
+          },
+          {
+            "minRate": -2,
+            "sort": "descend",
+            "time": [
+              "16:00",
+              "01:00"
+            ],
+            "timeOffset": "+03:00"
+          }
+        ]
+      }
     }
   ]
 }
