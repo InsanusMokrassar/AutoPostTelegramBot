@@ -4,14 +4,14 @@
 
 1. Скачайте `.jar` (конкретные ссылки будут приведены позже) или соберите проект. Чтобы собрать проект:
     1. Убедитесь, что у вас установлена `Java` (>= 1.7) и `Maven`
-    1. Склонируйте проект с [Github](https://github.com/InsanusMokrassar/TimingPostsTelegramBot)
+    1. Склонируйте проект с [Github](https://github.com/InsanusMokrassar/AutoPostTelegramBot)
     2. В каталоге с проектом:
         1. Собираем проект с помощью команды для Maven `mvn clean package`
-        2. Копируем файл из пути `$PROJECT_DIR/target/TimingPostsTelegramBot-1.0-jar-with-dependencies.jar` туда, где
+        2. Копируем файл из пути `$PROJECT_DIR/target/AutoPostTelegramBot-1.0-jar-with-dependencies.jar` туда, где
         должен лежать бот
 3. Настройте проект через написание конфига (шаблон конфигурации есть в корне 
-[проекта на Github](https://github.com/InsanusMokrassar/TimingPostsTelegramBot))
-4. Запустите командой `java -jar ./TimingPostsTelegramBot-1.0-jar-with-dependencies.jar
+[проекта на Github](https://github.com/InsanusMokrassar/AutoPostTelegramBot))
+4. Запустите командой `java -jar ./AutoPostTelegramBot-1.0-jar-with-dependencies.jar
 %ПУТЬ ДО КОНФИГУРАЦИОННОГО ФАЙЛА%`
 5. Profit
 
@@ -114,16 +114,14 @@
     использования драйвера `h2`
 * `plugins` - список подключенных плагинов. Каждый плагин имеет следующие поля:
     * `classname` - полное пакетное имя класса плагина. Например,
-    `com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.triggers.TimerTriggerStrategy`
+    `com.github.insanusmokrassar.AutoPostTelegramBot.plugins.triggers.TimerTriggerStrategy`
     для подключения плагина триггеринга постов по времени
     * `params` - объект настроек плагина. Например, в таком объекте для
     плагина из предыдущего пункта будет только одно поле и конфигурация
     будет выглядеть следующим образом:
         ```json
         {
-          "classname": "com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.triggers.TimerTriggerStrategy",
-          "params": {
-            "delay": 3600000
+          "classname": Acom.github.insanusmokrassar.AutoPostTelegramBot    "delay": 3600000
           }
         }
         ```
@@ -132,25 +130,17 @@
 
 ### Строго рекомендуемые к подключению
 
-* `com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.base.callbacks.OnMessage` - подключение
-реакции бота на сообщение по-умолчанию, то есть сохранение сообщения как части поста и фиксации
+* `com.github.insanusmokrassar.AutoPostTelegramBot.plugins.base.callbaccom.github.insanusmokrassar.AutoPostTelegramBotние по-умолчанию, то есть сохранение сообщения как части поста и фиксации
 поста если начало поста было положено не в этом плагине (например, с помощью команды `/startPost`)
-* `com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.base.callbacks.OnMediaGroup` - подключение
-реакции бота на сообщения, состоящие из медиагрупп (галереи), то есть сохранение сообщений как части ОДНОГО
+* `com.github.insanusmokrassar.AutoPostTelegramBot.plugins.base.callbaccom.github.insanusmokrassar.AutoPostTelegramBotбщения, состоящие из медиагрупп (галереи), то есть сохранение сообщений как части ОДНОГО
 поста и фиксации поста если начало поста было положено не в этом плагине (например, с помощью команды `/startPost`)
-* `com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.CallbackQueryReceivers.LikeReceiver` - плагин
-стандартной реакции на на нажатие кнопки одобрения поста
-* `com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.CallbackQueryReceivers.DislikeReceiver` - плагин
-стандартной реакции на на нажатие кнопки неодобрения поста
-* `com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.base.commands.StartPost` - подключение
-команды `/startPost`, используемой для начала записи поста, состоящего из нескольких сообщений
-* `com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.base.commands.FixPost` - подключение
-команды `/fixPost`, используемой для окончания записи поста, состоящего из нескольких сообщений и
+* `com.github.insanusmokrassar.AutoPostTelegramBot.plugins.CallbackQuercom.github.insanusmokrassar.AutoPostTelegramBotции на на нажатие кнопки одобрения поста
+* `com.github.insanusmokrassar.AutoPostTelegramBot.plugins.CallbackQuercom.github.insanusmokrassar.AutoPostTelegramBotеакции на на нажатие кнопки неодобрения поста
+* `com.github.insanusmokrassar.AutoPostTelegramBot.plugins.base.commandcom.github.insanusmokrassar.AutoPostTelegramBotспользуемой для начала записи поста, состоящего из нескольких сообщений
+* `com.github.insanusmokrassar.AutoPostTelegramBot.plugins.base.commandcom.github.insanusmokrassar.AutoPostTelegramBotьзуемой для окончания записи поста, состоящего из нескольких сообщений и
 фиксации в памяти бота
-* `com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.base.commands.DeletePost` - подключение
-команды `/deletePost`, используемой для удаления поста бота
-* `com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.choosers.SmartChooser` - "smart" плагин выборщика
-для постинга, имеет следующую структуру для параметра `params`:
+* `com.github.insanusmokrassar.AutoPostTelegramBot.plugins.base.commandcom.github.insanusmokrassar.AutoPostTelegramBot используемой для удаления поста бота
+* `com.github.insanusmokrassar.AutoPostTelegramBot.plugins.choosers.Smacom.github.insanusmokrassar.AutoPostTelegramBot, имеет следующую структуру для параметра `params`:
     * `times` - список временнЫх настроек для выборщика, каждый объект
     которого содержит следующие параметры:
         * `minRate` - минимальный рейтинг для попадания в список
@@ -172,12 +162,9 @@
 
 ### Опциональные плагины
 
-* `com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.rating.commands.AvailableRates` - подключение
-команды `availableRatings`, выдающей список из пар `рейтинг` : `число постов`
-* `com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.rating.commands.MostRated` - команда
-`mostRated`, выдающая список из наиболее одобренных постов
-* `com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.publishers.PublishPost` - команда
-для немедленной публикации поста
+* `com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.commacom.github.insanusmokrassar.AutoPostTelegramBotleRatings`, выдающей список из пар `рейтинг` : `число постов`
+* `com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.commacom.github.insanusmokrassar.AutoPostTelegramBotсок из наиболее одобренных постов
+* `com.github.insanusmokrassar.AutoPostTelegramBot.plugins.publishers.Pcom.github.insanusmokrassar.AutoPostTelegramBotоста
 
 ## Описание команд, доступных после подключения плагинов
 

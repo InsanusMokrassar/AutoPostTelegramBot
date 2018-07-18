@@ -17,7 +17,7 @@
   },
   "plugins": [
     {
-      "classname": "com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.DefaultPostRegisteredMessage"
+      "classname": "com.github.insanusmokrassar.AutoPostTelegramBot.plugins.DefaultPostRegisteredMessage"
     },
     {
       "classname": "class.name",
@@ -26,28 +26,28 @@
       }
     },
     {
-      "classname": "com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.triggers.TimerTriggerStrategy",
+      "classname": "com.github.insanusmokrassar.AutoPostTelegramBot.plugins.triggers.TimerTriggerStrategy",
       "params": {
         "delay": 3600000
       }
     },
     {
-      "classname": "com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.base.BasePlugin"
+      "classname": "com.github.insanusmokrassar.AutoPostTelegramBot.plugins.base.BasePlugin"
     },
     {
-      "classname": "com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.rating.RatingPlugin"
+      "classname": "com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.RatingPlugin"
     },
     {
-      "classname": "com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.forwarders.ForwardersPlugin"
+      "classname": "com.github.insanusmokrassar.AutoPostTelegramBot.plugins.forwarders.ForwardersPlugin"
     },
     {
-      "classname": "com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.publishers.PostPublisher"
+      "classname": "com.github.insanusmokrassar.AutoPostTelegramBot.plugins.publishers.PostPublisher"
     },
     {
-      "classname": "com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.RatingTimerAutoDisablePlugin"
+      "classname": "com.github.insanusmokrassar.AutoPostTelegramBot.plugins.RatingTimerAutoDisablePlugin"
     },
     {
-      "classname": "com.github.insanusmokrassar.TimingPostsTelegramBot.plugins.choosers.SmartChooser",
+      "classname": "com.github.insanusmokrassar.AutoPostTelegramBot.plugins.choosers.SmartChooser",
       "params": {
         "times": [
           {
