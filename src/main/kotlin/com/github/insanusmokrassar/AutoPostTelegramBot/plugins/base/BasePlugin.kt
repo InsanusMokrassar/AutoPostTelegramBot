@@ -18,6 +18,8 @@ class BasePlugin : Plugin {
     private var onMediaGroup: OnMediaGroup? = null
     private var onMessage: OnMessage? = null
 
+    private var defaultPostRegisteredMessage: DefaultPostRegisteredMessage? = null
+
     override fun onInit(bot: TelegramBot, baseConfig: FinalConfig, pluginManager: PluginManager) {
         val botWR = WeakReference(bot)
 
@@ -32,5 +34,10 @@ class BasePlugin : Plugin {
 
         onMediaGroup = OnMediaGroup(baseConfig.sourceChatId)
         onMessage = OnMessage(baseConfig.sourceChatId)
+
+        defaultPostRegisteredMessage = DefaultPostRegisteredMessage(
+            bot,
+            baseConfig.sourceChatId
+        )
     }
 }

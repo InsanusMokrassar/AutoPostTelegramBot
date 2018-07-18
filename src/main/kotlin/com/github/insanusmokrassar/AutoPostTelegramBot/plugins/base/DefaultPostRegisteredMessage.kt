@@ -1,4 +1,4 @@
-package com.github.insanusmokrassar.AutoPostTelegramBot.plugins
+package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.base
 
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.PostTransactionTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsMessagesTable
@@ -53,13 +53,12 @@ private fun registerPostMessage(
     }
 }
 
-class DefaultPostRegisteredMessage : Plugin {
-    override val version: PluginVersion = 0L
-
-    override fun onInit(bot: TelegramBot, baseConfig: FinalConfig, pluginManager: PluginManager) {
+class DefaultPostRegisteredMessage(
+    bot: TelegramBot,
+    sourceChatId: Long
+) {
+    init {
         val botWR = WeakReference(bot)
-
-        val sourceChatId = baseConfig.sourceChatId
 
         PostTransactionTable.transactionCompletedChannel.openSubscription().also {
             launch {
