@@ -3,7 +3,10 @@ package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.choosers
 import com.github.insanusmokrassar.IObjectK.interfaces.IObject
 import com.github.insanusmokrassar.IObjectKRealisations.toObject
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.PluginVersion
+import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.pluginLogger
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.database.PostIdRatingPair
+import kotlinx.coroutines.experimental.async
+import kotlinx.coroutines.experimental.launch
 import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
 import org.joda.time.format.DateTimeFormat
@@ -163,6 +166,28 @@ private class SmartChooserConfigItem (
     }
 }
 
+private fun checkCover(times: List<SmartChooserConfigItem>): List<Pair<Long, Long>> {
+    var currentFirst: Long? = null
+    val result = mutableListOf<Pair<Long, Long>>()
+    (timeFormat.parseMillis("00:00") .. timeFormat.parseDateTime("00:00").plusDays(1).millis).forEach {
+        now ->
+        currentFirst ?.let {
+            first ->
+            times.firstOrNull { it.actual(now) } ?.let {
+                if (first != now) {
+                    result.add(first to now)
+                }
+                currentFirst = null
+            }
+        } ?: {
+            times.firstOrNull { it.actual(now) } ?: {
+                currentFirst = now
+            }()
+        }()
+    }
+    return result
+}
+
 private class SmartChooserConfig(
     val times: List<SmartChooserConfigItem> = emptyList()
 )
@@ -176,14 +201,21 @@ class SmartChooser(
     init {
         println("Smart chooser inited: ${this.config.times.joinToString(separator = "\n") { it.toString() }}")
 
-        checkCover().let {
-            if (it.isNotEmpty()) {
-                println("Uncovered time:")
-                it.forEach {
-                    println("${coverFormat.print(it.first)} - ${coverFormat.print(it.second)}")
+        launch {
+            val deferred = async {
+                checkCover(this@SmartChooser.config.times)
+            }
+
+            deferred.await().also {
+                if (it.isNotEmpty()) {
+                    it.joinToString("\n", "$name: Uncovered time:\n") {
+                        "${coverFormat.print(it.first)} - ${coverFormat.print(it.second)}"
+                    }.also {
+                        pluginLogger.warning(it)
+                    }
+                } else {
+                    pluginLogger.info("$name: All day covered")
                 }
-            } else {
-                println("All day covered")
             }
         }
     }
@@ -202,27 +234,5 @@ class SmartChooser(
                 actualItem.count
             )
         } ?: emptyList()
-    }
-
-    private fun checkCover(): List<Pair<Long, Long>> {
-        var currentFirst: Long? = null
-        val result = mutableListOf<Pair<Long, Long>>()
-        (timeFormat.parseMillis("00:00") .. timeFormat.parseDateTime("00:00").plusDays(1).millis).forEach {
-            now ->
-            currentFirst ?.let {
-                first ->
-                config.times.firstOrNull { it.actual(now) } ?.let {
-                    if (first != now) {
-                        result.add(first to now)
-                    }
-                    currentFirst = null
-                }
-            } ?:let {
-                config.times.firstOrNull { it.actual(now) } ?:let {
-                    currentFirst = now
-                }
-            }
-        }
-        return result
     }
 }
