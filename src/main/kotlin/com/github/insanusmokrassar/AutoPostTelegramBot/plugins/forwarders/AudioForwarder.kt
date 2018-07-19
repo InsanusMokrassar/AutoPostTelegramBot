@@ -3,6 +3,7 @@ package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.forwarders
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.PostMessage
 import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.request.SendAudio
+import java.io.IOException
 
 class AudioForwarder : Forwarder {
 
@@ -32,8 +33,13 @@ class AudioForwarder : Forwarder {
                     }
                 }
             }
-        }.mapNotNull {
-            bot.execute(it).message() ?.messageId()
+        }.map {
+            bot.execute(it).let {
+                response ->
+                response.message() ?.messageId() ?:let {
+                    throw IOException("${response.errorCode()}: ${response.description()}")
+                }
+            }
         }
     }
 }

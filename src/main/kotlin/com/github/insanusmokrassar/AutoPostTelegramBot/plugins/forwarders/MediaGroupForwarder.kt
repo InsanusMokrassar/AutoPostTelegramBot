@@ -5,6 +5,7 @@ import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.model.Message
 import com.pengrad.telegrambot.model.request.*
 import com.pengrad.telegrambot.request.SendMediaGroup
+import java.io.IOException
 
 class MediaGroupForwarder : Forwarder {
 
@@ -46,9 +47,14 @@ class MediaGroupForwarder : Forwarder {
                 }.toTypedArray()
             )
         }.flatMap {
-            bot.execute(it).messages() ?.mapNotNull {
-                it.messageId()
-            } ?: emptyList()
+            bot.execute(it).let {
+                response ->
+                response.messages() ?.mapNotNull {
+                    it.messageId()
+                } ?:let {
+                    throw IOException("${response.errorCode()}: ${response.description()}")
+                }
+            }
         }
     }
 }

@@ -49,7 +49,7 @@ fun makeMapOfExecution(
 }
 
 class PostPublisher : Publisher {
-    override val version: PluginVersion = 0L
+    override val version: PluginVersion = 1L
 
     private var botWR: WeakReference<TelegramBot>? = null
 
@@ -107,8 +107,6 @@ class PostPublisher : Publisher {
                 }
                 it.forEach {
                     message ->
-                    messagesToDelete.add(sourceChatId to message.messageId)
-
                     bot.execute(
                         ForwardMessage(
                             logsChatId,

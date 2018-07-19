@@ -5,7 +5,7 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.*
 import com.pengrad.telegrambot.TelegramBot
 
 class ForwardersPlugin : Plugin {
-    override val version: PluginVersion = 0L
+    override val version: PluginVersion = 1L
 
     val forwarders = listOf(
         AudioForwarder(),

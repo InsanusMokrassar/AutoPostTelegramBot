@@ -4,6 +4,7 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.PostMessage
 import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.model.request.ParseMode
 import com.pengrad.telegrambot.request.SendVideo
+import java.io.IOException
 
 class VideoForwarder : Forwarder {
 
@@ -26,8 +27,13 @@ class VideoForwarder : Forwarder {
                 }
                 parseMode(ParseMode.Markdown)
             }
-        }.mapNotNull {
-            bot.execute(it).message() ?.messageId()
+        }.map {
+            bot.execute(it).let {
+                response ->
+                response.message() ?.messageId() ?:let {
+                    throw IOException("${response.errorCode()}: ${response.description()}")
+                }
+            }
         }
     }
 }

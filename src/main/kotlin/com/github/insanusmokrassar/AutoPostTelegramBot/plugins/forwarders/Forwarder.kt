@@ -2,6 +2,7 @@ package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.forwarders
 
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.PostMessage
 import com.pengrad.telegrambot.TelegramBot
+import java.io.IOException
 
 const val HIGH_PRIORITY = Int.MAX_VALUE
 const val MIDDLE_PRIORITY = 0
@@ -12,6 +13,8 @@ fun List<Forwarder>.correctSort(): List<Forwarder> = sortedDescending()
 interface Forwarder : Comparable<Forwarder> {
     val importance: Int
     fun canForward(message: PostMessage): Boolean
+
+    @Throws(IOException::class)
     fun forward(
         bot: TelegramBot,
         targetChatId: Long,

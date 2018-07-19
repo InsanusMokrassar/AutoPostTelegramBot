@@ -3,6 +3,7 @@ package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.forwarders
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.PostMessage
 import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.request.SendLocation
+import java.io.IOException
 
 class LocationForwarder : Forwarder {
 
@@ -21,8 +22,13 @@ class LocationForwarder : Forwarder {
                 it.location().latitude(),
                 it.location().longitude()
             )
-        }.mapNotNull {
-            bot.execute(it).message() ?.messageId()
+        }.map {
+            bot.execute(it).let {
+                response ->
+                response.message() ?.messageId() ?:let {
+                    throw IOException("${response.errorCode()}: ${response.description()}")
+                }
+            }
         }
     }
 }
