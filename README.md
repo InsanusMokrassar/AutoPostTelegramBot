@@ -2,7 +2,9 @@
 
 ## Как начать использовать?
 
-1. Скачайте `.jar` (конкретные ссылки будут приведены позже) или соберите проект. Чтобы собрать проект:
+1. Скачайте `.jar`
+    ([Maven](http://mvnrepository.com/artifact/com.github.insanusmokrassar/AutoPostTelegramBot)) или соберите проект.
+    Чтобы собрать проект:
     1. Убедитесь, что у вас установлена `Java` (>= 1.7) и `Maven`
     1. Склонируйте проект с [Github](https://github.com/InsanusMokrassar/AutoPostTelegramBot)
     2. В каталоге с проектом:
