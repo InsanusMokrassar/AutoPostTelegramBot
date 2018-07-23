@@ -6,3 +6,7 @@
 of notifying about removed messages
 * Add extension for `BroadcaseChannel` subscribing for more comfortable interact
 with events channels
+
+## 0.3.3
+
+* Hotfix for problem with new extension for BroadcastChannels

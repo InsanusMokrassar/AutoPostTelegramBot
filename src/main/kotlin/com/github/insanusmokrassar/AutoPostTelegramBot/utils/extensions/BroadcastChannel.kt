@@ -20,7 +20,7 @@ fun <T> BroadcastChannel<T>.subscribeChecking(
 
                     launch {
                         try {
-                            if (by(received)) {
+                            if (!by(received)) {
                                 it.cancel()
                             }
                         } catch (e: Throwable) {
