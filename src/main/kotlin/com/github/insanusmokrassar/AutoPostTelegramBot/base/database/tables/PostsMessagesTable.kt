@@ -12,11 +12,15 @@ typealias PostIdToMessagesIds = Pair<Int, Collection<Int>>
 
 object PostsMessagesTable : Table() {
     val newMessagesOfPost = BroadcastChannel<PostIdToMessagesIds>(countOfSubscriptions)
+
+    @Deprecated("This channel is not determine post id", ReplaceWith("removedMessageOfPost"))
     val removeMessageOfPost = BroadcastChannel<Int>(countOfSubscriptions)
+    val removedMessagesOfPost = BroadcastChannel<PostIdToMessagesIds>(countOfSubscriptions)
+    val removedMessageOfPost = BroadcastChannel<PostIdMessageId>(countOfSubscriptions)
 
     private val messageId = integer("messageId").primaryKey()
     private val mediaGroupId = text("mediaGroupId").nullable()
-    private val postId = integer("postId").references(PostsTable.id)
+    private val postId = integer("postId")
 
     fun getMessagesOfPost(postId: Int): List<PostMessage> {
         return transaction {
@@ -49,12 +53,47 @@ object PostsMessagesTable : Table() {
         }
     }
 
+    @Deprecated("This method will be deprecated in near releases", ReplaceWith("removePostMessage"))
     fun removeMessageOfPost(messageId: Int) {
         transaction {
             if (deleteWhere { PostsMessagesTable.messageId.eq(messageId) } > 0) {
                 launch {
                     removeMessageOfPost.send(messageId)
                 }
+            }
+        }
+    }
+
+    fun removePostMessages(postId: Int) {
+        getMessagesOfPost(postId).let {
+            transaction {
+                it.mapNotNull {
+                    postMessage ->
+                    if (removePostMessage(postId, postMessage.messageId)) {
+                        postMessage.messageId
+                    } else {
+                        null
+                    }
+                }
+            }
+        }.also {
+            if (it.isNotEmpty()) {
+                launch {
+                    removedMessagesOfPost.send(postId to it)
+                }
+            }
+        }
+    }
+
+    fun removePostMessage(postId: Int, messageId: Int): Boolean {
+        return transaction {
+            if (deleteWhere { PostsMessagesTable.messageId.eq(messageId) } > 0) {
+                launch {
+                    removedMessageOfPost.send(postId to messageId)
+                }
+                true
+            } else {
+                false
             }
         }
     }

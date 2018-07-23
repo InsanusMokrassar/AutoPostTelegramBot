@@ -16,7 +16,7 @@ object PostsTable : Table() {
     val postRemovedChannel = BroadcastChannel<Int>(countOfSubscriptions)
     val postMessageRegisteredChannel = BroadcastChannel<PostIdMessageId>(countOfSubscriptions)
 
-    internal val id = integer("id").primaryKey().autoIncrement()
+    private val id = integer("id").primaryKey().autoIncrement()
     private val postRegisteredMessageId = integer("postRegistered").nullable()
 
     @Throws(CreationException::class)
@@ -56,9 +56,7 @@ object PostsTable : Table() {
 
     fun removePost(postId: Int) {
         transaction {
-            PostsMessagesTable.getMessagesOfPost(postId).forEach {
-                PostsMessagesTable.removeMessageOfPost(it.messageId)
-            }
+            PostsMessagesTable.removePostMessages(postId)
             deleteWhere { id.eq(postId) }
             launch {
                 postRemovedChannel.send(postId)
