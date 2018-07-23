@@ -5,11 +5,12 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.Post
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.FinalConfig
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.*
-import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.executeAsync
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.*
 import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.model.request.ParseMode
 import com.pengrad.telegrambot.request.DeleteMessage
 import com.pengrad.telegrambot.request.SendMessage
+import kotlinx.coroutines.experimental.channels.ReceiveChannel
 import kotlinx.coroutines.experimental.launch
 import java.lang.ref.WeakReference
 
@@ -60,18 +61,13 @@ class DefaultPostRegisteredMessage(
     init {
         val botWR = WeakReference(bot)
 
-        PostTransactionTable.transactionCompletedChannel.openSubscription().also {
-            launch {
-                while (isActive) {
-                    val registeredPostId = it.receive()
-                    registerPostMessage(
-                        botWR.get() ?: break,
-                        sourceChatId,
-                        registeredPostId
-                    )
-                }
-                it.cancel()
-            }
+        PostTransactionTable.transactionCompletedChannel.subscribeChecking {
+            registerPostMessage(
+                botWR.get() ?: return@subscribeChecking false,
+                sourceChatId,
+                it
+            )
+            true
         }
     }
 }

@@ -2,6 +2,7 @@ package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.scheduler
 
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.pluginLogger
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.publishers.Publisher
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscribe
 import kotlinx.coroutines.experimental.*
 import org.joda.time.DateTime
 
@@ -27,40 +28,19 @@ class Scheduler(
         }
 
     init {
-        schedulesTable.postTimeRegisteredChannel.openSubscription().also {
-            launch {
-                while (isActive) {
-                    val created = it.receive()
-
-                    updateJob(created)
-                }
-                it.cancel()
-            }
+        schedulesTable.postTimeRegisteredChannel.subscribe {
+            updateJob(it)
         }
-        schedulesTable.postTimeChangedChannel.openSubscription().also {
-            launch {
-                while (isActive) {
-                    val changed = it.receive()
-
-                    updateJob(changed)
-                }
-                it.cancel()
-            }
+        schedulesTable.postTimeChangedChannel.subscribe {
+            updateJob(it)
         }
-        schedulesTable.postTimeRemovedChannel.openSubscription().also {
-            launch {
-                while (isActive) {
-                    val removed = it.receive()
-
-                    if (currentPlannedPostTimeAndJob ?.first ?.first == removed) {
-                        schedulesTable.nearPost() ?.also {
-                            updateJob(it)
-                        } ?:also {
-                            currentPlannedPostTimeAndJob = null
-                        }
-                    }
+        schedulesTable.postTimeRemovedChannel.subscribe {
+            if (currentPlannedPostTimeAndJob ?.first ?.first == it) {
+                schedulesTable.nearPost() ?.also {
+                    updateJob(it)
+                } ?:also {
+                    currentPlannedPostTimeAndJob = null
                 }
-                it.cancel()
             }
         }
     }

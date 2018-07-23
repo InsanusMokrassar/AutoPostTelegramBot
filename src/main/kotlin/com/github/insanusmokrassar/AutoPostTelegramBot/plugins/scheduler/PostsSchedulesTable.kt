@@ -1,6 +1,7 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.scheduler
 
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsTable
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscribe
 import kotlinx.coroutines.experimental.channels.BroadcastChannel
 import kotlinx.coroutines.experimental.launch
 import org.jetbrains.exposed.sql.*
@@ -19,20 +20,8 @@ class PostsSchedulesTable : Table() {
     val postTimeRemovedChannel = BroadcastChannel<Int>(broadcastsCount)
 
     init {
-        PostsTable.postRemovedChannel.openSubscription().also {
-            launch {
-                while (isActive) {
-                    val removedPostId = it.receive()
-
-                    try {
-                        unregisterPost(removedPostId)
-                    } catch (e: Exception) {
-                        // TODO:: FIX IT
-                        e.printStackTrace()
-                    }
-                }
-                it.cancel()
-            }
+        PostsTable.postRemovedChannel.subscribe {
+            unregisterPost(it)
         }
     }
 

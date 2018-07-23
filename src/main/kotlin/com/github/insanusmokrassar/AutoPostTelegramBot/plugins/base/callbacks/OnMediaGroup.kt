@@ -4,6 +4,7 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.PostTransac
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.PostMessage
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.*
 import com.github.insanusmokrassar.AutoPostTelegramBot.mediaGroupsListener
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscribe
 import com.pengrad.telegrambot.model.Message
 import kotlinx.coroutines.experimental.launch
 import java.util.logging.Logger
@@ -14,25 +15,20 @@ class OnMediaGroup(
     sourceChatId: Long
 ) {
     init {
-        mediaGroupsListener.openSubscription().also {
-            launch {
-                while (isActive) {
-                    val received = it.receive()
-                    try {
-                        invoke(
-                            received.second,
-                            sourceChatId
-                        )
-                    } catch (e: Exception) {
-                        logger.throwing(
-                            OnMediaGroup::class.java.canonicalName,
-                            "Perform message",
-                            e
-                        )
-                    }
-                }
-                it.cancel()
+        mediaGroupsListener.subscribe(
+            {
+                logger.throwing(
+                    OnMediaGroup::class.java.canonicalName,
+                    "Perform message",
+                    it
+                )
+                true
             }
+        ) {
+            invoke(
+                it.second,
+                sourceChatId
+            )
         }
     }
 

@@ -1,6 +1,7 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.utils
 
 import com.github.insanusmokrassar.AutoPostTelegramBot.callbackQueryListener
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscribe
 import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.model.CallbackQuery
 import kotlinx.coroutines.experimental.launch
@@ -12,21 +13,11 @@ abstract class CallbackQueryReceiver(
     init {
         val botWR = WeakReference(bot)
 
-        callbackQueryListener.openSubscription().also {
-            launch {
-                while (isActive) {
-                    val received = it.receive()
-                    try {
-                        invoke(
-                            received.second,
-                            botWR.get()
-                        )
-                    } catch (e: Exception) {
-
-                    }
-                }
-                it.cancel()
-            }
+        callbackQueryListener.subscribe {
+            invoke(
+                it.second,
+                botWR.get()
+            )
         }
     }
 

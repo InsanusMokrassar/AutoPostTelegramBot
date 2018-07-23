@@ -5,6 +5,8 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.*
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.RatingPlugin
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.disableLikesForPost
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.scheduler.SchedulerPlugin
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscribe
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscribeChecking
 import com.pengrad.telegrambot.TelegramBot
 import kotlinx.coroutines.experimental.launch
 import java.lang.ref.WeakReference
@@ -30,49 +32,41 @@ class RatingTimerAutoDisablePlugin : Plugin {
         val botWR = WeakReference(bot)
         val sourceChatId = baseConfig.sourceChatId
 
-        schedulerPlugin.timerSchedulesTable.postTimeRegisteredChannel.openSubscription().also {
-            launch {
-                while (isActive) {
-                    val registered = it.receive()
-
-                    val bot = botWR.get() ?: break
-
-                    try {
-                        disableLikesForPost(
-                            registered.first,
-                            bot,
-                            sourceChatId,
-                            ratingPlugin.postsLikesMessagesTable
-                        )
-                    } catch (e: Exception) {
-                        pluginLogger.throwing(
-                            name,
-                            "register post time scheduler registered",
-                            e
-                        )
-                    }
-                }
-                it.cancel()
+        schedulerPlugin.timerSchedulesTable.postTimeRegisteredChannel.subscribeChecking(
+            {
+                pluginLogger.throwing(
+                    name,
+                    "register post time scheduler registered",
+                    it
+                )
+                true
             }
+        ) {
+            botWR.get() ?.let {
+                bot ->
+
+                disableLikesForPost(
+                    it.first,
+                    bot,
+                    sourceChatId,
+                    ratingPlugin.postsLikesMessagesTable
+                )
+
+                true
+            } ?: false
         }
 
-        ratingPlugin.postsLikesMessagesTable.ratingMessageRegisteredChannel.openSubscription().also {
-            launch {
-                while (isActive) {
-                    val registered = it.receive()
-
-                    try {
-                        schedulerPlugin.timerSchedulesTable.unregisterPost(registered.first)
-                    } catch (e: Exception) {
-                        pluginLogger.throwing(
-                            name,
-                            "register post rating enabled",
-                            e
-                        )
-                    }
-                }
-                it.cancel()
+        ratingPlugin.postsLikesMessagesTable.ratingMessageRegisteredChannel.subscribe(
+            {
+                pluginLogger.throwing(
+                    name,
+                    "register post rating enabled",
+                    it
+                )
+                true
             }
+        ) {
+            schedulerPlugin.timerSchedulesTable.unregisterPost(it.first)
         }
     }
 }

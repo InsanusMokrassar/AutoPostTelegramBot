@@ -2,6 +2,7 @@ package com.github.insanusmokrassar.AutoPostTelegramBot.utils.commands
 
 import com.github.insanusmokrassar.BotIncomeMessagesListener.UpdateCallback
 import com.github.insanusmokrassar.AutoPostTelegramBot.messagesListener
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscribe
 import com.pengrad.telegrambot.model.Message
 import kotlinx.coroutines.experimental.launch
 import java.util.logging.Logger
@@ -12,21 +13,8 @@ abstract class Command : UpdateCallback<Message> {
     protected abstract val commandRegex: Regex
 
     init {
-        messagesListener.openSubscription().also {
-            launch {
-                while (isActive) {
-                    val received = it.receive()
-                    try {
-                        invoke(received.first, received.second)
-                    } catch (e: Exception) {
-                        logger.throwing(
-                            Command::class.java.canonicalName,
-                            "Perform message",
-                            e
-                        )
-                    }
-                }
-            }
+        messagesListener.subscribe {
+            invoke(it.first, it.second)
         }
     }
 

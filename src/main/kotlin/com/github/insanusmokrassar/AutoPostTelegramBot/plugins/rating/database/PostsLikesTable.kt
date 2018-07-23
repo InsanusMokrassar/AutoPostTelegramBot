@@ -2,6 +2,7 @@ package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.database
 
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.pluginLogger
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscribe
 import kotlinx.coroutines.experimental.channels.BroadcastChannel
 import kotlinx.coroutines.experimental.launch
 import org.h2.jdbc.JdbcSQLException
@@ -28,22 +29,17 @@ class PostsLikesTable : Table() {
     internal lateinit var postsLikesMessagesTable: PostsLikesMessagesTable
 
     init {
-        PostsTable.postRemovedChannel.openSubscription().also {
-            launch {
-                while (isActive) {
-                    val removedPostId = it.receive()
-                    try {
-                        clearPostMarks(removedPostId)
-                    } catch (e: Exception) {
-                        pluginLogger.throwing(
-                            "PostsLikesTable",
-                            "Clear likes",
-                            e
-                        )
-                    }
-                }
-                it.cancel()
+        PostsTable.postRemovedChannel.subscribe(
+            {
+                pluginLogger.throwing(
+                    "PostsLikesTable",
+                    "Clear likes",
+                    it
+                )
+                true
             }
+        ) {
+            clearPostMarks(it)
         }
     }
 

@@ -7,8 +7,7 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.pluginLogger
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.database.PostsLikesMessagesTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.database.PostsLikesTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.receivers.*
-import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.executeAsync
-import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.toTable
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.*
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.makeLinkToMessage
 import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.model.request.*
@@ -45,96 +44,55 @@ class RegisteredRefresher(
     private val botWR = WeakReference(bot)
 
     init {
-        postsLikesTable.ratingsChannel.openSubscription().also {
-            launch {
-                while (isActive) {
-                    val update = it.receive()
-
-                    try {
-                        refreshRegisteredMessage(
-                            sourceChatId,
-                            botWR.get() ?: break,
-                            update.first,
-                            postsLikesTable,
-                            postsLikesMessagesTable,
-                            update.second
-                        )
-                    } catch (e: Exception) {
-                        pluginLogger.throwing(
-                            "RegisteredRefresher",
-                            "updateMessageId",
-                            e
-                        )
-                    }
-                }
-                it.cancel()
+        postsLikesTable.ratingsChannel.subscribeChecking(
+            {
+                pluginLogger.throwing(
+                    "RegisteredRefresher",
+                    "updateMessageId",
+                    it
+                )
+                true
             }
+        ) {
+            refreshRegisteredMessage(
+                sourceChatId,
+                botWR.get() ?: return@subscribeChecking false,
+                it.first,
+                postsLikesTable,
+                postsLikesMessagesTable,
+                it.second
+            )
+            true
         }
 
-//        PostsTable.postMessageRegisteredChannel.openSubscription().also {
-//            launch {
-//                while (isActive) {
-//                    val postMessageRegistered = it.receive()
-//
-//                    try {
-//                        refreshRegisteredMessage(
-//                            sourceChatId,
-//                            botWR.get() ?: break,
-//                            postMessageRegistered.first,
-//                            postsLikesTable,
-//                            postsLikesMessagesTable
-//                        )
-//                    } catch (e: Exception) {
-//                        pluginLogger.throwing(
-//                            "RegisteredRefresher",
-//                            "updateMessageId",
-//                            e
-//                        )
-//                    }
-//                }
-//                it.cancel()
-//            }
-//        }
-
-        PostTransactionTable.transactionCompletedChannel.openSubscription().also {
-            launch {
-                while (isActive) {
-                    val bot = botWR.get() ?: break
-                    val postId = it.receive()
-                    refreshRegisteredMessage(
-                        sourceChatId,
-                        bot,
-                        postId,
-                        postsLikesTable,
-                        postsLikesMessagesTable
-                    )
-                }
-                it.cancel()
-            }
+        PostTransactionTable.transactionCompletedChannel.subscribeChecking {
+            refreshRegisteredMessage(
+                sourceChatId,
+                botWR.get() ?: return@subscribeChecking false,
+                it,
+                postsLikesTable,
+                postsLikesMessagesTable
+            )
+            true
         }
 
-        PostsTable.postRemovedChannel.openSubscription().also {
-            launch {
-                while (isActive) {
-                    val removedPostId = it.receive()
-
-                    try {
-                        disableLikesForPost(
-                            removedPostId,
-                            botWR.get() ?: break,
-                            sourceChatId,
-                            postsLikesMessagesTable
-                        )
-                    } catch (e: Exception) {
-                        pluginLogger.throwing(
-                            "RegisteredRefresher",
-                            "remove registered post-message link",
-                            e
-                        )
-                    }
-                }
-                it.cancel()
+        PostsTable.postRemovedChannel.subscribeChecking(
+            {
+                pluginLogger.throwing(
+                    "RegisteredRefresher",
+                    "remove registered post-message link",
+                    it
+                )
+                true
             }
+        ) {
+            disableLikesForPost(
+                it,
+                botWR.get() ?: return@subscribeChecking false,
+                sourceChatId,
+                postsLikesMessagesTable
+            )
+            true
         }
     }
 }

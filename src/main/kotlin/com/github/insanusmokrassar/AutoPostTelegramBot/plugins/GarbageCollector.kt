@@ -8,6 +8,7 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.*
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.base.commands.deletePost
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.RatingPlugin
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.database.PostIdRatingPair
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscribeChecking
 import com.pengrad.telegrambot.TelegramBot
 import kotlinx.coroutines.experimental.delay
 import kotlinx.coroutines.experimental.launch
@@ -44,16 +45,12 @@ class GarbageCollector(
         val postsLikesTable = ratingPlugin.postsLikesTable
         val postsLikesMessagesTable = ratingPlugin.postsLikesMessagesTable
 
-        postsLikesTable.ratingsChannel.openSubscription().let {
-            launch {
-                while (isActive) {
-                    val bot = botWR.get() ?: break
-                    it.receive().let {
-                        check(it, bot, baseConfig)
-                    }
-                }
-                it.cancel()
-            }
+        postsLikesTable.ratingsChannel.subscribeChecking {
+            botWR.get() ?.let {
+                bot ->
+                check(it, bot, baseConfig)
+                true
+            } ?: false
         }
 
         config.manualCheckDelay ?.let {

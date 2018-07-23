@@ -9,8 +9,7 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.database.P
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.database.PostsLikesTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.refreshRegisteredMessage
 import com.github.insanusmokrassar.AutoPostTelegramBot.realMessagesListener
-import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.executeAsync
-import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.queryAnswer
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.*
 import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.model.CallbackQuery
 import com.pengrad.telegrambot.model.request.ParseMode
@@ -39,62 +38,57 @@ class EnableReceiver(
     private val awaitApprove = HashMap<Long, Int>()
 
     init {
-        realMessagesListener.broadcastChannel.openSubscription().also {
-            launch {
-                val botWR = WeakReference(bot)
-                while (isActive) {
-                    val message = it.receive()
+        val botWR = WeakReference(bot)
+        realMessagesListener.broadcastChannel.subscribeChecking {
+            message ->
+            val userId = message.second.chat().id()
 
-                    val userId = message.second.chat().id()
+            val bot = botWR.get() ?: return@subscribeChecking false
+            awaitApprove[userId] ?.let {
+                if (extractEnableInline(message.second.text()) == it) {
+                    awaitApprove.remove(userId)
+                    refreshRegisteredMessage(
+                        sourceChatId,
+                        bot,
+                        it,
+                        postsLikesTable,
+                        postsLikesMessagesTable
+                    )
 
-                    val bot = botWR.get() ?: break
-                    awaitApprove[userId] ?.let {
-                        if (extractEnableInline(message.second.text()) == it) {
-                            awaitApprove.remove(userId)
-                            refreshRegisteredMessage(
-                                sourceChatId,
-                                bot,
-                                it,
-                                postsLikesTable,
-                                postsLikesMessagesTable
-                            )
-
-                            bot.executeAsync(
-                                SendMessage(
-                                    userId,
-                                    "Rating was enabled"
-                                ).parseMode(
-                                    ParseMode.Markdown
-                                )
-                            )
-                        }
-                    } ?:let {
-                        val forwardFrom = message.second.forwardFromChat()
-                        if (forwardFrom != null && forwardFrom.id() == sourceChatId) {
-                            try {
-                                val postId = PostsTable.findPost(
-                                    message.second.forwardFromMessageId()
-                                )
-                                bot.executeAsync(
-                                    SendMessage(
-                                        userId,
-                                        makeTextToApproveEnable(
-                                            postId
-                                        )
-                                    ).parseMode(
-                                        ParseMode.Markdown
-                                    ),
-                                    onResponse = {
-                                        _, _ ->
-                                        awaitApprove[userId] = postId
-                                    }
-                                )
-                            } catch (e: NoRowFoundException) { }
-                        }
-                    }
+                    bot.executeAsync(
+                        SendMessage(
+                            userId,
+                            "Rating was enabled"
+                        ).parseMode(
+                            ParseMode.Markdown
+                        )
+                    )
                 }
-                it.cancel()
+            } ?:let {
+                val forwardFrom = message.second.forwardFromChat()
+                if (forwardFrom != null && forwardFrom.id() == sourceChatId) {
+                    try {
+                        val postId = PostsTable.findPost(
+                            message.second.forwardFromMessageId()
+                        )
+                        bot.executeAsync(
+                            SendMessage(
+                                userId,
+                                makeTextToApproveEnable(
+                                    postId
+                                )
+                            ).parseMode(
+                                ParseMode.Markdown
+                            ),
+                            onResponse = {
+                                _, _ ->
+                                awaitApprove[userId] = postId
+                            }
+                        )
+                    } catch (e: NoRowFoundException) { }
+                }
             }
+            true
         }
     }
 

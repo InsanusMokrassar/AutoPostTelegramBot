@@ -6,8 +6,7 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.utils.CallbackQueryReceiv
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.disableLikesForPost
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.database.PostsLikesMessagesTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.realMessagesListener
-import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.executeAsync
-import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.queryAnswer
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.*
 import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.model.CallbackQuery
 import com.pengrad.telegrambot.model.request.ParseMode
@@ -41,60 +40,55 @@ class DisableReceiver(
     private val awaitApprove = HashSet<UserIdPostId>()
 
     init {
-        realMessagesListener.broadcastChannel.openSubscription().also {
-            launch {
-                val botWR = WeakReference(bot)
-                while (isActive) {
-                    val message = it.receive()
+        val botWR = WeakReference(bot)
+        realMessagesListener.broadcastChannel.subscribeChecking {
+            message ->
+            val userId = message.second.chat().id()
 
-                    val userId = message.second.chat().id()
+            val bot = botWR.get() ?: return@subscribeChecking false
+            awaitApprove.firstOrNull { it.first == userId } ?.let {
+                val (userId, postId) = it
+                if (extractDisableInline(message.second.text()) == postId) {
+                    awaitApprove.remove(it)
+                    disableLikesForPost(
+                        postId,
+                        bot,
+                        sourceChatId,
+                        postsLikesMessagesTable
+                    )
 
-                    val bot = botWR.get() ?: break
-                    awaitApprove.firstOrNull { it.first == userId } ?.let {
-                        val (userId, postId) = it
-                        if (extractDisableInline(message.second.text()) == postId) {
-                            awaitApprove.remove(it)
-                            disableLikesForPost(
-                                postId,
-                                bot,
-                                sourceChatId,
-                                postsLikesMessagesTable
-                            )
-
-                            bot.executeAsync(
-                                SendMessage(
-                                    userId,
-                                    "Rating was disabled"
-                                ).parseMode(
-                                    ParseMode.Markdown
-                                )
-                            )
-                        }
-                    } ?:let {
-                        val forwardFrom = message.second.forwardFromChat()
-                        if (forwardFrom != null && forwardFrom.id() == sourceChatId) {
-                            val postId = postsLikesMessagesTable.postIdByMessage(
-                                message.second.forwardFromMessageId()
-                            ) ?: return@let
-                            bot.executeAsync(
-                                SendMessage(
-                                    userId,
-                                    makeTextToApproveRemove(
-                                        postId
-                                    )
-                                ).parseMode(
-                                    ParseMode.Markdown
-                                ),
-                                onResponse = {
-                                    _, _ ->
-                                    awaitApprove.add(userId to postId)
-                                }
-                            )
-                        }
-                    }
+                    bot.executeAsync(
+                        SendMessage(
+                            userId,
+                            "Rating was disabled"
+                        ).parseMode(
+                            ParseMode.Markdown
+                        )
+                    )
                 }
-                it.cancel()
+            } ?:let {
+                val forwardFrom = message.second.forwardFromChat()
+                if (forwardFrom != null && forwardFrom.id() == sourceChatId) {
+                    val postId = postsLikesMessagesTable.postIdByMessage(
+                        message.second.forwardFromMessageId()
+                    ) ?: return@let
+                    bot.executeAsync(
+                        SendMessage(
+                            userId,
+                            makeTextToApproveRemove(
+                                postId
+                            )
+                        ).parseMode(
+                            ParseMode.Markdown
+                        ),
+                        onResponse = {
+                            _, _ ->
+                            awaitApprove.add(userId to postId)
+                        }
+                    )
+                }
             }
+            true
         }
     }
 

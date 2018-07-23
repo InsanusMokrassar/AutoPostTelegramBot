@@ -7,6 +7,7 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.Post
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.Config
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.DefaultPluginManager
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscribe
 import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.model.CallbackQuery
 import com.pengrad.telegrambot.model.Message
@@ -98,51 +99,21 @@ fun main(args: Array<String>) {
         config
     )
 
-    realMessagesListener.broadcastChannel.openSubscription().also {
-        launch {
-            while (isActive) {
-                val received = it.receive()
-                try {
-                    if (received.second.chat().id() == config.sourceChatId) {
-                        messagesListener.send(received)
-                    }
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                }
-            }
-            it.cancel()
+    realMessagesListener.broadcastChannel.subscribe {
+        if (it.second.chat().id() == config.sourceChatId) {
+            messagesListener.send(it)
         }
     }
 
-    realCallbackQueryListener.broadcastChannel.openSubscription().also {
-        launch {
-            while (isActive) {
-                val received = it.receive()
-                try {
-                    if (received.second.message().chat().id() == config.sourceChatId) {
-                        callbackQueryListener.send(received)
-                    }
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                }
-            }
-            it.cancel()
+    realCallbackQueryListener.broadcastChannel.subscribe {
+        if (it.second.message().chat().id() == config.sourceChatId) {
+            callbackQueryListener.send(it)
         }
     }
 
-    realMediaGroupsListener.broadcastChannel.openSubscription().also {
-        launch {
-            while (isActive) {
-                val received = it.receive()
-                try {
-                    if (received.second.firstOrNull { it.chat().id() != config.sourceChatId } == null) {
-                        mediaGroupsListener.send(received)
-                    }
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                }
-            }
-            it.cancel()
+    realMediaGroupsListener.broadcastChannel.subscribe {
+        if (it.second.firstOrNull { it.chat().id() != config.sourceChatId } == null) {
+            mediaGroupsListener.send(it)
         }
     }
 
