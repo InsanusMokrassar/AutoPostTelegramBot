@@ -2,8 +2,6 @@ package com.github.insanusmokrassar.AutoPostTelegramBot.base.models
 
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.PluginConfig
 import org.h2.Driver
-import java.net.URL
-import java.net.URLClassLoader
 
 class Config (
     val targetChatId: Long? = null,
@@ -17,7 +15,6 @@ class Config (
         ""
     ),
     val proxy: ProxySettings? = null,
-    val pluginsURL: String? = null,
     val plugins: List<PluginConfig> = emptyList(),
     val debug: Boolean = false
 ) {
@@ -31,12 +28,7 @@ class Config (
             databaseConfig,
             proxy,
             plugins,
-            debug,
-            pluginsURL ?.let {
-                arrayOf<ClassLoader>(
-                    URLClassLoader.newInstance(arrayOf(URL(it)))
-                )
-            } ?: emptyArray()
+            debug
         )
 }
 
@@ -55,6 +47,5 @@ class FinalConfig (
     val databaseConfig: DatabaseConfig,
     val proxy: ProxySettings? = null,
     val pluginsConfigs: List<PluginConfig> = emptyList(),
-    val debug: Boolean = false,
-    val additionalClassLoaders: Array<ClassLoader> = emptyArray()
+    val debug: Boolean = false
 )

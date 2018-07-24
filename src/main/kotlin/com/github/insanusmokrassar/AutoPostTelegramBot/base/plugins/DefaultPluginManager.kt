@@ -9,12 +9,9 @@ class DefaultPluginManager(
     pluginsCollection: Collection<Plugin>
 ) : PluginManager {
     override val plugins: List<Plugin> = pluginsCollection.toList()
-    constructor(
-        pluginsConfigs: List<PluginConfig>,
-        vararg additionalClassLoaders: ClassLoader
-    ) : this(
+    constructor(pluginsConfigs: List<PluginConfig>) : this(
         pluginsConfigs.mapNotNull {
-            it.newInstance(*additionalClassLoaders) ?.also {
+            it.newInstance() ?.also {
                 pluginLogger.info("Plugin ${it.name} instantiated")
             }
         }
