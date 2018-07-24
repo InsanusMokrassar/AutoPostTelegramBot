@@ -2,6 +2,7 @@ package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.forwarders
 
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.PostMessage
 import com.pengrad.telegrambot.TelegramBot
+import com.pengrad.telegrambot.model.Message
 import com.pengrad.telegrambot.request.SendAudio
 import java.io.IOException
 
@@ -13,33 +14,37 @@ class AudioForwarder : Forwarder {
         return message.message ?. audio() != null
     }
 
-    override fun forward(bot: TelegramBot, targetChatId: Long, vararg messages: PostMessage): List<Int> {
+    override fun forward(bot: TelegramBot, targetChatId: Long, vararg messages: PostMessage): Map<PostMessage, Message> {
         return messages.mapNotNull {
-            it.message
-        }.map {
-            SendAudio(
-                targetChatId,
-                it.audio().fileId()
-            ).apply {
-                it.caption() ?.let {
-                    caption(it)
-                }
-                it.audio().also {
-                    it.title() ?.let {
-                        title(it)
+            postMessage ->
+            postMessage.message ?.let {
+                postMessage to SendAudio(
+                    targetChatId,
+                    it.audio().fileId()
+                ).apply {
+                    it.caption() ?.let {
+                        caption(it)
                     }
-                    it.duration() ?.let {
-                        duration(it)
+                    it.audio().also {
+                        it.title() ?.let {
+                            title(it)
+                        }
+                        it.duration() ?.let {
+                            duration(it)
+                        }
                     }
                 }
             }
         }.map {
-            bot.execute(it).let {
+            pair ->
+            bot.execute(pair.second).let {
                 response ->
-                response.message() ?.messageId() ?:let {
+                response.message() ?.let {
+                    pair.first to it
+                } ?:let {
                     throw IOException("${response.errorCode()}: ${response.description()}")
                 }
             }
-        }
+        }.toMap()
     }
 }

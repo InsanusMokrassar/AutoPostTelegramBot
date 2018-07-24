@@ -2,6 +2,7 @@ package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.forwarders
 
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.PostMessage
 import com.pengrad.telegrambot.TelegramBot
+import com.pengrad.telegrambot.model.Message
 import com.pengrad.telegrambot.request.ForwardMessage
 import java.io.IOException
 
@@ -13,22 +14,25 @@ class SimpleForwarder : Forwarder {
         return true
     }
 
-    override fun forward(bot: TelegramBot, targetChatId: Long, vararg messages: PostMessage): List<Int> {
+    override fun forward(bot: TelegramBot, targetChatId: Long, vararg messages: PostMessage): Map<PostMessage, Message> {
         return messages.mapNotNull {
-            it.message
-        }.map {
-            ForwardMessage(
+            postMessage ->
+            val message = postMessage.message ?: return@mapNotNull null
+            postMessage to ForwardMessage(
                 targetChatId,
-                it.chat().id(),
-                it.messageId()
+                message.chat().id(),
+                message.messageId()
             )
         }.map {
-            bot.execute(it).let {
+            pair ->
+            bot.execute(pair.second).let {
                 response ->
-                response.message() ?.messageId() ?:let {
+                response.message() ?.let {
+                    pair.first to it
+                } ?:let {
                     throw IOException("${response.errorCode()}: ${response.description()}")
                 }
             }
-        }
+        }.toMap()
     }
 }

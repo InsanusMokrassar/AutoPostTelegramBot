@@ -2,6 +2,7 @@ package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.forwarders
 
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.PostMessage
 import com.pengrad.telegrambot.TelegramBot
+import com.pengrad.telegrambot.model.Message
 import com.pengrad.telegrambot.request.SendLocation
 import java.io.IOException
 
@@ -13,22 +14,26 @@ class LocationForwarder : Forwarder {
         return message.message ?. location() != null
     }
 
-    override fun forward(bot: TelegramBot, targetChatId: Long, vararg messages: PostMessage): List<Int> {
+    override fun forward(bot: TelegramBot, targetChatId: Long, vararg messages: PostMessage): Map<PostMessage, Message> {
         return messages.mapNotNull {
-            it.message
+            postMessage ->
+            postMessage.message ?.let {
+                postMessage to SendLocation(
+                    targetChatId,
+                    it.location().latitude(),
+                    it.location().longitude()
+                )
+            }
         }.map {
-            SendLocation(
-                targetChatId,
-                it.location().latitude(),
-                it.location().longitude()
-            )
-        }.map {
-            bot.execute(it).let {
+            pair ->
+            bot.execute(pair.second).let {
                 response ->
-                response.message() ?.messageId() ?:let {
+                response.message() ?.let {
+                    pair.first to it
+                } ?:let {
                     throw IOException("${response.errorCode()}: ${response.description()}")
                 }
             }
-        }
+        }.toMap()
     }
 }

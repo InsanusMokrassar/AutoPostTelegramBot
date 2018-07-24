@@ -11,11 +11,16 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.choosers.Chooser
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.forwarders.*
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.executeAsync
 import com.pengrad.telegrambot.TelegramBot
+import com.pengrad.telegrambot.model.Message
 import com.pengrad.telegrambot.model.request.ParseMode
 import com.pengrad.telegrambot.request.*
+import kotlinx.coroutines.experimental.channels.BroadcastChannel
+import kotlinx.coroutines.experimental.launch
 import java.lang.ref.WeakReference
 
+typealias PostIdListPostMessagesTelegramMessages = Pair<Int, Map<PostMessage, Message>>
 private typealias ChatIdMessageIdPair = Pair<Long, Int>
+private const val subscribeMaxCount = 256
 
 fun makeMapOfExecution(
     messageToPost: List<PostMessage>,
@@ -49,6 +54,10 @@ fun makeMapOfExecution(
 }
 
 class PostPublisher : Publisher {
+    val postPublishedChannel = BroadcastChannel<PostIdListPostMessagesTelegramMessages>(
+        subscribeMaxCount
+    )
+
     override val version: PluginVersion = 1L
 
     private var botWR: WeakReference<TelegramBot>? = null
@@ -67,7 +76,7 @@ class PostPublisher : Publisher {
     ) {
         botWR = WeakReference(bot).also {
             publishPostCommand = PublishPost(
-                pluginManager.plugins.firstOrNull { it is Chooser? } as? Chooser,
+                pluginManager.plugins.firstOrNull { it is Chooser } as? Chooser,
                 pluginManager.plugins.firstOrNull { it is Publisher } as Publisher,
                 it,
                 baseConfig.logsChatId
@@ -127,20 +136,33 @@ class PostPublisher : Publisher {
                 forwardersList
             )
 
-            mapOfExecution.flatMap {
+            mapOfExecution.map {
                 it.first.forward(
                     bot,
                     targetChatId,
                     *it.second.toTypedArray()
                 )
             }.let {
-                it.forEach {
+                it.flatMap {
+                    it.map {
+                        it.value
+                    }
+                }.forEach {
                     bot.execute(
                         ForwardMessage(
                             logsChatId,
-                            targetChatId,
-                            it
+                            it.chat().id(),
+                            it.messageId()
                         )
+                    )
+                }
+                val resultMap = mutableMapOf<PostMessage, Message>()
+                it.forEach {
+                    resultMap.putAll(it)
+                }
+                launch {
+                    postPublishedChannel.send(
+                        postId to resultMap
                     )
                 }
             }

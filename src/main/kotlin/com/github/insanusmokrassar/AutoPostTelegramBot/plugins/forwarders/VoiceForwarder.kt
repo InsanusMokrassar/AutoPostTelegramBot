@@ -2,6 +2,7 @@ package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.forwarders
 
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.PostMessage
 import com.pengrad.telegrambot.TelegramBot
+import com.pengrad.telegrambot.model.Message
 import com.pengrad.telegrambot.request.SendVoice
 import java.io.IOException
 
@@ -13,30 +14,33 @@ class VoiceForwarder : Forwarder {
         return message.message ?. voice() != null
     }
 
-    override fun forward(bot: TelegramBot, targetChatId: Long, vararg messages: PostMessage): List<Int> {
+    override fun forward(bot: TelegramBot, targetChatId: Long, vararg messages: PostMessage): Map<PostMessage, Message> {
         return messages.mapNotNull {
-            it.message
-        }.map {
-            SendVoice(
+            postMessage ->
+            val message = postMessage.message ?: return@mapNotNull null
+            postMessage to SendVoice(
                 targetChatId,
-                it.voice().fileId()
+                message.voice().fileId()
             ).apply {
-                it.caption() ?.let {
+                message.caption() ?.let {
                     caption(it)
                 }
-                it.voice().also {
+                message.voice().also {
                     it.duration() ?.let {
                         duration(it)
                     }
                 }
             }
         }.map {
-            bot.execute(it).let {
+            pair->
+            bot.execute(pair.second).let {
                 response ->
-                response.message() ?.messageId() ?:let {
+                response.message() ?.let {
+                    pair.first to it
+                } ?:let {
                     throw IOException("${response.errorCode()}: ${response.description()}")
                 }
             }
-        }
+        }.toMap()
     }
 }

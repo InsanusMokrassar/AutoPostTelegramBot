@@ -15,46 +15,54 @@ class MediaGroupForwarder : Forwarder {
         return message.mediaGroupId != null
     }
 
-    override fun forward(bot: TelegramBot, targetChatId: Long, vararg messages: PostMessage): List<Int> {
-        val mediaGroups = mutableMapOf<String, MutableList<Message>>()
+    override fun forward(bot: TelegramBot, targetChatId: Long, vararg messages: PostMessage): Map<PostMessage, Message> {
+        val mediaGroups = mutableMapOf<String, MutableList<PostMessage>>()
         messages.forEach {
             postMessage ->
-            val message = postMessage.message ?: return@forEach
+            postMessage.message ?: return@forEach
             val mediaGroupId = postMessage.mediaGroupId ?: return@forEach
-            (mediaGroups[mediaGroupId] ?: mutableListOf<Message>().apply {
+            (mediaGroups[mediaGroupId] ?: mutableListOf<PostMessage>().apply {
                 mediaGroups[mediaGroupId] = this
-            }).add(message)
+            }).add(postMessage)
         }
 
         return mediaGroups.values.map {
             SendMediaGroup(
                 targetChatId,
                 *it.mapNotNull {
-                    (it.photo() ?.let {
-                        it.maxBy { it.fileSize() } ?. fileId() ?.let {
-                            InputMediaPhoto(
-                                it
+                    postMessage ->
+                    postMessage.message ?.let {
+                        message ->
+                        (message.photo() ?.let {
+                            it.maxBy { it.fileSize() } ?. fileId() ?.let {
+                                InputMediaPhoto(
+                                    it
+                                )
+                            }
+                        } ?: message.video() ?. let {
+                            InputMediaVideo(
+                                it.fileId()
                             )
+                        }) ?.apply {
+                            caption(message.caption())
+                            parseMode(ParseMode.Markdown)
                         }
-                    } ?: it.video() ?. let {
-                        InputMediaVideo(
-                            it.fileId()
-                        )
-                    }) ?.apply {
-                        caption(it.caption())
-                        parseMode(ParseMode.Markdown)
                     }
                 }.toTypedArray()
-            )
+            ) to it
         }.flatMap {
-            bot.execute(it).let {
+            pair ->
+            bot.execute(pair.first).let {
                 response ->
-                response.messages() ?.mapNotNull {
-                    it.messageId()
+                response.messages() ?.let {
+                    (0 until pair.second.size).map {
+                        i ->
+                        pair.second[i] to it[i]
+                    }
                 } ?:let {
                     throw IOException("${response.errorCode()}: ${response.description()}")
                 }
             }
-        }
+        }.toMap()
     }
 }
