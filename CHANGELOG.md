@@ -10,3 +10,8 @@ with events channels
 ## 0.3.3
 
 * Hotfix for problem with new extension for BroadcastChannels
+
+## 0.3.4
+
+* Changed return type of forwarders
+* Now you can subscribe onto post published events
