@@ -7,9 +7,14 @@ class PluginConfig(
     val classname: String? = null,
     val params: IObject<Any>?
 ) {
-    fun newInstance(): Plugin? {
+    fun newInstance(vararg additionalClassLoaders: ClassLoader): Plugin? {
         return classname ?.let {
-            initObject<Plugin>(it, params)
+            initObject<Plugin>(
+                it,
+                params,
+                this::class.java.classLoader,
+                *additionalClassLoaders
+            )
         }
     }
 }

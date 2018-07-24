@@ -91,7 +91,8 @@ fun main(args: Array<String>) {
     }
 
     val pluginManager = DefaultPluginManager(
-        config.pluginsConfigs
+        config.pluginsConfigs,
+        *config.additionalClassLoaders
     )
 
     pluginManager.onInit(

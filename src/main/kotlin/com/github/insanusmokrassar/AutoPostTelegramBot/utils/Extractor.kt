@@ -3,12 +3,25 @@ package com.github.insanusmokrassar.AutoPostTelegramBot.utils
 import com.github.insanusmokrassar.IObjectK.interfaces.IObject
 import java.lang.reflect.InvocationTargetException
 
-fun <T> initObject(className: String, params: IObject<Any>?): T {
-    return params ?.let {
-        extract<T>(className, it)
-    } ?: {
-        extract<T>(className)
-    }()
+fun <T> initObject(
+    className: String,
+    params: IObject<Any>?,
+    vararg classLoaders: ClassLoader = arrayOf(ClassLoader.getSystemClassLoader())
+): T {
+    val exceptions = mutableListOf<Exception>()
+    classLoaders.forEach {
+        classLoader ->
+        try {
+            return params ?.let {
+                classLoader.extract<T>(className, it)
+            } ?: {
+                classLoader.extract<T>(className)
+            }()
+        } catch (e: Exception) {
+            exceptions.add(e)
+        }
+    }
+    throw IllegalArgumentException(exceptions.joinToString("\n") { it.message ?: "" })
 }
 
 /**
@@ -22,7 +35,7 @@ fun <T> initObject(className: String, params: IObject<Any>?): T {
  * @throws IllegalArgumentException
 </T> */
 @Throws(IllegalArgumentException::class)
-fun <T> extract(path: String, vararg constructorArgs: Any?): T {
+fun <T> ClassLoader.extract(path: String, vararg constructorArgs: Any?): T {
     val targetClass = getClass<T>(path)
     targetClass.constructors.forEach {
         if (it.parameterTypes.size != constructorArgs.size) {
@@ -45,9 +58,9 @@ fun <T> extract(path: String, vararg constructorArgs: Any?): T {
 }
 
 @Throws(IllegalArgumentException::class)
-fun <T> getClass(path: String): Class<T> {
+fun <T> ClassLoader.getClass(path: String): Class<T> {
     try {
-        val targetClass = Class.forName(path)
+        val targetClass = loadClass(path)
         return targetClass as Class<T>
     } catch (e: ClassNotFoundException) {
         throw IllegalArgumentException("Can't find class with this classPath: $path", e)
