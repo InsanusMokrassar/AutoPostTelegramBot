@@ -35,7 +35,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <kotlin.version>1.2.51</kotlin.version>
-        <kotlin.coroutines.version>0.23.0</kotlin.coroutines.version>
+        <kotlin.coroutines.version>0.23.4</kotlin.coroutines.version>
         <dokka.version>0.9.16</dokka.version>
         <gpg.version>1.6</gpg.version>
         <assembly.version>2.6</assembly.version>
@@ -230,7 +230,7 @@
         <dependency>
             <groupId>com.github.insanusmokrassar</groupId>
             <artifactId>IObjectKRealisations</artifactId>
-            <version>1.11.1</version>
+            <version>1.11.2</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.jetbrains.exposed/exposed -->
