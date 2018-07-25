@@ -1,9 +1,9 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions
 
-import kotlinx.coroutines.experimental.CancellationException
+import kotlinx.coroutines.experimental.*
 import kotlinx.coroutines.experimental.channels.BroadcastChannel
 import kotlinx.coroutines.experimental.channels.ReceiveChannel
-import kotlinx.coroutines.experimental.launch
+import java.util.concurrent.TimeUnit
 
 fun <T> BroadcastChannel<T>.subscribeChecking(
     throwableHandler: (Throwable) -> Boolean = {
@@ -49,4 +49,39 @@ fun <T> BroadcastChannel<T>.subscribe(
         by(it)
         true
     }
+}
+
+fun <T> ReceiveChannel<T>.debounce(delayMs: Long, awaitedSubscriptions: Int = 256): BroadcastChannel<T> {
+    val channel = BroadcastChannel<T>(awaitedSubscriptions)
+    var lastReceived: Pair<Long, T>? = null
+    var job: Job? = null
+    launch {
+        while (isActive && !isClosedForReceive) {
+            val received = receive()
+
+            lastReceived = Pair(System.currentTimeMillis() + delayMs, received)
+
+            job ?:let {
+                job = launch {
+                    try {
+                        var now = System.currentTimeMillis()
+                        while (isActive && lastReceived?.first ?: now >= now) {
+                            delay((lastReceived ?.first ?: now) - now, TimeUnit.MILLISECONDS)
+                            now = System.currentTimeMillis()
+                        }
+
+                        lastReceived?.second?.also {
+                            channel.send(it)
+                        }
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    } finally {
+                        job = null
+                    }
+                }
+            }
+        }
+        cancel()
+    }
+    return channel
 }

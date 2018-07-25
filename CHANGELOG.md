@@ -20,3 +20,7 @@ with events channels
 
 * Fixed problem with scheduler on initialization (without any event scheduler
 will not update job, but now fixed)
+
+## 0.3.6
+
+* Add `BroadcastReceiver#debounce`
