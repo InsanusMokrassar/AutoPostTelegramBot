@@ -24,3 +24,8 @@ will not update job, but now fixed)
 ## 0.3.6
 
 * Add `BroadcastReceiver#debounce`
+
+## 0.3.7
+
+* Fix `TimerTriggerStrategy` calculating delay and put trigger work in
+different async block

@@ -31,18 +31,21 @@ class TimerTriggerStrategy (
 
         launch {
             while (isActive) {
-                synchronized(PostsTable) {
-                    synchronized(PostsMessagesTable) {
-                        try {
-                            chooser.triggerChoose().forEach {
-                                publisher.publishPost(it)
+                val nextTriggerTime = System.currentTimeMillis() + config.delay
+                launch {
+                    synchronized(PostsTable) {
+                        synchronized(PostsMessagesTable) {
+                            try {
+                                chooser.triggerChoose().forEach {
+                                    publisher.publishPost(it)
+                                }
+                            } catch (e: Exception) {
+                                e.printStackTrace()
                             }
-                        } catch (e: Exception) {
-                            e.printStackTrace()
                         }
                     }
                 }
-                delay(config.delay)
+                delay(nextTriggerTime - System.currentTimeMillis())
             }
         }
     }
