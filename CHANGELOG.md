@@ -15,3 +15,8 @@ with events channels
 
 * Changed return type of forwarders
 * Now you can subscribe onto post published events
+
+## 0.3.5
+
+* Fixed problem with scheduler on initialization (without any event scheduler
+will not update job, but now fixed)

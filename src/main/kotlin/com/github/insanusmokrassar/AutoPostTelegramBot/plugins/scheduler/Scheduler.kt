@@ -43,6 +43,9 @@ class Scheduler(
                 }
             }
         }
+        schedulesTable.nearPost() ?.also {
+            updateJob(it)
+        }
     }
 
     private fun updateJob(by: PostIdPostTime)  {
