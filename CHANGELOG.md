@@ -29,3 +29,10 @@ will not update job, but now fixed)
 
 * Fix `TimerTriggerStrategy` calculating delay and put trigger work in
 different async block
+
+## 0.3.8
+
+* Add `PostsUsedTable`, now any plugin or action which can potentially publish
+recommended to register/unregister in this table
+* Rename methods of `PostsLikesMessagesTable` to be consistent with their
+behaviours
