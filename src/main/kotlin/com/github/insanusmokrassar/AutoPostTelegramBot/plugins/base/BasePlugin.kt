@@ -20,6 +20,8 @@ class BasePlugin : Plugin {
 
     private var defaultPostRegisteredMessage: DefaultPostRegisteredMessage? = null
 
+    val postsUsedTable = PostsUsedTable()
+
     override fun onInit(bot: TelegramBot, baseConfig: FinalConfig, pluginManager: PluginManager) {
         val botWR = WeakReference(bot)
 

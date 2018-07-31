@@ -2,6 +2,7 @@ package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating
 
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.FinalConfig
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.*
+import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.base.BasePlugin
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.commands.AvailableRates
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.commands.MostRated
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.database.PostsLikesMessagesTable
@@ -42,6 +43,10 @@ class RatingPlugin : Plugin {
         pluginManager: PluginManager
     ) {
         val botWR = WeakReference(bot)
+
+        (pluginManager.plugins.firstOrNull { it is BasePlugin } as? BasePlugin)?.also {
+            postsLikesMessagesTable.postsUsedTablePluginName = it.postsUsedTable to name
+        }
 
         likeReceiver ?: let {
             likeReceiver = LikeReceiver(bot, postsLikesTable)

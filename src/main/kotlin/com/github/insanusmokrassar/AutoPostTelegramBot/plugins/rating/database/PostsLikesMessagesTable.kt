@@ -1,7 +1,11 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.database
 
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostIdMessageId
+import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.PluginName
+import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.base.PostsUsedTable
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscribe
 import kotlinx.coroutines.experimental.channels.BroadcastChannel
+import kotlinx.coroutines.experimental.channels.ReceiveChannel
 import kotlinx.coroutines.experimental.launch
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -17,6 +21,33 @@ class PostsLikesMessagesTable(
     private val postId = integer("postId").primaryKey()
     private val messageId = integer("messageId")
 
+    private lateinit var lastEnableSubscription: ReceiveChannel<PostIdMessageId>
+    private lateinit var lastDisableSubscription: ReceiveChannel<Int>
+
+    internal var postsUsedTablePluginName: Pair<PostsUsedTable, PluginName>? = null
+        set(value) {
+            field ?.also {
+                lastEnableSubscription.cancel()
+                lastDisableSubscription.cancel()
+            }
+            field = value
+            value ?.also {
+                getEnabledPostsIdAndRatings().map {
+                    it.first
+                }.minus(
+                    value.first.getPluginLinks(value.second)
+                ).forEach {
+                    value.first.registerLink(it, value.second)
+                }
+                lastEnableSubscription = ratingMessageRegisteredChannel.subscribe {
+                    value.first.registerLink(it.first, value.second)
+                }
+                lastDisableSubscription = ratingMessageUnregisteredChannel.subscribe {
+                    value.first.unregisterLink(it, value.second)
+                }
+            }
+        }
+
     fun messageIdByPostId(postId: Int): Int? {
         return transaction {
             select {
@@ -25,7 +56,7 @@ class PostsLikesMessagesTable(
         }
     }
 
-    fun postIdByMessage(messageId: Int): Int? {
+    fun postIdByMessageId(messageId: Int): Int? {
         return transaction {
             select {
                 this@PostsLikesMessagesTable.messageId.eq(messageId)
@@ -35,7 +66,7 @@ class PostsLikesMessagesTable(
         }
     }
 
-    fun registerLikeMessageId(postId: Int, messageId: Int): Boolean {
+    fun enableLikes(postId: Int, messageId: Int): Boolean {
         return transaction {
             if (messageIdByPostId(postId) == null) {
                 insert {
@@ -52,7 +83,7 @@ class PostsLikesMessagesTable(
         }
     }
 
-    fun clearPostIdMessageId(postId: Int) {
+    fun disableLikes(postId: Int) {
         transaction {
             (deleteWhere {
                 this@PostsLikesMessagesTable.postId.eq(postId)

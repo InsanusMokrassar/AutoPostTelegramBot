@@ -12,7 +12,6 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.utils.makeLinkToMessage
 import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.model.request.*
 import com.pengrad.telegrambot.request.*
-import kotlinx.coroutines.experimental.launch
 import java.lang.ref.WeakReference
 
 fun disableLikesForPost(
@@ -31,7 +30,7 @@ fun disableLikesForPost(
             )
         )
 
-        postsLikesMessagesTable.clearPostIdMessageId(postId)
+        postsLikesMessagesTable.disableLikes(postId)
     }
 }
 
@@ -178,7 +177,7 @@ internal fun refreshRegisteredMessage(
                 it,
                 onResponse = {
                     _, sendResponse ->
-                    if (!postsLikesMessagesTable.registerLikeMessageId(postId, sendResponse.message().messageId())) {
+                    if (!postsLikesMessagesTable.enableLikes(postId, sendResponse.message().messageId())) {
                         bot.executeAsync(
                             DeleteMessage(
                                 chatId,

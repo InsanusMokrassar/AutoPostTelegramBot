@@ -11,7 +11,6 @@ import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.model.CallbackQuery
 import com.pengrad.telegrambot.model.request.ParseMode
 import com.pengrad.telegrambot.request.SendMessage
-import kotlinx.coroutines.experimental.launch
 import java.lang.ref.WeakReference
 
 const val disable = "❌"
@@ -69,7 +68,7 @@ class DisableReceiver(
             } ?:let {
                 val forwardFrom = message.second.forwardFromChat()
                 if (forwardFrom != null && forwardFrom.id() == sourceChatId) {
-                    val postId = postsLikesMessagesTable.postIdByMessage(
+                    val postId = postsLikesMessagesTable.postIdByMessageId(
                         message.second.forwardFromMessageId()
                     ) ?: return@let
                     bot.executeAsync(

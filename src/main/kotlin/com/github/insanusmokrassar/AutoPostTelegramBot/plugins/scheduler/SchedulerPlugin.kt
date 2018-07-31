@@ -2,6 +2,7 @@ package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.scheduler
 
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.FinalConfig
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.*
+import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.base.BasePlugin
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.publishers.Publisher
 import com.pengrad.telegrambot.TelegramBot
 import org.jetbrains.exposed.sql.SchemaUtils
@@ -24,6 +25,10 @@ class SchedulerPlugin : Plugin {
     }
 
     override fun onInit(bot: TelegramBot, baseConfig: FinalConfig, pluginManager: PluginManager) {
+        (pluginManager.plugins.firstOrNull { it is BasePlugin } as? BasePlugin)?.also {
+            timerSchedulesTable.postsUsedTablePluginName = it.postsUsedTable to name
+        }
+
         scheduler = Scheduler(
             timerSchedulesTable,
             pluginManager.plugins.firstOrNull { it is Publisher } as? Publisher ?: return
