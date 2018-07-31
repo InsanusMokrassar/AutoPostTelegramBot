@@ -10,12 +10,6 @@ interface PluginManager {
         it.name == name
     }
 
-    fun byNameAndVersion(name: PluginName, minVersion: PluginVersion): Plugin? = byName(name).filter {
-        it.version >= minVersion
-    }.maxBy {
-        it.version
-    }
-
     fun onInit(
         bot: TelegramBot,
         baseConfig: FinalConfig

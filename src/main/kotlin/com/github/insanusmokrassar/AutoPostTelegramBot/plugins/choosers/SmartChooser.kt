@@ -195,7 +195,6 @@ private class SmartChooserConfig(
 class SmartChooser(
     config: IObject<Any>
 ) : RateChooser() {
-    override val version: PluginVersion = 0L
     private val config = config.toObject(SmartChooserConfig::class.java)
 
     init {

@@ -1,11 +1,8 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.forwarders
 
-import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.FinalConfig
-import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.*
-import com.pengrad.telegrambot.TelegramBot
+import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.Plugin
 
 class ForwardersPlugin : Plugin {
-    override val version: PluginVersion = 1L
 
     val forwarders = listOf(
         AudioForwarder(),
@@ -19,6 +16,4 @@ class ForwardersPlugin : Plugin {
         VideoForwarder(),
         VoiceForwarder()
     ).sortedDescending()
-
-    override fun onInit(bot: TelegramBot, baseConfig: FinalConfig, pluginManager: PluginManager) { }
 }

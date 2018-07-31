@@ -22,8 +22,6 @@ private data class GarbageCollectorConfig(
 class GarbageCollector(
     params: IObject<Any>?
 ) : Plugin {
-    override val version: PluginVersion = 0L
-
     private val config = params ?.toObject(GarbageCollectorConfig::class.java) ?: GarbageCollectorConfig()
 
     override fun onInit(

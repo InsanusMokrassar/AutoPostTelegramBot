@@ -14,8 +14,6 @@ import org.jetbrains.exposed.sql.transactions.transaction
 import java.lang.ref.WeakReference
 
 class RatingPlugin : Plugin {
-    override val version: PluginVersion = 0L
-
     private var likeReceiver: LikeReceiver? = null
     private var dislikeReceiver: DislikeReceiver? = null
     private var disableReceiver: DisableReceiver? = null

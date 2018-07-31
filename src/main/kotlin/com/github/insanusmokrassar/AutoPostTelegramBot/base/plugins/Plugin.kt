@@ -10,7 +10,6 @@ typealias PluginName = String
 val pluginLogger = Logger.getLogger(Plugin::class.java.simpleName)
 
 interface Plugin {
-    val version: PluginVersion
     val name: PluginName
         get() = this::class.java.simpleName
 
@@ -18,5 +17,5 @@ interface Plugin {
         bot: TelegramBot,
         baseConfig: FinalConfig,
         pluginManager: PluginManager
-    )
+    ) { }
 }

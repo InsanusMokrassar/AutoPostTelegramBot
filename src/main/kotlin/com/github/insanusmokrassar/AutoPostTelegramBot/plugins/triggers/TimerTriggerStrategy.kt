@@ -19,8 +19,6 @@ private data class TimerStrategyConfig(
 class TimerTriggerStrategy (
     config: IObject<Any>?
 ) : Plugin {
-    override val version: PluginVersion = 0L
-
     private val config = config ?.toObject(TimerStrategyConfig::class.java) ?: TimerStrategyConfig()
 
     override fun onInit(bot: TelegramBot, baseConfig: FinalConfig, pluginManager: PluginManager) {

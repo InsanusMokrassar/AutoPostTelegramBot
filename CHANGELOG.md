@@ -32,7 +32,10 @@ different async block
 
 ## 0.3.8
 
+**BREAK CHANGES**
+
 * Add `PostsUsedTable`, now any plugin or action which can potentially publish
 recommended to register/unregister in this table
 * Rename methods of `PostsLikesMessagesTable` to be consistent with their
 behaviours
+* ***Now plugins `HAVE NO VERSIONS` and must not implement `onInit` method***

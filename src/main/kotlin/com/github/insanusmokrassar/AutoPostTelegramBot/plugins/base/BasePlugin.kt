@@ -9,8 +9,6 @@ import com.pengrad.telegrambot.TelegramBot
 import java.lang.ref.WeakReference
 
 class BasePlugin : Plugin {
-    override val version: PluginVersion = 0L
-
     private var deletePost: DeletePost? = null
     private var startPost: StartPost? = null
     private var fixPost: FixPost? = null

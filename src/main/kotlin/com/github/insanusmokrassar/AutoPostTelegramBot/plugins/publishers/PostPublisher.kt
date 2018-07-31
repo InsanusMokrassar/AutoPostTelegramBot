@@ -58,8 +58,6 @@ class PostPublisher : Publisher {
         subscribeMaxCount
     )
 
-    override val version: PluginVersion = 1L
-
     private var botWR: WeakReference<TelegramBot>? = null
 
     private var sourceChatId: Long? = null

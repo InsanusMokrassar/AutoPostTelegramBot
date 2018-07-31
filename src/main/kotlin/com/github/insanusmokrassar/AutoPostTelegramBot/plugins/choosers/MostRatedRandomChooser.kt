@@ -4,7 +4,6 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.PluginVersio
 import java.util.*
 
 class MostRatedRandomChooser : RateChooser() {
-    override val version: PluginVersion = 0L
     private val random = Random()
 
     override fun triggerChoose(): Collection<Int> {

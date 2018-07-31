@@ -12,8 +12,6 @@ import kotlinx.coroutines.experimental.launch
 import java.lang.ref.WeakReference
 
 class RatingTimerAutoDisablePlugin : Plugin {
-    override val version: PluginVersion = 0L
-
     override fun onInit(bot: TelegramBot, baseConfig: FinalConfig, pluginManager: PluginManager) {
         val ratingPlugin: RatingPlugin = pluginManager.plugins.firstOrNull {
             it is RatingPlugin

@@ -10,8 +10,6 @@ import org.jetbrains.exposed.sql.transactions.transaction
 import java.lang.ref.WeakReference
 
 class SchedulerPlugin : Plugin {
-    override val version: PluginVersion = 0L
-
     val timerSchedulesTable = PostsSchedulesTable()
 
     private lateinit var enableTimerCommand: EnableTimerCommand
