@@ -42,7 +42,9 @@ behaviours
 
 ## 0.3.9
 
-* Add `Throwable#collectStackTrace` which return as string stacktrace of
+* Added `Throwable#collectStackTrace` which return as string stacktrace of
 caller
-* Add `String#splitByStep`, `String#splitForMessage` and
+* Added `String#splitByStep`, `String#splitForMessage` and
 `String#splitForMessageWithAdditionalStep`
+* Added logger handler for all logger events which was created by bot by
+default
