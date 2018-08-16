@@ -44,3 +44,5 @@ behaviours
 
 * Add `Throwable#collectStackTrace` which return as string stacktrace of
 caller
+* Add `String#splitByStep`, `String#splitForMessage` and
+`String#splitForMessageWithAdditionalStep`
