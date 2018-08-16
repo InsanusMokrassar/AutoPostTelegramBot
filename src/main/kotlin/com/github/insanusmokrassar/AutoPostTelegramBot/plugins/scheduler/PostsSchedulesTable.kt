@@ -1,6 +1,5 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.scheduler
 
-import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostIdMessageId
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.PluginName
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.base.PostsUsedTable

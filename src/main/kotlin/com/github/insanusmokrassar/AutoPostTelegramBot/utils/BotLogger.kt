@@ -1,13 +1,14 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.utils
 
-import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.pluginLogger
+import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.commonLogger
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.executeAsync
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.splitForMessageWithAdditionalStep
 import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.model.request.ParseMode
 import com.pengrad.telegrambot.request.SendMessage
 import java.lang.ref.WeakReference
-import java.util.logging.*
+import java.util.logging.Handler
+import java.util.logging.LogRecord
 
 private class LoggerHandler(
     bot: TelegramBot,
@@ -44,8 +45,8 @@ private class LoggerHandler(
 
 @Synchronized
 fun initLogger(bot: TelegramBot, logsChatId: Long) {
-    pluginLogger.handlers.firstOrNull { it is LoggerHandler } ?: run {
-        pluginLogger.addHandler(
+    commonLogger.handlers.firstOrNull { it is LoggerHandler } ?: run {
+        commonLogger.addHandler(
             LoggerHandler(bot, logsChatId)
         )
     }

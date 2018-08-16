@@ -8,7 +8,6 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.scheduler.Schedul
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscribe
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscribeChecking
 import com.pengrad.telegrambot.TelegramBot
-import kotlinx.coroutines.experimental.launch
 import java.lang.ref.WeakReference
 
 class RatingTimerAutoDisablePlugin : Plugin {
@@ -16,14 +15,14 @@ class RatingTimerAutoDisablePlugin : Plugin {
         val ratingPlugin: RatingPlugin = pluginManager.plugins.firstOrNull {
             it is RatingPlugin
         } as? RatingPlugin ?:let {
-            pluginLogger.warning("Plugin $name was not load for the reason that rating plugin was not found")
+            commonLogger.warning("Plugin $name was not load for the reason that rating plugin was not found")
             return
         }
 
         val schedulerPlugin: SchedulerPlugin = (pluginManager.plugins.firstOrNull {
             it is SchedulerPlugin
         } as? SchedulerPlugin) ?:let {
-            pluginLogger.warning("Plugin $name was not load for the reason that scheduler plugin was not found")
+            commonLogger.warning("Plugin $name was not load for the reason that scheduler plugin was not found")
             return
         }
 
@@ -32,7 +31,7 @@ class RatingTimerAutoDisablePlugin : Plugin {
 
         schedulerPlugin.timerSchedulesTable.postTimeRegisteredChannel.subscribeChecking(
             {
-                pluginLogger.throwing(
+                commonLogger.throwing(
                     name,
                     "register post time scheduler registered",
                     it
@@ -56,7 +55,7 @@ class RatingTimerAutoDisablePlugin : Plugin {
 
         ratingPlugin.postsLikesMessagesTable.ratingMessageRegisteredChannel.subscribe(
             {
-                pluginLogger.throwing(
+                commonLogger.throwing(
                     name,
                     "register post rating enabled",
                     it

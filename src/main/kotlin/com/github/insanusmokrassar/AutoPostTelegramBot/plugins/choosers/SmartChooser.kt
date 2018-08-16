@@ -1,10 +1,9 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.choosers
 
+import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.commonLogger
+import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.database.PostIdRatingPair
 import com.github.insanusmokrassar.IObjectK.interfaces.IObject
 import com.github.insanusmokrassar.IObjectKRealisations.toObject
-import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.PluginVersion
-import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.pluginLogger
-import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.database.PostIdRatingPair
 import kotlinx.coroutines.experimental.async
 import kotlinx.coroutines.experimental.launch
 import org.joda.time.DateTime
@@ -210,10 +209,10 @@ class SmartChooser(
                     it.joinToString("\n", "$name: Uncovered time:\n") {
                         "${coverFormat.print(it.first)} - ${coverFormat.print(it.second)}"
                     }.also {
-                        pluginLogger.warning(it)
+                        commonLogger.warning(it)
                     }
                 } else {
-                    pluginLogger.info("$name: All day covered")
+                    commonLogger.info("$name: All day covered")
                 }
             }
         }

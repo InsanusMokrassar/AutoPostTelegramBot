@@ -12,12 +12,13 @@ class DefaultPluginManager(
     constructor(pluginsConfigs: List<PluginConfig>) : this(
         pluginsConfigs.mapNotNull {
             it.newInstance() ?.also {
-                pluginLogger.info("Plugin ${it.name} instantiated")
+                commonLogger.info("Plugin ${it.name} instantiated")
             }
         }
     )
 
     override fun onInit(bot: TelegramBot, baseConfig: FinalConfig) {
+        val logsChatId = baseConfig.logsChatId
         runBlocking {
             plugins.map {
                 launch {
@@ -26,11 +27,12 @@ class DefaultPluginManager(
                         baseConfig,
                         this@DefaultPluginManager
                     )
-                    pluginLogger.info("Plugin ${it.name} was init")
+                    commonLogger.info("Plugin ${it.name} was init")
                 }
             }.forEach {
                 it.join()
             }
+            commonLogger.info("Plugins was initiated")
         }
     }
 }

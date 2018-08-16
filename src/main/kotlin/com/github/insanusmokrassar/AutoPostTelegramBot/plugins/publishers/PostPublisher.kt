@@ -5,14 +5,14 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.Post
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.FinalConfig
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.PostMessage
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.PluginManager
-import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.PluginVersion
+import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.commonLogger
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.base.commands.deletePost
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.choosers.Chooser
-import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.forwarders.*
+import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.forwarders.Forwarder
+import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.forwarders.ForwardersPlugin
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.executeAsync
 import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.model.Message
-import com.pengrad.telegrambot.model.request.ParseMode
 import com.pengrad.telegrambot.request.*
 import kotlinx.coroutines.experimental.channels.BroadcastChannel
 import kotlinx.coroutines.experimental.launch
@@ -173,13 +173,10 @@ class PostPublisher : Publisher {
             )
         } catch (e: Exception) {
             e.printStackTrace()
-            bot.executeAsync(
-                SendMessage(
-                    sourceChatId,
-                    "Can't publish post:\n```$e```"
-                ).parseMode(
-                    ParseMode.Markdown
-                )
+            commonLogger.throwing(
+                name,
+                "Trying to publish",
+                e
             )
         } finally {
             messagesToDelete.forEach {

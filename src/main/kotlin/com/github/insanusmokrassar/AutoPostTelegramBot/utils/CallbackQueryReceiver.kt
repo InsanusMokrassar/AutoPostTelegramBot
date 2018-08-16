@@ -4,7 +4,6 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.callbackQueryListener
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscribe
 import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.model.CallbackQuery
-import kotlinx.coroutines.experimental.launch
 import java.lang.ref.WeakReference
 
 abstract class CallbackQueryReceiver(

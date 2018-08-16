@@ -1,7 +1,5 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.plugins
 
-import com.github.insanusmokrassar.IObjectK.interfaces.IObject
-import com.github.insanusmokrassar.IObjectKRealisations.toObject
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsMessagesTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.FinalConfig
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.*
@@ -9,6 +7,8 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.base.commands.del
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.RatingPlugin
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.database.PostIdRatingPair
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscribeChecking
+import com.github.insanusmokrassar.IObjectK.interfaces.IObject
+import com.github.insanusmokrassar.IObjectKRealisations.toObject
 import com.pengrad.telegrambot.TelegramBot
 import kotlinx.coroutines.experimental.delay
 import kotlinx.coroutines.experimental.launch
@@ -34,7 +34,7 @@ class GarbageCollector(
         val ratingPlugin = (pluginManager.plugins.firstOrNull {
             it is RatingPlugin
         } as? RatingPlugin) ?:let {
-            pluginLogger.warning(
+            commonLogger.warning(
                 "Plugin $name was not correctly inited: can't get data about ratings"
             )
             return

@@ -1,7 +1,7 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.database
 
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsTable
-import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.pluginLogger
+import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.commonLogger
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscribe
 import kotlinx.coroutines.experimental.channels.BroadcastChannel
 import kotlinx.coroutines.experimental.launch
@@ -31,7 +31,7 @@ class PostsLikesTable : Table() {
     init {
         PostsTable.postRemovedChannel.subscribe(
             {
-                pluginLogger.throwing(
+                commonLogger.throwing(
                     "PostsLikesTable",
                     "Clear likes",
                     it

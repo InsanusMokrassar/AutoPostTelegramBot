@@ -1,6 +1,6 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.scheduler
 
-import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.pluginLogger
+import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.commonLogger
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.publishers.Publisher
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscribe
 import kotlinx.coroutines.experimental.*
@@ -52,7 +52,7 @@ class Scheduler(
         try {
             currentPlannedPostTimeAndJob = by to createScheduledJob(by)
         } catch (e: Exception) {
-            pluginLogger.throwing(
+            commonLogger.throwing(
                 Scheduler::class.java.simpleName,
                 "update job",
                 e

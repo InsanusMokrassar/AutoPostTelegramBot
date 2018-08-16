@@ -1,10 +1,10 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.receivers
 
+import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.database.PostsLikesTable
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.CallbackQueryReceiver
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.queryAnswer
 import com.github.insanusmokrassar.IObjectK.exceptions.ReadException
 import com.github.insanusmokrassar.IObjectKRealisations.toIObject
-import com.github.insanusmokrassar.AutoPostTelegramBot.utils.CallbackQueryReceiver
-import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.database.PostsLikesTable
-import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.queryAnswer
 import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.model.CallbackQuery
 

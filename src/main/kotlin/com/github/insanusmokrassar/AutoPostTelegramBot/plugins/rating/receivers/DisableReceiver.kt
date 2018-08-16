@@ -1,12 +1,12 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.receivers
 
+import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.database.PostsLikesMessagesTable
+import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.disableLikesForPost
+import com.github.insanusmokrassar.AutoPostTelegramBot.realMessagesListener
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.CallbackQueryReceiver
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.*
 import com.github.insanusmokrassar.IObjectK.exceptions.ReadException
 import com.github.insanusmokrassar.IObjectKRealisations.toIObject
-import com.github.insanusmokrassar.AutoPostTelegramBot.utils.CallbackQueryReceiver
-import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.disableLikesForPost
-import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.database.PostsLikesMessagesTable
-import com.github.insanusmokrassar.AutoPostTelegramBot.realMessagesListener
-import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.*
 import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.model.CallbackQuery
 import com.pengrad.telegrambot.model.request.ParseMode

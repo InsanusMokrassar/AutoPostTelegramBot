@@ -3,15 +3,13 @@ package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.base
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.PostTransactionTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsMessagesTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsTable
-import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.FinalConfig
-import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.*
-import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.*
+import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.commonLogger
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.executeAsync
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscribeChecking
 import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.model.request.ParseMode
 import com.pengrad.telegrambot.request.DeleteMessage
 import com.pengrad.telegrambot.request.SendMessage
-import kotlinx.coroutines.experimental.channels.ReceiveChannel
-import kotlinx.coroutines.experimental.launch
 import java.lang.ref.WeakReference
 
 private fun registerPostMessage(
@@ -46,7 +44,7 @@ private fun registerPostMessage(
             }
         )
     } catch (e: Exception) {
-        pluginLogger.throwing(
+        commonLogger.throwing(
             DefaultPostRegisteredMessage::class.java.simpleName,
             "Register message",
             e

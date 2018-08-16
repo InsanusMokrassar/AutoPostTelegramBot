@@ -3,7 +3,7 @@ package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.PostTransactionTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsMessagesTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsTable
-import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.pluginLogger
+import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.commonLogger
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.database.PostsLikesMessagesTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.database.PostsLikesTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.receivers.*
@@ -45,7 +45,7 @@ class RegisteredRefresher(
     init {
         postsLikesTable.ratingsChannel.subscribeChecking(
             {
-                pluginLogger.throwing(
+                commonLogger.throwing(
                     "RegisteredRefresher",
                     "updateMessageId",
                     it
@@ -77,7 +77,7 @@ class RegisteredRefresher(
 
         PostsTable.postRemovedChannel.subscribeChecking(
             {
-                pluginLogger.throwing(
+                commonLogger.throwing(
                     "RegisteredRefresher",
                     "remove registered post-message link",
                     it
