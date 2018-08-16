@@ -48,3 +48,4 @@ caller
 `String#splitForMessageWithAdditionalStep`
 * Added logger handler for all logger events which was created by bot by
 default
+* Added `commonLogger` and deprecated `pluginLogger`
