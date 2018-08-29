@@ -10,8 +10,6 @@ import org.slf4j.LoggerFactory
 import java.io.IOException
 import java.lang.ref.WeakReference
 import java.util.concurrent.TimeUnit
-import kotlin.properties.Delegates
-import kotlin.properties.Delegates.observable
 
 private val logger = LoggerFactory.getLogger("TelegramAsyncExecutions")
 
