@@ -5,11 +5,13 @@ import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.request.AnswerCallbackQuery
 import com.pengrad.telegrambot.request.BaseRequest
 import com.pengrad.telegrambot.response.BaseResponse
-import kotlinx.coroutines.experimental.async
-import kotlinx.coroutines.experimental.delay
+import kotlinx.coroutines.experimental.*
 import org.slf4j.LoggerFactory
 import java.io.IOException
 import java.lang.ref.WeakReference
+import java.util.concurrent.TimeUnit
+import kotlin.properties.Delegates
+import kotlin.properties.Delegates.observable
 
 private val logger = LoggerFactory.getLogger("TelegramAsyncExecutions")
 
@@ -70,6 +72,45 @@ fun <T: BaseRequest<T, R>, R: BaseResponse> TelegramBot.executeAsync(
                     retriesDelay
             )
     )
+}
+
+@Throws(IOException::class, IllegalStateException::class)
+fun <T: BaseRequest<T, R>, R: BaseResponse> TelegramBot.executeSync(
+    request: T,
+    retries: Int? = 0,
+    retriesDelay: Long = 1000L
+): R {
+    val toDestroy = launch {
+        delay(Long.MAX_VALUE, TimeUnit.DAYS)
+        throw IllegalStateException("It is impossible:)")
+    }
+    lateinit var result: R
+    runBlocking {
+        executeAsync(
+            request,
+            {
+                _, ioException ->
+                runBlocking {
+                    toDestroy.cancel(ioException)
+                }
+            },
+            {
+                _, r ->
+                result = r
+                runBlocking {
+                    toDestroy.cancel()
+                }
+            },
+            retries,
+            retriesDelay
+        )
+        toDestroy.join()
+    }
+    try {
+        return result
+    } catch (e: UninitializedPropertyAccessException) {
+        throw IllegalStateException("Result was not set but toDestroy was cancelled")
+    }
 }
 
 fun TelegramBot.queryAnswer(
