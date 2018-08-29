@@ -49,3 +49,14 @@ caller
 * Added logger handler for all logger events which was created by bot by
 default
 * Added `commonLogger` and deprecated `pluginLogger`
+
+## 0.4.0
+
+* Updated dependencies
+    * `Kotlin` -> 1.2.61
+    * `Kotlin Coroutines` -> 0.25.0
+    * `TelegramBot` -> 4.1.0
+* Added `TelegramBot#executeSync` (as a replacement for `execute` of `TelegramBot`,
+which block all requests data thread)
+* Added `BotLogger` plugin and removed init by default of `LogHandler`
+* Small fixes
