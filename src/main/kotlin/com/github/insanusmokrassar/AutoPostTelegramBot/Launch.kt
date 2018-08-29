@@ -4,6 +4,7 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.Post
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.Config
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.DefaultPluginManager
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.executeSync
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscribe
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.initHandler
 import com.github.insanusmokrassar.BotIncomeMessagesListener.*
@@ -86,7 +87,7 @@ fun main(args: Array<String>) {
         }
     }
 
-    if (!bot.execute(GetChat(config.sourceChatId)).isOk || !bot.execute(GetChat(config.targetChatId)).isOk) {
+    if (!bot.executeSync(GetChat(config.sourceChatId)).isOk || !bot.executeSync(GetChat(config.targetChatId)).isOk) {
         throw IllegalArgumentException("Can't check chats availability")
     }
 

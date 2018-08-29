@@ -3,8 +3,7 @@ package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.commands
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.database.PostsLikesTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.commands.Command
-import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.executeAsync
-import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.toTable
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.*
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.makeLinkToMessage
 import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.model.Message
@@ -53,7 +52,7 @@ class MostRated(
             mostRated.mapNotNull {
                 PostsTable.postRegisteredMessage(it)
             }.forEach {
-                bot.execute(
+                bot.executeSync(
                     ForwardMessage(
                         chatId,
                         chatId,
