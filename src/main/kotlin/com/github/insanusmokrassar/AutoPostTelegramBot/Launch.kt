@@ -6,7 +6,6 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.Config
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.DefaultPluginManager
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.executeSync
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscribe
-import com.github.insanusmokrassar.AutoPostTelegramBot.utils.initHandler
 import com.github.insanusmokrassar.BotIncomeMessagesListener.*
 import com.github.insanusmokrassar.IObjectKRealisations.load
 import com.github.insanusmokrassar.IObjectKRealisations.toObject
@@ -90,8 +89,6 @@ fun main(args: Array<String>) {
     if (!bot.executeSync(GetChat(config.sourceChatId)).isOk || !bot.executeSync(GetChat(config.targetChatId)).isOk) {
         throw IllegalArgumentException("Can't check chats availability")
     }
-
-    initHandler(bot, config.logsChatId)
 
     val pluginManager = DefaultPluginManager(
         config.pluginsConfigs
