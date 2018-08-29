@@ -34,8 +34,8 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <kotlin.version>1.2.60</kotlin.version>
-        <kotlin.coroutines.version>0.24.0</kotlin.coroutines.version>
+        <kotlin.version>1.2.61</kotlin.version>
+        <kotlin.coroutines.version>0.25.0</kotlin.coroutines.version>
         <dokka.version>0.9.16</dokka.version>
         <gpg.version>1.6</gpg.version>
         <assembly.version>2.6</assembly.version>
@@ -219,6 +219,11 @@
             <groupId>com.github.insanusmokrassar</groupId>
             <artifactId>BotIncomeMessagesListener</artifactId>
             <version>0.9b</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.pengrad</groupId>
+            <artifactId>java-telegram-bot-api</artifactId>
+            <version>4.1.0</version>
         </dependency>
 
         <dependency>
