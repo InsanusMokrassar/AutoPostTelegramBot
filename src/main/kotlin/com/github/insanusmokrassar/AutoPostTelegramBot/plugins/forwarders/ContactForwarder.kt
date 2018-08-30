@@ -1,6 +1,7 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.forwarders
 
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.PostMessage
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.executeSync
 import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.model.Message
 import com.pengrad.telegrambot.request.SendContact
@@ -35,7 +36,7 @@ class ContactForwarder : Forwarder {
             }
         }.map {
             pair ->
-            bot.execute(pair.second).let {
+            bot.executeSync(pair.second).let {
                 response ->
                 response.message() ?.let {
                     pair.first to it

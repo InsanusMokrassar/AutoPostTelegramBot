@@ -11,6 +11,7 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.choosers.Chooser
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.forwarders.Forwarder
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.forwarders.ForwardersPlugin
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.executeAsync
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.executeSync
 import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.model.Message
 import com.pengrad.telegrambot.request.*
@@ -98,7 +99,7 @@ class PostPublisher : Publisher {
         val messagesToDelete = mutableListOf<ChatIdMessageIdPair>()
 
         try {
-            bot.execute(
+            bot.executeSync(
                 SendMessage(
                     logsChatId,
                     "Start post"
@@ -114,7 +115,7 @@ class PostPublisher : Publisher {
                 }
                 it.forEach {
                     message ->
-                    bot.execute(
+                    bot.executeSync(
                         ForwardMessage(
                             logsChatId,
                             sourceChatId,
@@ -146,7 +147,7 @@ class PostPublisher : Publisher {
                         it.value
                     }
                 }.forEach {
-                    bot.execute(
+                    bot.executeSync(
                         ForwardMessage(
                             logsChatId,
                             it.chat().id(),

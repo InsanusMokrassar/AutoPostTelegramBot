@@ -19,7 +19,9 @@ private fun TelegramBot.sendLogRecord(record: String, chatId: Long) {
             record
         ).parseMode(
             ParseMode.Markdown
-        )
+        ),
+        retries = null,
+        retriesDelay = 10000L
     )
 }
 

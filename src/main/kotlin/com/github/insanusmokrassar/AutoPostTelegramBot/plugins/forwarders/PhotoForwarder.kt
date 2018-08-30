@@ -1,6 +1,7 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.forwarders
 
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.PostMessage
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.executeSync
 import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.model.Message
 import com.pengrad.telegrambot.model.request.ParseMode
@@ -19,7 +20,7 @@ class PhotoForwarder : Forwarder {
         return messages.mapNotNull {
             postMessage ->
             val message = postMessage.message ?: return@mapNotNull null
-            postMessage to message.photo().maxBy { it.fileSize() } ?.let {
+            message.photo().maxBy { it.fileSize() } ?.let {
                 SendPhoto(
                     targetChatId,
                     it.fileId()
@@ -29,10 +30,12 @@ class PhotoForwarder : Forwarder {
                     caption(it)
                 }
                 parseMode(ParseMode.Markdown)
+            } ?.let {
+                postMessage to it
             }
         }.map {
             pair ->
-            bot.execute(pair.second).let {
+            bot.executeSync(pair.second).let {
                 response ->
                 response.message() ?.let {
                     pair.first to it

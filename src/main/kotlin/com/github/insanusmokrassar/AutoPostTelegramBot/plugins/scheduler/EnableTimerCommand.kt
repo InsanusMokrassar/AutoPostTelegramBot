@@ -5,6 +5,7 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.Post
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.commands.Command
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.executeAsync
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.executeSync
 import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.model.Message
 import com.pengrad.telegrambot.model.request.ParseMode
@@ -83,7 +84,7 @@ class EnableTimerCommand(
                     parsed ->
                     postsSchedulesTable.registerPostTime(postId, parsed)
 
-                    bot.execute(
+                    bot.executeSync(
                         ForwardMessage(
                             logsChatId,
                             chatId,

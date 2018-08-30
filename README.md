@@ -233,6 +233,15 @@
     ```
     Отсутствие `manualCheckDelay` в настройках отключит проверку раз в какое-то время и будет реагировать
     только на события изменений в плагине `RatingPlugin`
+* [BotLogger](src/main/kotlin/com/github/insanusmokrassar/AutoPostTelegramBot/plugins/BotLogger.kt) - по-факту,
+инициализирует `LogHandler` через вызов
+[initHandler](src/main/kotlin/com/github/insanusmokrassar/AutoPostTelegramBot/utils/BotLogger.kt#97) в момент
+инициализации плагина. Подключение:
+    ```json
+        {
+          "classname": "com.github.insanusmokrassar.AutoPostTelegramBot.plugins.BotLogger"
+        }
+    ```
 
 ## Секции конфигурации
 

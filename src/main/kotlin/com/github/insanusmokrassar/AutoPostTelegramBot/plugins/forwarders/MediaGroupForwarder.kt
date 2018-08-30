@@ -1,6 +1,7 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.forwarders
 
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.PostMessage
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.executeSync
 import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.model.Message
 import com.pengrad.telegrambot.model.request.*
@@ -52,7 +53,7 @@ class MediaGroupForwarder : Forwarder {
             ) to it
         }.flatMap {
             pair ->
-            bot.execute(pair.first).let {
+            bot.executeSync(pair.first).let {
                 response ->
                 response.messages() ?.let {
                     (0 until pair.second.size).map {
