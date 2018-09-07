@@ -63,4 +63,5 @@ which block all requests data thread)
 
 ## 0.4.1
 
-
+* Hotfixes for `0.4.0` version
+* Update `Kotlin Coroutines` -> 0.25.3
