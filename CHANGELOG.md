@@ -60,3 +60,8 @@ default
 which block all requests data thread)
 * Added `BotLogger` plugin and removed init by default of `LogHandler`
 * Small fixes
+
+## 0.4.1
+
+* Hotfixes for `0.4.0` version
+* Update `Kotlin Coroutines` -> 0.25.3

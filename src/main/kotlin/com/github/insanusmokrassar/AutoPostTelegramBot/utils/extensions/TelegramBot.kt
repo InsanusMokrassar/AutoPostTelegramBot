@@ -72,6 +72,11 @@ fun <T: BaseRequest<T, R>, R: BaseResponse> TelegramBot.executeAsync(
     )
 }
 
+private class Container<T>(
+    var value: T? = null,
+    var throwable: Throwable? = null
+)
+
 @Throws(IOException::class, IllegalStateException::class)
 fun <T: BaseRequest<T, R>, R: BaseResponse> TelegramBot.executeSync(
     request: T,
@@ -82,19 +87,20 @@ fun <T: BaseRequest<T, R>, R: BaseResponse> TelegramBot.executeSync(
         delay(Long.MAX_VALUE, TimeUnit.DAYS)
         throw IllegalStateException("It is impossible:)")
     }
-    lateinit var result: R
+    val container = Container<R>()
     runBlocking {
         executeAsync(
             request,
             {
                 _, ioException ->
+                container.throwable = ioException
                 runBlocking {
-                    toDestroy.cancel(ioException)
+                    toDestroy.cancel()
                 }
             },
             {
                 _, r ->
-                result = r
+                container.value = r
                 runBlocking {
                     toDestroy.cancel()
                 }
@@ -104,11 +110,11 @@ fun <T: BaseRequest<T, R>, R: BaseResponse> TelegramBot.executeSync(
         )
         toDestroy.join()
     }
-    try {
-        return result
-    } catch (e: UninitializedPropertyAccessException) {
-        throw IllegalStateException("Result was not set but toDestroy was cancelled")
-    }
+    return container.value
+                ?: throw container.throwable
+                ?: throw IllegalStateException(
+                    "Result was not set but toDestroy was cancelled"
+                )
 }
 
 fun TelegramBot.queryAnswer(
