@@ -1,8 +1,7 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.utils
 
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.commonLogger
-import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.executeAsync
-import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.splitForMessageWithAdditionalStep
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.*
 import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.model.request.ParseMode
 import com.pengrad.telegrambot.request.SendMessage
@@ -13,6 +12,18 @@ import java.util.logging.*
 import java.util.logging.Formatter
 
 private fun TelegramBot.sendLogRecord(record: String, chatId: Long) {
+    executeSync(
+        SendMessage(
+            chatId,
+            record
+        ).parseMode(
+            ParseMode.Markdown
+        ),
+        retries = null
+    )
+}
+
+private fun TelegramBot.sendLogRecordAsync(record: String, chatId: Long) {
     executeAsync(
         SendMessage(
             chatId,
@@ -20,8 +31,7 @@ private fun TelegramBot.sendLogRecord(record: String, chatId: Long) {
         ).parseMode(
             ParseMode.Markdown
         ),
-        retries = null,
-        retriesDelay = 10000L
+        retries = null
     )
 }
 
@@ -55,13 +65,14 @@ private class LoggerHandler(
         runBlocking {
             logsSendingJob ?.cancelAndJoin()
             while (logsQueue.isNotEmpty()) {
-                botWR.get() ?.sendLogRecord() ?: logsQueue.poll()
+                botWR.get() ?.sendLogRecord(true) ?: logsQueue.poll()
             }
         }
     }
 
     override fun close() {
         botWR.clear()
+        logsQueue.clear()
     }
 
     private fun addLogRecord(record: String) {
@@ -86,7 +97,11 @@ private class LoggerHandler(
         }
     }
 
-    private fun TelegramBot.sendLogRecord() = sendLogRecord(logsQueue.poll(), logsChatId)
+    private fun TelegramBot.sendLogRecord(immediataly: Boolean = false) = if (immediataly) {
+        sendLogRecordAsync(logsQueue.poll(), logsChatId)
+    } else {
+        sendLogRecord(logsQueue.poll(), logsChatId)
+    }
 
     override fun getFormatter(): Formatter {
         return super.getFormatter() ?: defaultFormatter
