@@ -21,7 +21,7 @@ private fun sendHelpForUsage(
     bot.executeAsync(
         SendMessage(
             chatId,
-            "Usage: `/$disableSchedulePublishCommand`.\n" +
+            "Usage: `$disableSchedulePublishCommand`.\n" +
                 "Reply post registered message and write command"
         ).parseMode(
             ParseMode.Markdown
