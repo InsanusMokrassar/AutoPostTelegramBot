@@ -1,8 +1,10 @@
-package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.scheduler
+package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.scheduler.commands
 
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.exceptions.NoRowFoundException
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsMessagesTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsTable
+import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.scheduler.PostsSchedulesTable
+import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.scheduler.converters
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.commands.Command
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.executeAsync
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.executeSync
@@ -10,7 +12,6 @@ import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.model.Message
 import com.pengrad.telegrambot.model.request.ParseMode
 import com.pengrad.telegrambot.request.*
-import org.joda.time.DateTime
 import java.lang.ref.WeakReference
 
 private val availableConvertersText = converters.joinToString("\n") {
@@ -69,19 +70,14 @@ class EnableTimerCommand(
                 }
             }
 
-            var parsed: DateTime? = null
-            converters.firstOrNull {
-                converter ->
-                parsed ?.let {
-                    false
-                } ?:let {
-                    parsed = converter.tryConvert(preparsedText)
-                    true
-                }
+            converters.map {
+                it to it.tryConvert(preparsedText)
+            }.firstOrNull {
+                it.second != null
             } ?.also {
-                converter ->
-                parsed ?.also {
-                    parsed ->
+                (converter, parsed) ->
+                parsed ?: return@also
+                parsed.also {
                     postsSchedulesTable.registerPostTime(postId, parsed)
 
                     bot.executeSync(

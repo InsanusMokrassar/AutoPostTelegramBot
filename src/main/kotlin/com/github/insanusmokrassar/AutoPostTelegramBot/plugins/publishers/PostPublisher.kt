@@ -172,7 +172,7 @@ class PostPublisher : Publisher {
                 logsChatId,
                 postId
             )
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             e.printStackTrace()
             commonLogger.throwing(
                 name,

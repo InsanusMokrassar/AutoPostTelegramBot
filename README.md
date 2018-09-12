@@ -209,7 +209,7 @@
         }
         ```
 * [TimerTrigger](src/main/kotlin/com/github/insanusmokrassar/AutoPostTelegramBot/plugins/triggers/TimerTriggerStrategy.kt)
-    \- аредоставляет возможность осуществлять автоматическую публикацию раз в строго определённое время. Для
+    \- предоставляет возможность осуществлять автоматическую публикацию раз в строго определённое время. Для
     работы требует подключенные `Chooser` и `Publisher` плагины. В момент триггера спросит у `Chooser`
     посты для публикации и передаст их `Publisher`. Подключение:
     ```json
@@ -218,6 +218,19 @@
           "params": {
             "delay": 3600000
           }
+        }
+    ```
+* [SchedulerPlugin](src/main/kotlin/com/github/insanusmokrassar/AutoPostTelegramBot/plugins/scheduler/SchedulerPlugin.kt)
+    \- позволяет ставить посты на публикацию в определенное время (в том числе на конкретную дату). Добавляет
+    команды:
+    * `/setPublishTime (time format)` - установка таймера на пост
+    * `/getPublishSchedule[ число]` - пересылает все/определённое число постов, выставленных на таймер
+    * `/disableSchedulePublish` - исключает из публикации по таймеру пост
+    
+    Подключение:
+    ```json
+        {
+          "classname": "com.github.insanusmokrassar.AutoPostTelegramBot.plugins.scheduler.SchedulerPlugin"
         }
     ```
 * [GarbageCollector](src/main/kotlin/com/github/insanusmokrassar/AutoPostTelegramBot/plugins/GarbageCollector.kt) - как 

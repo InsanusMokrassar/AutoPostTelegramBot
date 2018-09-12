@@ -5,6 +5,7 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.Plugin
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.PluginManager
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.base.BasePlugin
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.publishers.Publisher
+import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.scheduler.commands.*
 import com.pengrad.telegrambot.TelegramBot
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -14,6 +15,8 @@ class SchedulerPlugin : Plugin {
     val timerSchedulesTable = PostsSchedulesTable()
 
     private lateinit var enableTimerCommand: EnableTimerCommand
+    private lateinit var getSchedulesCommand: GetSchedulesCommand
+    private lateinit var disableTimerCommand: DisableTimerCommand
 
     private lateinit var scheduler: Scheduler
 
@@ -32,10 +35,21 @@ class SchedulerPlugin : Plugin {
             timerSchedulesTable,
             pluginManager.plugins.firstOrNull { it is Publisher } as? Publisher ?: return
         )
+        val botWR = WeakReference(bot)
+
         enableTimerCommand = EnableTimerCommand(
             timerSchedulesTable,
-            WeakReference(bot),
+            botWR,
             baseConfig.logsChatId
+        )
+        getSchedulesCommand = GetSchedulesCommand(
+            timerSchedulesTable,
+            botWR,
+            baseConfig.sourceChatId
+        )
+        disableTimerCommand = DisableTimerCommand(
+            timerSchedulesTable,
+            botWR
         )
     }
 }
