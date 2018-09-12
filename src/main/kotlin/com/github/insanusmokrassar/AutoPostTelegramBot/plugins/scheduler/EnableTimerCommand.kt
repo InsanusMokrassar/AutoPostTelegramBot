@@ -69,19 +69,14 @@ class EnableTimerCommand(
                 }
             }
 
-            var parsed: DateTime? = null
-            converters.firstOrNull {
-                converter ->
-                parsed ?.let {
-                    false
-                } ?:let {
-                    parsed = converter.tryConvert(preparsedText)
-                    true
-                }
+            converters.map {
+                it to it.tryConvert(preparsedText)
+            }.firstOrNull {
+                it.second != null
             } ?.also {
-                converter ->
-                parsed ?.also {
-                    parsed ->
+                (converter, parsed) ->
+                parsed ?: return@also
+                parsed.also {
                     postsSchedulesTable.registerPostTime(postId, parsed)
 
                     bot.executeSync(

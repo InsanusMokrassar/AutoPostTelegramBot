@@ -65,3 +65,7 @@ which block all requests data thread)
 
 * Hotfixes for `0.4.0` version
 * Update `Kotlin Coroutines` -> 0.25.3
+
+## 0.4.2
+
+* Fixes in scheduler plugin
