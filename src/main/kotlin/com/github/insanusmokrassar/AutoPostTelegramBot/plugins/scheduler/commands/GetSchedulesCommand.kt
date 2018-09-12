@@ -1,11 +1,9 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.scheduler.commands
 
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsMessagesTable
-import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.commonLogger
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.scheduler.PostsSchedulesTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.commands.Command
-import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.executeAsync
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.executeSync
 import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.model.Message
@@ -25,7 +23,7 @@ class GetSchedulesCommand(
     override fun onCommand(updateId: Int, message: Message) {
         val bot = botWR.get() ?: return
 
-        val userId = message.from().id()
+        val chatId = message.from() ?.id() ?: message.chat().id()
 
         val count = message.text().split(" ").let {
             if (it.size == 1) {
@@ -38,7 +36,7 @@ class GetSchedulesCommand(
         try {
             bot.executeSync(
                 SendMessage(
-                    userId,
+                    chatId,
                     "Let me prepare data"
                 )
             )
@@ -63,14 +61,14 @@ class GetSchedulesCommand(
             }.forEach {
                 bot.executeSync(
                     ForwardMessage(
-                        userId,
+                        chatId,
                         sourceChatId,
                         PostsMessagesTable.getMessagesOfPost(it.first).firstOrNull() ?.messageId ?: return@forEach
                     )
                 )
                 bot.executeSync(
                     SendMessage(
-                        userId,
+                        chatId,
                         "Post time: ${it.second}"
                     )
                 )
