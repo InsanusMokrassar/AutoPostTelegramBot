@@ -70,3 +70,4 @@ which block all requests data thread)
 
 * Fixes in scheduler plugin
 * Added `/getPublishSchedule` command
+* Added `/disableSchedulePublish` command
