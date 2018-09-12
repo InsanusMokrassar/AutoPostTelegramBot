@@ -73,26 +73,26 @@ fun <T: BaseRequest<T, R>, R: BaseResponse> TelegramBot.executeAsync(
 }
 
 @Throws(IOException::class, IllegalStateException::class)
-fun <T: BaseRequest<T, R>, R: BaseResponse> TelegramBot.deferredExecute(
+fun <T: BaseRequest<T, R>, R: BaseResponse> TelegramBot.executeSync(
     request: T,
     retries: Int? = 0,
     retriesDelay: Long = 1000L
-): Deferred<R> {
-    return async {
-        var tryies = 0
-        var lastError: Throwable? = null
-        while (retries == null || tryies <= retries) {
-            tryies++
-            try {
-                return@async execute(request)
-            } catch (e: Throwable) {
-                lastError = e
-                delay(retriesDelay)
-            }
+): R {
+    var tryies = 0
+    var lastError: Throwable? = null
+    while (retries == null || tryies <= retries) {
+        tryies++
+        try {
+            return execute(request)
+        } catch (e: Throwable) {
+            lastError = e
+            Thread.sleep(retriesDelay)
         }
-        throw (lastError ?: IllegalStateException("Can't execute request: $request"))
     }
+    throw (lastError ?: IllegalStateException("Can't execute request: $request"))
 }
+
+
 
 fun TelegramBot.queryAnswer(
         id: String,
