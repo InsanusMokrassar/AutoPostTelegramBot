@@ -72,49 +72,26 @@ fun <T: BaseRequest<T, R>, R: BaseResponse> TelegramBot.executeAsync(
     )
 }
 
-private class Container<T>(
-    var value: T? = null,
-    var throwable: Throwable? = null
-)
-
 @Throws(IOException::class, IllegalStateException::class)
-fun <T: BaseRequest<T, R>, R: BaseResponse> TelegramBot.executeSync(
+fun <T: BaseRequest<T, R>, R: BaseResponse> TelegramBot.deferredExecute(
     request: T,
     retries: Int? = 0,
     retriesDelay: Long = 1000L
-): R {
-    val toDestroy = launch {
-        delay(Long.MAX_VALUE, TimeUnit.DAYS)
-        throw IllegalStateException("It is impossible:)")
+): Deferred<R> {
+    return async {
+        var tryies = 0
+        var lastError: Throwable? = null
+        while (retries == null || tryies <= retries) {
+            tryies++
+            try {
+                return@async execute(request)
+            } catch (e: Throwable) {
+                lastError = e
+                delay(retriesDelay)
+            }
+        }
+        throw (lastError ?: IllegalStateException("Can't execute request: $request"))
     }
-    val container = Container<R>()
-    runBlocking {
-        executeAsync(
-            request,
-            {
-                _, ioException ->
-                container.throwable = ioException
-                runBlocking {
-                    toDestroy.cancel()
-                }
-            },
-            {
-                _, r ->
-                container.value = r
-                runBlocking {
-                    toDestroy.cancel()
-                }
-            },
-            retries,
-            retriesDelay
-        )
-        toDestroy.join()
-    }
-    return container.value
-                ?: throw container.throwable
-                ?: throw IllegalStateException(
-                    "Result was not set but toDestroy was cancelled"
-                )
 }
 
 fun TelegramBot.queryAnswer(
