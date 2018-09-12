@@ -71,3 +71,4 @@ which block all requests data thread)
 * Fixes in scheduler plugin
 * Added `/getPublishSchedule` command
 * Added `/disableSchedulePublish` command
+* Now publisher will automatically remove `/publishPost` message

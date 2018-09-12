@@ -8,6 +8,7 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.executeA
 import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.model.Message
 import com.pengrad.telegrambot.model.request.ParseMode
+import com.pengrad.telegrambot.request.DeleteMessage
 import com.pengrad.telegrambot.request.SendMessage
 import java.lang.ref.WeakReference
 
@@ -102,6 +103,12 @@ class PublishPost(
                             it
                         )
                     }
+                    bot.executeAsync(
+                        DeleteMessage(
+                            message.chat().id(),
+                            message.messageId()
+                        )
+                    )
                 }
             )
         }
