@@ -69,3 +69,4 @@ which block all requests data thread)
 ## 0.4.2
 
 * Fixes in scheduler plugin
+* Added `/getPublishSchedule` command
