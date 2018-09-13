@@ -72,3 +72,5 @@ which block all requests data thread)
 * Added `/getPublishSchedule` command
 * Added `/disableSchedulePublish` command
 * Now publisher will automatically remove `/publishPost` message
+
+## 0.4.3
