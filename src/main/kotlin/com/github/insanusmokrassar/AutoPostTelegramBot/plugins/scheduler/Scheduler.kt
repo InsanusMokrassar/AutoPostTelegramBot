@@ -50,6 +50,7 @@ class Scheduler(
 
     private fun updateJob(by: PostIdPostTime)  {
         try {
+            currentPlannedPostTimeAndJob ?.second ?.cancel()
             currentPlannedPostTimeAndJob = by to createScheduledJob(by)
         } catch (e: Exception) {
             commonLogger.throwing(
