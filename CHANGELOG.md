@@ -75,6 +75,7 @@ which block all requests data thread)
 
 ## 0.4.3
 
+* **Now posts contain creation datetime** (look at `PostsTable#getPostCreationDateTime(Int)`)
 * Update `BotLogger` behaviour
 * Fix problem with canceling of next scheduled job for `SchedulerPlugin`
 * Fix behaviour of GetSchedulesCommand when queue is empty
