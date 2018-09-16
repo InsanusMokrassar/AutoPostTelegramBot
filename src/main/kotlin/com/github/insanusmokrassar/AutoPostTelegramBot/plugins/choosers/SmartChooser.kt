@@ -1,5 +1,6 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.choosers
 
+import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.commonLogger
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.database.PostIdRatingPair
 import com.github.insanusmokrassar.IObjectK.interfaces.IObject
@@ -85,7 +86,9 @@ private class SmartChooserConfigItem (
         null
     ),
     val sort: String = defaultSort,
-    val count: Int = 1
+    val count: Int = 1,
+    val minAge: Long? = null,
+    val maxAge: Long? = null
 ) {
     private val zeroHour: DateTime by lazy {
         timeFormat.parseDateTime("00:00")
@@ -97,6 +100,18 @@ private class SmartChooserConfigItem (
 
     private val timeZone by lazy {
         DateTimeZone.forID(timeOffset)
+    }
+
+    private val minAgeAsDateTime: DateTime? by lazy {
+        minAge ?.let {
+            DateTime.now().withZone(DateTimeZone.UTC).withMillis(it).withZone(DateTimeZone.getDefault())
+        }
+    }
+
+    private val maxAgeAsDateTime: DateTime? by lazy {
+        maxAge ?.let {
+            DateTime.now().withZone(DateTimeZone.UTC).withMillis(it).withZone(DateTimeZone.getDefault())
+        }
     }
 
     private val timePairs: List<Pair<DateTime, DateTime>> by lazy {
@@ -153,6 +168,19 @@ private class SmartChooserConfigItem (
 
     val chooser: InnerChooser?
         get() = commonInnerChoosers[sort]
+
+    fun checkPostAge(postId: Int): Boolean {
+        val postDateTime: DateTime = PostsTable.getPostCreationDateTime(postId) ?: return false
+        val minIsOk = minAgeAsDateTime ?.let {
+            minDateTime ->
+            postDateTime.plus(minDateTime.millis).isBeforeNow
+        } ?: true
+        val maxIsOk = maxAgeAsDateTime ?.let {
+            minDateTime ->
+            postDateTime.plus(minDateTime.millis).isAfterNow
+        } ?: true
+        return minIsOk && maxIsOk
+    }
 
     override fun toString(): String {
         val stringBuilder = StringBuilder()
@@ -224,7 +252,10 @@ class SmartChooser(
             postsLikesTable ?.getRateRange(
                 it.minRate,
                 it.maxRate
-            )
+            ) ?.filter {
+                (postId, _) ->
+                actualItem.checkPostAge(postId)
+            }
         } ?.let {
             chosenList ->
             actualItem.chooser ?.invoke(
