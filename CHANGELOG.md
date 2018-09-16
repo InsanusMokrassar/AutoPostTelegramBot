@@ -74,3 +74,5 @@ which block all requests data thread)
 * Now publisher will automatically remove `/publishPost` message
 
 ## 0.4.3
+
+* Update `BotLogger` behaviour
