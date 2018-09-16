@@ -4,6 +4,7 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.Post
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.commonLogger
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.scheduler.PostsSchedulesTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.commands.Command
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.executeAsync
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.executeSync
 import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.model.Message
@@ -58,21 +59,33 @@ class GetSchedulesCommand(
                 } else {
                     it.subList(0, count)
                 }
-            }.forEach {
-                bot.executeSync(
-                    ForwardMessage(
-                        chatId,
-                        sourceChatId,
-                        PostsMessagesTable.getMessagesOfPost(it.first).firstOrNull() ?.messageId ?: return@forEach
+            }.let {
+                if (it.isEmpty()) {
+                    bot.executeAsync(
+                        SendMessage(
+                            chatId,
+                            "Nothing to show, schedule queue is empty"
+                        )
                     )
-                )
-                bot.executeSync(
-                    SendMessage(
-                        chatId,
-                        "Post time: ${it.second}"
-                    )
-                )
-                delay(1000)
+                } else {
+                    it.forEach {
+                        (postId, time) ->
+                        bot.executeSync(
+                            ForwardMessage(
+                                chatId,
+                                sourceChatId,
+                                PostsMessagesTable.getMessagesOfPost(postId).firstOrNull() ?.messageId ?: return@forEach
+                            )
+                        )
+                        bot.executeSync(
+                            SendMessage(
+                                chatId,
+                                "Post time: $time"
+                            )
+                        )
+                        delay(1000)
+                    }
+                }
             }
         }
     }

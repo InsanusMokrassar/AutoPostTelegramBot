@@ -77,3 +77,4 @@ which block all requests data thread)
 
 * Update `BotLogger` behaviour
 * Fix problem with canceling of next scheduled job for `SchedulerPlugin`
+* Fix behaviour of GetSchedulesCommand when queue is empty
