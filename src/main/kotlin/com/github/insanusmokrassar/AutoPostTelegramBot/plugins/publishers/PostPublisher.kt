@@ -136,10 +136,11 @@ class PostPublisher : Publisher {
             )
 
             mapOfExecution.map {
-                it.first.forward(
+                (forwarder, messages) ->
+                forwarder.forward(
                     bot,
                     targetChatId,
-                    *it.second.toTypedArray()
+                    *messages.toTypedArray()
                 )
             }.let {
                 it.flatMap {

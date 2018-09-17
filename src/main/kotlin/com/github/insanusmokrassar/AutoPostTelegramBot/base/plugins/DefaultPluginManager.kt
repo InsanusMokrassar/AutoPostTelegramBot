@@ -18,7 +18,6 @@ class DefaultPluginManager(
     )
 
     override fun onInit(bot: TelegramBot, baseConfig: FinalConfig) {
-        val logsChatId = baseConfig.logsChatId
         runBlocking {
             plugins.map {
                 launch {

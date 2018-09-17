@@ -30,7 +30,7 @@ private typealias InnerChooser = (List<PostIdRatingPair>, Int) -> Collection<Int
 private val commonInnerChoosers = mapOf<String, InnerChooser>(
     ascendSort to {
         pairs, count ->
-        pairs.sortedBy { it.second }.let {
+        pairs.sortedBy { (_, rating) -> rating }.let {
             it.subList(
                 0,
                 if (it.size < count) {
@@ -40,12 +40,13 @@ private val commonInnerChoosers = mapOf<String, InnerChooser>(
                 }
             )
         }.map {
-            it.first
+            (postId, _) ->
+            postId
         }
     },
     descendSort to {
         pairs, count ->
-        pairs.sortedByDescending { it.second }.let {
+        pairs.sortedByDescending { (_, rating) -> rating }.let {
             it.subList(
                 0,
                 if (it.size < count) {
@@ -55,7 +56,8 @@ private val commonInnerChoosers = mapOf<String, InnerChooser>(
                 }
             )
         }.map {
-            it.first
+            (postId, _) ->
+            postId
         }
     },
     randomSort to {
@@ -134,8 +136,8 @@ private class SmartChooserConfigItem (
                 )
             }
             currentPair ?.let {
-                currentPairNN ->
-                val first = currentPairNN.first ?: zeroHour
+                (from, _) ->
+                val first = from ?: zeroHour
                 val second = dateTime ?: nextDayZeroHour
 
                 if (first > second) {
@@ -159,7 +161,8 @@ private class SmartChooserConfigItem (
         )
     ): Boolean {
         timePairs.forEach {
-            if ((it.first.isBefore(now) || it.first.isEqual(now)) && it.second.isAfter(now)) {
+            (from, to) ->
+            if ((from.isBefore(now) || from.isEqual(now)) && to.isAfter(now)) {
                 return true
             }
         }
@@ -187,7 +190,8 @@ private class SmartChooserConfigItem (
         stringBuilder.append("Rating: ${minRate ?: "any low"} - ${maxRate ?: "any big"}\n")
         stringBuilder.append("Time:\n")
         timePairs.forEach {
-            stringBuilder.append("  ${timeFormat.print(it.first)} - ${timeFormat.print(it.second)}\n")
+            (from, to) ->
+            stringBuilder.append("  ${timeFormat.print(from)} - ${timeFormat.print(to)}\n")
         }
         return stringBuilder.toString()
     }

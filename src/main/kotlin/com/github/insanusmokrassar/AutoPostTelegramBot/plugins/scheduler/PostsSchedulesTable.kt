@@ -40,7 +40,8 @@ class PostsSchedulesTable : Table() {
             field = value
             value ?.also {
                 registeredPostsTimes().map {
-                    it.first
+                    (postId, _) ->
+                    postId
                 }.minus(
                     value.first.getPluginLinks(value.second)
                 ).forEach {

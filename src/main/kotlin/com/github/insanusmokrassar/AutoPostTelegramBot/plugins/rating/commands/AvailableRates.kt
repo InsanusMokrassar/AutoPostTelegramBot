@@ -22,7 +22,7 @@ class AvailableRates(
         var commonCount = 0
 
         val ratingCountMap = mutableMapOf<Int, Int>()
-        postsLikesMessagesTable.getEnabledPostsIdAndRatings().map { it.second }.also {
+        postsLikesMessagesTable.getEnabledPostsIdAndRatings().map { (_, rating) -> rating }.also {
             commonCount = it.size
             maxRatingLength = it.maxBy {
                 rating ->

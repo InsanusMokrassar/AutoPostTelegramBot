@@ -113,10 +113,11 @@ class PostsLikesTable : Table() {
      */
     fun getRateRange(min: Int?, max: Int?): List<PostIdRatingPair> {
         return postsLikesMessagesTable.getEnabledPostsIdAndRatings().sortedByDescending {
-            it.second
+            (_, rating) ->
+            rating
         }.filter {
-            pair ->
-            min ?.let { it <= pair.second } != false && max ?.let { pair.second <= it } != false
+            (_, rating) ->
+            min ?.let { it <= rating } != false && max ?.let { rating <= it } != false
         }
     }
 

@@ -33,7 +33,8 @@ class PostsLikesMessagesTable(
             field = value
             value ?.also {
                 getEnabledPostsIdAndRatings().map {
-                    it.first
+                    (postId, _) ->
+                    postId
                 }.minus(
                     value.first.getPluginLinks(value.second)
                 ).forEach {
