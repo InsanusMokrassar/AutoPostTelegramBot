@@ -7,7 +7,7 @@ import java.util.logging.Logger
 typealias PluginVersion = Long
 typealias PluginName = String
 
-val commonLogger = Logger.getAnonymousLogger()
+val commonLogger = Logger.getLogger("common")
 
 @Deprecated(
     "This variable was deprecated for the reason that it is useless in context of commonarchitecture",

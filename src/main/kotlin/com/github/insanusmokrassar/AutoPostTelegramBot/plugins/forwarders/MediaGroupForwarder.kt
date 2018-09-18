@@ -52,13 +52,13 @@ class MediaGroupForwarder : Forwarder {
                 }.toTypedArray()
             ) to it
         }.flatMap {
-            pair ->
-            bot.executeSync(pair.first).let {
+            (request, originals) ->
+            bot.executeSync(request).let {
                 response ->
                 response.messages() ?.let {
-                    (0 until pair.second.size).map {
+                    (0 until originals.size).map {
                         i ->
-                        pair.second[i] to it[i]
+                        originals[i] to it[i]
                     }
                 } ?:let {
                     throw IOException("${response.errorCode()}: ${response.description()}")

@@ -6,6 +6,7 @@ import kotlinx.coroutines.experimental.channels.BroadcastChannel
 import kotlinx.coroutines.experimental.launch
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
+import org.joda.time.DateTime
 
 private const val countOfSubscriptions = 256
 
@@ -18,11 +19,14 @@ object PostsTable : Table() {
 
     private val id = integer("id").primaryKey().autoIncrement()
     private val postRegisteredMessageId = integer("postRegistered").nullable()
+    private val postDateTime = datetime("postDateTime").default(DateTime.now())
 
     @Throws(CreationException::class)
     fun allocatePost(): Int {
         return transaction {
-            insert {  }[id] ?.also {
+            insert {
+                it[postDateTime] = DateTime.now()
+            }[id] ?.also {
                 launch {
                     postAllocatedChannel.send(it)
                 }
@@ -76,6 +80,14 @@ object PostsTable : Table() {
             select {
                 postRegisteredMessageId.eq(messageId)
             }.firstOrNull() ?.get(id) ?: throw NoRowFoundException("Can't find row for message $messageId")
+        }
+    }
+
+    fun getPostCreationDateTime(postId: Int): DateTime? {
+        return transaction {
+            select {
+                id.eq(postId)
+            }.firstOrNull() ?.get(postDateTime)
         }
     }
 }

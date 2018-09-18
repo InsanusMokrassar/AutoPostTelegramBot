@@ -1,5 +1,6 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.choosers
 
+import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.commonLogger
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.database.PostIdRatingPair
 import com.github.insanusmokrassar.IObjectK.interfaces.IObject
@@ -29,7 +30,7 @@ private typealias InnerChooser = (List<PostIdRatingPair>, Int) -> Collection<Int
 private val commonInnerChoosers = mapOf<String, InnerChooser>(
     ascendSort to {
         pairs, count ->
-        pairs.sortedBy { it.second }.let {
+        pairs.sortedBy { (_, rating) -> rating }.let {
             it.subList(
                 0,
                 if (it.size < count) {
@@ -39,12 +40,13 @@ private val commonInnerChoosers = mapOf<String, InnerChooser>(
                 }
             )
         }.map {
-            it.first
+            (postId, _) ->
+            postId
         }
     },
     descendSort to {
         pairs, count ->
-        pairs.sortedByDescending { it.second }.let {
+        pairs.sortedByDescending { (_, rating) -> rating }.let {
             it.subList(
                 0,
                 if (it.size < count) {
@@ -54,7 +56,8 @@ private val commonInnerChoosers = mapOf<String, InnerChooser>(
                 }
             )
         }.map {
-            it.first
+            (postId, _) ->
+            postId
         }
     },
     randomSort to {
@@ -85,7 +88,9 @@ private class SmartChooserConfigItem (
         null
     ),
     val sort: String = defaultSort,
-    val count: Int = 1
+    val count: Int = 1,
+    val minAge: Long? = null,
+    val maxAge: Long? = null
 ) {
     private val zeroHour: DateTime by lazy {
         timeFormat.parseDateTime("00:00")
@@ -97,6 +102,18 @@ private class SmartChooserConfigItem (
 
     private val timeZone by lazy {
         DateTimeZone.forID(timeOffset)
+    }
+
+    private val minAgeAsDateTime: DateTime? by lazy {
+        minAge ?.let {
+            DateTime.now().withZone(DateTimeZone.UTC).withMillis(it).withZone(DateTimeZone.getDefault())
+        }
+    }
+
+    private val maxAgeAsDateTime: DateTime? by lazy {
+        maxAge ?.let {
+            DateTime.now().withZone(DateTimeZone.UTC).withMillis(it).withZone(DateTimeZone.getDefault())
+        }
     }
 
     private val timePairs: List<Pair<DateTime, DateTime>> by lazy {
@@ -119,8 +136,8 @@ private class SmartChooserConfigItem (
                 )
             }
             currentPair ?.let {
-                currentPairNN ->
-                val first = currentPairNN.first ?: zeroHour
+                (from, _) ->
+                val first = from ?: zeroHour
                 val second = dateTime ?: nextDayZeroHour
 
                 if (first > second) {
@@ -144,7 +161,8 @@ private class SmartChooserConfigItem (
         )
     ): Boolean {
         timePairs.forEach {
-            if ((it.first.isBefore(now) || it.first.isEqual(now)) && it.second.isAfter(now)) {
+            (from, to) ->
+            if ((from.isBefore(now) || from.isEqual(now)) && to.isAfter(now)) {
                 return true
             }
         }
@@ -154,12 +172,26 @@ private class SmartChooserConfigItem (
     val chooser: InnerChooser?
         get() = commonInnerChoosers[sort]
 
+    fun checkPostAge(postId: Int): Boolean {
+        val postDateTime: DateTime = PostsTable.getPostCreationDateTime(postId) ?: return false
+        val minIsOk = minAgeAsDateTime ?.let {
+            minDateTime ->
+            postDateTime.plus(minDateTime.millis).isBeforeNow
+        } ?: true
+        val maxIsOk = maxAgeAsDateTime ?.let {
+            minDateTime ->
+            postDateTime.plus(minDateTime.millis).isAfterNow
+        } ?: true
+        return minIsOk && maxIsOk
+    }
+
     override fun toString(): String {
         val stringBuilder = StringBuilder()
         stringBuilder.append("Rating: ${minRate ?: "any low"} - ${maxRate ?: "any big"}\n")
         stringBuilder.append("Time:\n")
         timePairs.forEach {
-            stringBuilder.append("  ${timeFormat.print(it.first)} - ${timeFormat.print(it.second)}\n")
+            (from, to) ->
+            stringBuilder.append("  ${timeFormat.print(from)} - ${timeFormat.print(to)}\n")
         }
         return stringBuilder.toString()
     }
@@ -224,7 +256,10 @@ class SmartChooser(
             postsLikesTable ?.getRateRange(
                 it.minRate,
                 it.maxRate
-            )
+            ) ?.filter {
+                (postId, _) ->
+                actualItem.checkPostAge(postId)
+            }
         } ?.let {
             chosenList ->
             actualItem.chooser ?.invoke(

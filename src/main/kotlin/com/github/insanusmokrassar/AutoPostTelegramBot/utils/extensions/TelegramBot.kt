@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory
 import java.io.IOException
 import java.lang.ref.WeakReference
 import java.util.concurrent.TimeUnit
+import kotlin.coroutines.experimental.suspendCoroutine
 
 private val logger = LoggerFactory.getLogger("TelegramAsyncExecutions")
 
@@ -78,18 +79,26 @@ fun <T: BaseRequest<T, R>, R: BaseResponse> TelegramBot.executeSync(
     retries: Int? = 0,
     retriesDelay: Long = 1000L
 ): R {
-    var tryies = 0
-    var lastError: Throwable? = null
-    while (retries == null || tryies <= retries) {
-        tryies++
-        try {
-            return execute(request)
-        } catch (e: Throwable) {
-            lastError = e
-            Thread.sleep(retriesDelay)
+    return runBlocking {
+        suspendCoroutine<R> {
+            continuation ->
+            executeAsync(
+                request,
+                {
+                    _, ioException ->
+                    continuation.resumeWithException(
+                        ioException ?: IllegalStateException("Something went wrong")
+                    )
+                },
+                {
+                    _, r ->
+                    continuation.resume(r)
+                },
+                retries,
+                retriesDelay
+            )
         }
     }
-    throw (lastError ?: IllegalStateException("Can't execute request: $request"))
 }
 
 

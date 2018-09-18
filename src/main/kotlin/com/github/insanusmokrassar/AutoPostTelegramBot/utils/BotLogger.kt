@@ -16,10 +16,7 @@ private fun TelegramBot.sendLogRecord(record: String, chatId: Long) {
         SendMessage(
             chatId,
             record
-        ).parseMode(
-            ParseMode.Markdown
-        ),
-        retries = null
+        )
     )
 }
 
@@ -28,10 +25,7 @@ private fun TelegramBot.sendLogRecordAsync(record: String, chatId: Long) {
         SendMessage(
             chatId,
             record
-        ).parseMode(
-            ParseMode.Markdown
-        ),
-        retries = null
+        )
     )
 }
 
@@ -49,6 +43,19 @@ private class LoggerHandler(
 
     private var logsSendingJob: Job? = null
 
+    private val sendRecordsBlock: suspend CoroutineScope.() -> Unit = {
+        try {
+            while (isActive && logsQueue.isNotEmpty()) {
+                botWR.get() ?.sendLogRecord() ?: break
+                delay(logMessagesDelay)
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        } finally {
+            logsSendingJob = null
+        }
+    }
+
     init {
         loggerToHandle.addHandler(this)
     }
@@ -56,7 +63,8 @@ private class LoggerHandler(
     override fun publish(record: LogRecord?) {
         record ?.also {
             formatter.format(it).splitForMessageWithAdditionalStep(6).forEach {
-                addLogRecord("```$it```")
+                record ->
+                addLogRecord(record)
             }
         }
     }
@@ -82,18 +90,7 @@ private class LoggerHandler(
 
     private fun refreshSendJob() {
         logsSendingJob ?:also {
-            logsSendingJob = launch {
-                try {
-                    while (isActive && logsQueue.isNotEmpty()) {
-                        botWR.get() ?.sendLogRecord() ?: break
-                        delay(logMessagesDelay)
-                    }
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                } finally {
-                    logsSendingJob = null
-                }
-            }
+            logsSendingJob = launch(block = sendRecordsBlock)
         }
     }
 

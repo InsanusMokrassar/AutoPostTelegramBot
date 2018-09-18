@@ -25,11 +25,11 @@ class SimpleForwarder : Forwarder {
                 message.messageId()
             )
         }.map {
-            pair ->
-            bot.executeSync(pair.second).let {
+            (original, request) ->
+            bot.executeSync(request).let {
                 response ->
                 response.message() ?.let {
-                    pair.first to it
+                    original to it
                 } ?:let {
                     throw IOException("${response.errorCode()}: ${response.description()}")
                 }
