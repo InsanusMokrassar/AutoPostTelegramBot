@@ -9,7 +9,6 @@ import kotlinx.coroutines.experimental.*
 import org.slf4j.LoggerFactory
 import java.io.IOException
 import java.lang.ref.WeakReference
-import java.util.concurrent.TimeUnit
 import kotlin.coroutines.experimental.suspendCoroutine
 
 private val logger = LoggerFactory.getLogger("TelegramAsyncExecutions")
@@ -18,27 +17,23 @@ private class DefaultCallback<T: BaseRequest<T, R>, R: BaseResponse>(
         private val onFailureCallback: ((T, IOException?) -> Unit)?,
         private val onResponseCallback: ((T, R) -> Unit)?,
         bot: TelegramBot,
-        private var retries: Int? = 0,
+        private var retries: Int = 0,
         private val retriesDelay: Long = 1000L
 ) : Callback<T, R> {
     private val bot = WeakReference(bot)
     override fun onFailure(request: T, e: IOException?) {
         logger.warn("Request failure: {}; Error: {}", request, e)
         onFailureCallback ?. invoke(request, e)
-        (retries ?.let {
-            it > 0
-        } ?: true).let {
-            if (it) {
-                async {
-                    delay(retriesDelay)
-                    bot.get() ?. executeAsync(
-                            request,
-                            onFailureCallback,
-                            onResponseCallback,
-                            retries ?. minus(1),
-                            retriesDelay
-                    )
-                }
+        if (retries > 0) {
+            async {
+                delay(retriesDelay)
+                bot.get() ?. executeAsync(
+                    request,
+                    onFailureCallback,
+                    onResponseCallback,
+                    retries - 1,
+                    retriesDelay
+                )
             }
         }
     }
@@ -57,7 +52,7 @@ fun <T: BaseRequest<T, R>, R: BaseResponse> TelegramBot.executeAsync(
         request: T,
         onFailure: ((T, IOException?) -> Unit)? = null,
         onResponse: ((T, R) -> Unit)? = null,
-        retries: Int? = 0,
+        retries: Int = 0,
         retriesDelay: Long = 1000L
 ) {
     logger.info("Try to put request for executing: {}", request)
@@ -76,7 +71,7 @@ fun <T: BaseRequest<T, R>, R: BaseResponse> TelegramBot.executeAsync(
 @Throws(IOException::class, IllegalStateException::class)
 fun <T: BaseRequest<T, R>, R: BaseResponse> TelegramBot.executeSync(
     request: T,
-    retries: Int? = 0,
+    retries: Int = 0,
     retriesDelay: Long = 1000L
 ): R {
     return runBlocking {
