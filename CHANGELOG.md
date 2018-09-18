@@ -83,3 +83,7 @@ which block all requests data thread)
 posts which too old or too young
 
 ## 0.4.4
+
+**BREAK CHANGES**
+
+* **Update Java version from `1.7` -> `1.8`**
