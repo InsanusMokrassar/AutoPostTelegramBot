@@ -89,3 +89,4 @@ posts which too old or too young
 * **Update Java version from `1.7` -> `1.8`**
 * Disabled availability to use infinity `executeSync` and `executeAsync`
 * Update version of `h2` `1.4.196` -> `1.4.197`
+* `PostTransactionTable` now closeable - you can use `use` and other
