@@ -6,10 +6,11 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.Post
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.PostMessage
 import kotlinx.coroutines.experimental.channels.BroadcastChannel
 import kotlinx.coroutines.experimental.launch
+import java.io.Closeable
 
 private const val broadcastSubscriptions = 256
 
-object PostTransactionTable {
+object PostTransactionTable : Closeable {
     val transactionStartedChannel = BroadcastChannel<Unit>(broadcastSubscriptions)
     val transactionMessageAddedChannel = BroadcastChannel<Array<out PostMessage>>(broadcastSubscriptions)
     val transactionMessageRemovedChannel = BroadcastChannel<PostMessage>(broadcastSubscriptions)
@@ -77,5 +78,8 @@ object PostTransactionTable {
         launch {
             transactionCompletedChannel.send(postId)
         }
+    }
+    override fun close() {
+        saveNewPost()
     }
 }

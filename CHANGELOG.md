@@ -81,3 +81,12 @@ which block all requests data thread)
 * Fix behaviour of GetSchedulesCommand when queue is empty
 * Add for items of `SmartChooser` plugin config options `minAge` and `maxAge` for prefilter
 posts which too old or too young
+
+## 0.4.4
+
+**BREAK CHANGES**
+
+* **Update Java version from `1.7` -> `1.8`**
+* Disabled availability to use infinity `executeSync` and `executeAsync`
+* `PostTransactionTable` now closeable - you can use `use` and other
+* Fix problem with forward posts which contain deleted posts

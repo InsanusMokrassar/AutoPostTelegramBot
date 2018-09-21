@@ -17,6 +17,7 @@ import com.pengrad.telegrambot.model.Message
 import com.pengrad.telegrambot.request.*
 import kotlinx.coroutines.experimental.channels.BroadcastChannel
 import kotlinx.coroutines.experimental.launch
+import java.lang.Exception
 import java.lang.ref.WeakReference
 
 typealias PostIdListPostMessagesTelegramMessages = Pair<Int, Map<PostMessage, Message>>
@@ -115,17 +116,23 @@ class PostPublisher : Publisher {
                 }
                 it.forEach {
                     message ->
-                    bot.executeSync(
-                        ForwardMessage(
-                            logsChatId,
-                            sourceChatId,
-                            message.messageId
-                        ).disableNotification(
-                            true
+                    try {
+                        bot.executeSync(
+                            ForwardMessage(
+                                logsChatId,
+                                sourceChatId,
+                                message.messageId
+                            ).disableNotification(
+                                true
+                            )
+                        )?.message()?.also {
+                            messagesToDelete.add(it.chat().id() to it.messageId())
+                            message.message = it
+                        }
+                    } catch (e: Exception) {
+                        commonLogger.warning(
+                            "Can't forward message with id: ${message.messageId}"
                         )
-                    ) ?.message() ?.also {
-                        messagesToDelete.add(it.chat().id() to it.messageId())
-                        message.message = it
                     }
                 }
             }
@@ -148,13 +155,19 @@ class PostPublisher : Publisher {
                         it.value
                     }
                 }.forEach {
-                    bot.executeSync(
-                        ForwardMessage(
-                            logsChatId,
-                            it.chat().id(),
-                            it.messageId()
+                    try {
+                        bot.executeSync(
+                            ForwardMessage(
+                                logsChatId,
+                                it.chat().id(),
+                                it.messageId()
+                            )
                         )
-                    )
+                    } catch (e: Exception) {
+                        commonLogger.warning(
+                            "Can't forward message with id: ${it.messageId()}"
+                        )
+                    }
                 }
                 val resultMap = mutableMapOf<PostMessage, Message>()
                 it.forEach {
