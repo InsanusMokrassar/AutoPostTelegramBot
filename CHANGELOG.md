@@ -93,4 +93,4 @@ posts which too old or too young
 
 ## 0.4.5
 
-
+* Added `SemaphoreK`
