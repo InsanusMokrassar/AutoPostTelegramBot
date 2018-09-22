@@ -90,3 +90,7 @@ posts which too old or too young
 * Disabled availability to use infinity `executeSync` and `executeAsync`
 * `PostTransactionTable` now closeable - you can use `use` and other
 * Fix problem with forward posts which contain deleted posts
+
+## 0.4.5
+
+
