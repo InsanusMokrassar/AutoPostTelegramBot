@@ -94,3 +94,4 @@ posts which too old or too young
 ## 0.4.5
 
 * Added `SemaphoreK`
+* Add work with semaphore in execution bot extensions
