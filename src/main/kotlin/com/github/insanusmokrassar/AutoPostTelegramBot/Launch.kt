@@ -86,6 +86,8 @@ fun main(args: Array<String>) {
         }
     }
 
+    config.regen ?.applyFor(bot)
+
     if (!bot.executeSync(GetChat(config.sourceChatId)).isOk || !bot.executeSync(GetChat(config.targetChatId)).isOk) {
         throw IllegalArgumentException("Can't check chats availability")
     }

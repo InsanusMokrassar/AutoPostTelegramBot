@@ -95,3 +95,4 @@ posts which too old or too young
 
 * Added `SemaphoreK`
 * Add work with semaphore in execution bot extensions
+* Add availibility to set up requests regen settings
