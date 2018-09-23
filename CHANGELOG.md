@@ -98,3 +98,6 @@ posts which too old or too young
 * Add availibility to set up requests regen settings
 * Add `PostTransaction` - now recommended to use this
 class instead of `PostTransactionTable`
+* Add `executeDeferred(T, TelegramBot, Int, Long)`
+    * Please, note that old methods as `executeAsync`
+    and `executeSync` are not recommended to use

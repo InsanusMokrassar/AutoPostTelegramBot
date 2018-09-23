@@ -9,6 +9,7 @@ import com.pengrad.telegrambot.response.BaseResponse
 import kotlinx.coroutines.experimental.*
 import org.slf4j.LoggerFactory
 import java.io.IOException
+import java.lang.Exception
 import java.lang.ref.WeakReference
 import kotlin.coroutines.experimental.suspendCoroutine
 
@@ -78,61 +79,62 @@ fun <T: BaseRequest<T, R>, R: BaseResponse> TelegramBot.executeAsync(
         retries: Int = 0,
         retriesDelay: Long = 1000L
 ) {
-    executeAsync(
-        request, this, onFailure, onResponse, retries, retriesDelay
-    )
-}
-
-fun <T: BaseRequest<T, R>, R: BaseResponse> executeAsync(
-        request: T,
-        bot: TelegramBot,
-        onFailure: ((T, IOException?) -> Unit)? = null,
-        onResponse: ((T, R) -> Unit)? = null,
-        retries: Int = 0,
-        retriesDelay: Long = 1000L
-): Job {
-    return launch {
-        semaphores[bot] ?.lock()
-        logger.info("Try to put request for executing: {}", request)
-        bot.execute(
-            request,
-            DefaultCallback(
-                onFailure,
-                onResponse,
-                bot,
-                retries,
-                retriesDelay
-            )
-        )
+    launch {
+        if (onFailure == null && onResponse == null) {
+            executeDeferred(request, retries, retriesDelay)
+        } else {
+            try {
+                val result = executeDeferred(request, retries, retriesDelay).await()
+                onResponse ?.invoke(request, result)
+            } catch (e: IOException) {
+                onFailure ?.invoke(request, e)
+            }
+        }
     }
 }
 
-@Throws(IOException::class, IllegalStateException::class)
+@Throws(IOException::class)
+suspend fun <T: BaseRequest<T, R>, R: BaseResponse> TelegramBot.executeDeferred(
+        request: T,
+        retries: Int = 0,
+        retriesDelay: Long = 1000L
+): Deferred<R> {
+    return async {
+        semaphores[this@executeDeferred] ?.lock()
+        logger.info("Try to put request for executing: {}", request)
+        suspendCoroutine<R> {
+            continuation ->
+            execute(
+                request,
+                DefaultCallback(
+                    {
+                        _, ioException ->
+                        continuation.resumeWithException(
+                            ioException ?: IllegalStateException("Something went wrong")
+                        )
+                    },
+                    {
+                        _, r ->
+                        continuation.resume(r)
+                    },
+                    this@executeDeferred,
+                    retries,
+                    retriesDelay
+                )
+            )
+        }
+    }
+}
+
+
+@Throws(IOException::class)
 fun <T: BaseRequest<T, R>, R: BaseResponse> TelegramBot.executeSync(
     request: T,
     retries: Int = 0,
     retriesDelay: Long = 1000L
 ): R {
     return runBlocking {
-        suspendCoroutine<R> {
-            continuation ->
-            executeAsync(
-                request,
-                this@executeSync,
-                {
-                    _, ioException ->
-                    continuation.resumeWithException(
-                        ioException ?: IllegalStateException("Something went wrong")
-                    )
-                },
-                {
-                    _, r ->
-                    continuation.resume(r)
-                },
-                retries,
-                retriesDelay
-            )
-        }
+        this@executeSync.executeDeferred(request, retries, retriesDelay).await()
     }
 }
 
