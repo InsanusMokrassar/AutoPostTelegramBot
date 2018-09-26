@@ -1,8 +1,8 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.base
 
-import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.PostTransactionTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsMessagesTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsTable
+import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.transactionCompletedChannel
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.commonLogger
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.executeAsync
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscribeChecking
@@ -59,7 +59,7 @@ class DefaultPostRegisteredMessage(
     init {
         val botWR = WeakReference(bot)
 
-        PostTransactionTable.transactionCompletedChannel.subscribeChecking {
+        transactionCompletedChannel.subscribeChecking {
             registerPostMessage(
                 botWR.get() ?: return@subscribeChecking false,
                 sourceChatId,
