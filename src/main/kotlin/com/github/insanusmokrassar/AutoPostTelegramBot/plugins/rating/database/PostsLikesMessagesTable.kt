@@ -4,19 +4,16 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.Post
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.PluginName
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.base.PostsUsedTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscribe
-import kotlinx.coroutines.experimental.channels.BroadcastChannel
-import kotlinx.coroutines.experimental.channels.ReceiveChannel
+import kotlinx.coroutines.experimental.channels.*
 import kotlinx.coroutines.experimental.launch
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 
-private const val subscriptionsCount = 256
-
 class PostsLikesMessagesTable(
     private val postsLikesTable: PostsLikesTable
 ) : Table() {
-    val ratingMessageRegisteredChannel = BroadcastChannel<PostIdMessageId>(subscriptionsCount)
-    val ratingMessageUnregisteredChannel = BroadcastChannel<Int>(subscriptionsCount)
+    val ratingMessageRegisteredChannel = BroadcastChannel<PostIdMessageId>(Channel.CONFLATED)
+    val ratingMessageUnregisteredChannel = BroadcastChannel<Int>(Channel.CONFLATED)
 
     private val postId = integer("postId").primaryKey()
     private val messageId = integer("messageId")

@@ -61,6 +61,14 @@
             <name>exposed</name>
             <url>https://dl.bintray.com/kotlin/exposed</url>
         </repository>
+        <repository>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <id>bintray-insanusmokrassar-StandardRepository</id>
+            <name>bintray</name>
+            <url>https://dl.bintray.com/insanusmokrassar/StandardRepository</url>
+        </repository>
     </repositories>
 
     <build>
@@ -218,7 +226,7 @@
         <dependency>
             <groupId>com.github.insanusmokrassar</groupId>
             <artifactId>BotIncomeMessagesListener</artifactId>
-            <version>0.9b</version>
+            <version>0.9</version>
         </dependency>
         <dependency>
             <groupId>com.github.pengrad</groupId>

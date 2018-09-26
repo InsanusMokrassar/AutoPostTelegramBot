@@ -34,8 +34,7 @@ private fun TelegramBot.sendLogRecordAsync(record: String, chatId: Long) {
 private class LoggerHandler(
     loggerToHandle: Logger,
     bot: TelegramBot,
-    private val logsChatId: Long,
-    private val logMessagesDelay: Long = 1000L
+    private val logsChatId: Long
 ) : Handler() {
     private val botWR = WeakReference(bot)
 
@@ -46,12 +45,12 @@ private class LoggerHandler(
             val bot = botWR.get() ?: break
             formatter.format(msg).splitForMessageWithAdditionalStep(6).forEach {
                 record ->
-                bot.executeDeferred(
+                bot.executeBlocking(
                     SendMessage(
                         logsChatId,
                         record
                     )
-                ).await()
+                )
             }
         }
     }

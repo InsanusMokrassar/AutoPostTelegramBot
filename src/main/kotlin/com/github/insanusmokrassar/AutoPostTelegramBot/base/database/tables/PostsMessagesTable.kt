@@ -2,21 +2,20 @@ package com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables
 
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.PostMessage
 import kotlinx.coroutines.experimental.channels.BroadcastChannel
+import kotlinx.coroutines.experimental.channels.Channel
 import kotlinx.coroutines.experimental.launch
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 
-private const val countOfSubscriptions = 256
-
 typealias PostIdToMessagesIds = Pair<Int, Collection<Int>>
 
 object PostsMessagesTable : Table() {
-    val newMessagesOfPost = BroadcastChannel<PostIdToMessagesIds>(countOfSubscriptions)
+    val newMessagesOfPost = BroadcastChannel<PostIdToMessagesIds>(Channel.CONFLATED)
 
     @Deprecated("This channel is not determine post id", ReplaceWith("removedMessageOfPost"))
-    val removeMessageOfPost = BroadcastChannel<Int>(countOfSubscriptions)
-    val removedMessagesOfPost = BroadcastChannel<PostIdToMessagesIds>(countOfSubscriptions)
-    val removedMessageOfPost = BroadcastChannel<PostIdMessageId>(countOfSubscriptions)
+    val removeMessageOfPost = BroadcastChannel<Int>(Channel.CONFLATED)
+    val removedMessagesOfPost = BroadcastChannel<PostIdToMessagesIds>(Channel.CONFLATED)
+    val removedMessageOfPost = BroadcastChannel<PostIdMessageId>(Channel.CONFLATED)
 
     private val messageId = integer("messageId").primaryKey()
     private val mediaGroupId = text("mediaGroupId").nullable()

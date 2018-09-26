@@ -5,16 +5,15 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.Post
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.PostMessage
 import kotlinx.coroutines.experimental.channels.BroadcastChannel
+import kotlinx.coroutines.experimental.channels.Channel
 import kotlinx.coroutines.experimental.launch
 import java.io.Closeable
 import java.lang.IllegalStateException
 
-private const val broadcastSubscriptions = 256
-
-val transactionStartedChannel = BroadcastChannel<Unit>(broadcastSubscriptions)
-val transactionMessageAddedChannel = BroadcastChannel<Array<out PostMessage>>(broadcastSubscriptions)
-val transactionMessageRemovedChannel = BroadcastChannel<PostMessage>(broadcastSubscriptions)
-val transactionCompletedChannel = BroadcastChannel<Int>(broadcastSubscriptions)
+val transactionStartedChannel = BroadcastChannel<Unit>(Channel.CONFLATED)
+val transactionMessageAddedChannel = BroadcastChannel<Array<out PostMessage>>(Channel.CONFLATED)
+val transactionMessageRemovedChannel = BroadcastChannel<PostMessage>(Channel.CONFLATED)
+val transactionCompletedChannel = BroadcastChannel<Int>(Channel.CONFLATED)
 
 class PostTransaction : Closeable {
     private val messages = ArrayList<PostMessage>()

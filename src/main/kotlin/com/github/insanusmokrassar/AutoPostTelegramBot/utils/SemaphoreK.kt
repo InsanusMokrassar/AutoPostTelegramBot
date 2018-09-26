@@ -1,7 +1,6 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.utils
 
-import kotlinx.coroutines.experimental.channels.SendChannel
-import kotlinx.coroutines.experimental.channels.actor
+import kotlinx.coroutines.experimental.channels.*
 import kotlinx.coroutines.experimental.isActive
 import kotlinx.coroutines.experimental.launch
 import java.util.*
@@ -9,7 +8,8 @@ import kotlin.coroutines.experimental.Continuation
 import kotlin.coroutines.experimental.suspendCoroutine
 
 class SemaphoreK(
-    private val maxAvailable: Int = 1
+    private val maxAvailable: Int = 1,
+    initial: Int = maxAvailable
 ) {
     private sealed class SemaphoreAction {
         class IncAction(val count: Int = 1) : SemaphoreAction()
@@ -17,28 +17,37 @@ class SemaphoreK(
     }
 
     private val semaphoreActor: SendChannel<SemaphoreAction>
+    private var free = if (initial > maxAvailable) {
+        maxAvailable
+    } else {
+        if (initial < 0) {
+            0
+        } else {
+            initial
+        }
+    }
+
+    private val continuations = Array<Queue<Continuation<Unit>>>(maxAvailable) { ArrayDeque() }
+
+    private suspend fun checkContinuations() {
+        for (i in (free - 1) downTo 0) {
+            continuations[i].poll() ?.let {
+                if (it.context.isActive) {
+                    it.resume(Unit)
+                    free -= (i + 1)
+                    checkContinuations()
+                } else {
+                    null
+                }
+            } ?: continue
+            break
+        }
+    }
 
     init {
-        semaphoreActor = actor {
-            var free = maxAvailable
-
-            val continuations = Array<Queue<Continuation<Unit>>>(maxAvailable) { ArrayDeque() }
-
-            fun checkContinuations() {
-                for (i in (free - 1) downTo 0) {
-                    continuations[i].poll() ?.let {
-                        if (it.context.isActive) {
-                            it.resume(Unit)
-                            free -= (i + 1)
-                            checkContinuations()
-                        } else {
-                            null
-                        }
-                    } ?: continue
-                    break
-                }
-            }
-
+        semaphoreActor = actor(
+            capacity = Channel.UNLIMITED
+        ) {
             for (msg in channel) {
                 when (msg) {
                     is SemaphoreAction.IncAction -> {

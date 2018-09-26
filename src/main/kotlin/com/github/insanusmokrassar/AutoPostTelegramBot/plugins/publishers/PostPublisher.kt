@@ -16,13 +16,13 @@ import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.model.Message
 import com.pengrad.telegrambot.request.*
 import kotlinx.coroutines.experimental.channels.BroadcastChannel
+import kotlinx.coroutines.experimental.channels.Channel
 import kotlinx.coroutines.experimental.launch
 import java.lang.Exception
 import java.lang.ref.WeakReference
 
 typealias PostIdListPostMessagesTelegramMessages = Pair<Int, Map<PostMessage, Message>>
 private typealias ChatIdMessageIdPair = Pair<Long, Int>
-private const val subscribeMaxCount = 256
 
 fun makeMapOfExecution(
     messageToPost: List<PostMessage>,
@@ -57,7 +57,7 @@ fun makeMapOfExecution(
 
 class PostPublisher : Publisher {
     val postPublishedChannel = BroadcastChannel<PostIdListPostMessagesTelegramMessages>(
-        subscribeMaxCount
+        Channel.CONFLATED
     )
 
     private var botWR: WeakReference<TelegramBot>? = null

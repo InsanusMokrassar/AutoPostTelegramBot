@@ -4,6 +4,7 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.Post
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.PluginName
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscribe
 import kotlinx.coroutines.experimental.channels.BroadcastChannel
+import kotlinx.coroutines.experimental.channels.Channel
 import kotlinx.coroutines.experimental.launch
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -11,8 +12,8 @@ import org.jetbrains.exposed.sql.transactions.transaction
 typealias PostIdToPluginName = Pair<Int, PluginName>
 
 class PostsUsedTable internal constructor() : Table() {
-    val registeredLinkChannel = BroadcastChannel<PostIdToPluginName>(256)
-    val unregisteredLinkChannel = BroadcastChannel<PostIdToPluginName>(256)
+    val registeredLinkChannel = BroadcastChannel<PostIdToPluginName>(Channel.CONFLATED)
+    val unregisteredLinkChannel = BroadcastChannel<PostIdToPluginName>(Channel.CONFLATED)
 
     private val id = integer("id").primaryKey().autoIncrement()
 
