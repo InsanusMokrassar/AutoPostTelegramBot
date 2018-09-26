@@ -5,7 +5,7 @@
 
     <groupId>com.github.insanusmokrassar</groupId>
     <artifactId>AutoPostTelegramBot</artifactId>
-    <version>0.4.4</version>
+    <version>0.4.5</version>
     <packaging>jar</packaging>
 
     <name>${project.artifactId}</name>
@@ -60,6 +60,14 @@
             <id>exposed</id>
             <name>exposed</name>
             <url>https://dl.bintray.com/kotlin/exposed</url>
+        </repository>
+        <repository>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <id>bintray-insanusmokrassar-StandardRepository</id>
+            <name>bintray</name>
+            <url>https://dl.bintray.com/insanusmokrassar/StandardRepository</url>
         </repository>
     </repositories>
 
@@ -218,7 +226,7 @@
         <dependency>
             <groupId>com.github.insanusmokrassar</groupId>
             <artifactId>BotIncomeMessagesListener</artifactId>
-            <version>0.9b</version>
+            <version>0.9</version>
         </dependency>
         <dependency>
             <groupId>com.github.pengrad</groupId>

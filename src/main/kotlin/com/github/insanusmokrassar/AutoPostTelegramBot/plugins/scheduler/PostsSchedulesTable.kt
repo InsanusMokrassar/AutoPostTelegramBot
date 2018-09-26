@@ -4,23 +4,21 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.Post
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.PluginName
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.base.PostsUsedTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscribe
-import kotlinx.coroutines.experimental.channels.BroadcastChannel
-import kotlinx.coroutines.experimental.channels.ReceiveChannel
+import kotlinx.coroutines.experimental.channels.*
 import kotlinx.coroutines.experimental.launch
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.joda.time.DateTime
 
-private const val broadcastsCount = 256
 typealias PostIdPostTime = Pair<Int, DateTime>
 
 class PostsSchedulesTable : Table() {
     private val postId = integer("postId").primaryKey()
     private val postTime = datetime("postTime")
 
-    val postTimeRegisteredChannel = BroadcastChannel<PostIdPostTime>(broadcastsCount)
-    val postTimeChangedChannel = BroadcastChannel<PostIdPostTime>(broadcastsCount)
-    val postTimeRemovedChannel = BroadcastChannel<Int>(broadcastsCount)
+    val postTimeRegisteredChannel = BroadcastChannel<PostIdPostTime>(Channel.CONFLATED)
+    val postTimeChangedChannel = BroadcastChannel<PostIdPostTime>(Channel.CONFLATED)
+    val postTimeRemovedChannel = BroadcastChannel<Int>(Channel.CONFLATED)
 
     init {
         PostsTable.postRemovedChannel.subscribe {

@@ -1,8 +1,7 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions
 
 import kotlinx.coroutines.experimental.*
-import kotlinx.coroutines.experimental.channels.BroadcastChannel
-import kotlinx.coroutines.experimental.channels.ReceiveChannel
+import kotlinx.coroutines.experimental.channels.*
 import java.util.concurrent.TimeUnit
 
 fun <T> BroadcastChannel<T>.subscribeChecking(
@@ -51,8 +50,8 @@ fun <T> BroadcastChannel<T>.subscribe(
     }
 }
 
-fun <T> ReceiveChannel<T>.debounce(delayMs: Long, awaitedSubscriptions: Int = 256): BroadcastChannel<T> {
-    val channel = BroadcastChannel<T>(awaitedSubscriptions)
+fun <T> ReceiveChannel<T>.debounce(delayMs: Long): BroadcastChannel<T> {
+    val channel = BroadcastChannel<T>(Channel.CONFLATED)
     var lastReceived: Pair<Long, T>? = null
     var job: Job? = null
     launch {

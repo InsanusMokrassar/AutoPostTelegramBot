@@ -1,5 +1,6 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions
 
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.SemaphoreK
 import com.pengrad.telegrambot.Callback
 import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.request.AnswerCallbackQuery
@@ -12,6 +13,28 @@ import java.lang.ref.WeakReference
 import kotlin.coroutines.experimental.suspendCoroutine
 
 private val logger = LoggerFactory.getLogger("TelegramAsyncExecutions")
+
+private val semaphores: MutableMap<TelegramBot, SemaphoreK> = HashMap()
+
+fun initSemaphore(
+    bot: TelegramBot,
+    maxCount: Int = 30,
+    regenDelay: Long = 1000L,
+    regenCount: Int = 1
+) {
+    semaphores[bot] ?.also {
+        throw IllegalStateException("Semaphore for bot was initiated, but was initiated again")
+    } ?: bot.also {
+        semaphores[it] = SemaphoreK(maxCount).also {
+            launch {
+                while (isActive) {
+                    it.free(regenCount)
+                    delay(regenDelay)
+                }
+            }
+        }
+    }
+}
 
 private class DefaultCallback<T: BaseRequest<T, R>, R: BaseResponse>(
         private val onFailureCallback: ((T, IOException?) -> Unit)?,
@@ -55,30 +78,35 @@ fun <T: BaseRequest<T, R>, R: BaseResponse> TelegramBot.executeAsync(
         retries: Int = 0,
         retriesDelay: Long = 1000L
 ) {
-    logger.info("Try to put request for executing: {}", request)
-    execute(
-            request,
-            DefaultCallback(
-                    onFailure,
-                    onResponse,
-                    this,
-                    retries,
-                    retriesDelay
-            )
-    )
+    if (onFailure == null && onResponse == null) {
+        launch {
+            executeBlocking(request, retries, retriesDelay)
+        }
+    } else {
+        launch {
+            try {
+                val result = executeBlocking(request, retries, retriesDelay)
+                onResponse ?.invoke(request, result)
+            } catch (e: IOException) {
+                onFailure ?.invoke(request, e)
+            }
+        }
+    }
 }
 
-@Throws(IOException::class, IllegalStateException::class)
-fun <T: BaseRequest<T, R>, R: BaseResponse> TelegramBot.executeSync(
-    request: T,
-    retries: Int = 0,
-    retriesDelay: Long = 1000L
+@Throws(IOException::class)
+suspend fun <T: BaseRequest<T, R>, R: BaseResponse> TelegramBot.executeBlocking(
+        request: T,
+        retries: Int = 0,
+        retriesDelay: Long = 1000L
 ): R {
-    return runBlocking {
-        suspendCoroutine<R> {
-            continuation ->
-            executeAsync(
-                request,
+    semaphores[this@executeBlocking] ?.lock()
+    logger.info("Try to put request for executing: {}", request)
+    return suspendCoroutine {
+        continuation ->
+        execute(
+            request,
+            DefaultCallback(
                 {
                     _, ioException ->
                     continuation.resumeWithException(
@@ -89,14 +117,13 @@ fun <T: BaseRequest<T, R>, R: BaseResponse> TelegramBot.executeSync(
                     _, r ->
                     continuation.resume(r)
                 },
+                this@executeBlocking,
                 retries,
                 retriesDelay
             )
-        }
+        )
     }
 }
-
-
 
 fun TelegramBot.queryAnswer(
         id: String,

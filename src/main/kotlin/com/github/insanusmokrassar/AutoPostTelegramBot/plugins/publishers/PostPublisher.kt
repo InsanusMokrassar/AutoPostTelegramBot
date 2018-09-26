@@ -11,18 +11,17 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.choosers.Chooser
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.forwarders.Forwarder
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.forwarders.ForwardersPlugin
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.executeAsync
-import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.executeSync
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.executeBlocking
 import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.model.Message
 import com.pengrad.telegrambot.request.*
 import kotlinx.coroutines.experimental.channels.BroadcastChannel
+import kotlinx.coroutines.experimental.channels.Channel
 import kotlinx.coroutines.experimental.launch
-import java.lang.Exception
 import java.lang.ref.WeakReference
 
 typealias PostIdListPostMessagesTelegramMessages = Pair<Int, Map<PostMessage, Message>>
 private typealias ChatIdMessageIdPair = Pair<Long, Int>
-private const val subscribeMaxCount = 256
 
 fun makeMapOfExecution(
     messageToPost: List<PostMessage>,
@@ -57,7 +56,7 @@ fun makeMapOfExecution(
 
 class PostPublisher : Publisher {
     val postPublishedChannel = BroadcastChannel<PostIdListPostMessagesTelegramMessages>(
-        subscribeMaxCount
+        Channel.CONFLATED
     )
 
     private var botWR: WeakReference<TelegramBot>? = null
@@ -91,7 +90,7 @@ class PostPublisher : Publisher {
         } as? ForwardersPlugin) ?.forwarders ?: emptyList()
     }
 
-    override fun publishPost(postId: Int) {
+    override suspend fun publishPost(postId: Int) {
         val bot = botWR ?.get() ?: return
         val sourceChatId: Long = sourceChatId ?: return
         val targetChatId: Long = targetChatId ?: return
@@ -100,12 +99,12 @@ class PostPublisher : Publisher {
         val messagesToDelete = mutableListOf<ChatIdMessageIdPair>()
 
         try {
-            bot.executeSync(
+            bot.executeBlocking(
                 SendMessage(
                     logsChatId,
                     "Start post"
                 )
-            )?.message() ?.let {
+            ) ?.message() ?.let {
                 messagesToDelete.add(it.chat().id() to it.messageId())
             }
 
@@ -117,7 +116,7 @@ class PostPublisher : Publisher {
                 it.forEach {
                     message ->
                     try {
-                        bot.executeSync(
+                        bot.executeBlocking(
                             ForwardMessage(
                                 logsChatId,
                                 sourceChatId,
@@ -125,7 +124,7 @@ class PostPublisher : Publisher {
                             ).disableNotification(
                                 true
                             )
-                        )?.message()?.also {
+                        ) ?.message()?.also {
                             messagesToDelete.add(it.chat().id() to it.messageId())
                             message.message = it
                         }
@@ -156,7 +155,7 @@ class PostPublisher : Publisher {
                     }
                 }.forEach {
                     try {
-                        bot.executeSync(
+                        bot.executeBlocking(
                             ForwardMessage(
                                 logsChatId,
                                 it.chat().id(),

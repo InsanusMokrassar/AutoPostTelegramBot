@@ -13,19 +13,6 @@ class Scheduler(
     private val publisher: Publisher
 ) {
     private var currentPlannedPostTimeAndJob: PostTimeToJob? = null
-        @Synchronized
-        set(value) {
-            value ?.also {
-                if (field ?.first ?.second ?.isAfter(value.first.second) == false) {
-                    value.second.cancel()
-
-                    return
-                }
-            }
-            field ?.second ?.cancel()
-
-            field = value
-        }
 
     init {
         schedulesTable.postTimeRegisteredChannel.subscribe {
@@ -48,10 +35,14 @@ class Scheduler(
         }
     }
 
+    @Synchronized
     private fun updateJob(by: PostIdPostTime)  {
         try {
-            currentPlannedPostTimeAndJob ?.second ?.cancel()
-            currentPlannedPostTimeAndJob = by to createScheduledJob(by)
+            val update = currentPlannedPostTimeAndJob ?.first ?.second ?.isAfter(by.second) ?: true
+            if (update) {
+                currentPlannedPostTimeAndJob ?.second ?.cancel()
+                currentPlannedPostTimeAndJob = by to createScheduledJob(by)
+            }
         } catch (e: Exception) {
             commonLogger.throwing(
                 Scheduler::class.java.simpleName,

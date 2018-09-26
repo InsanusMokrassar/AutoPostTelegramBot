@@ -4,6 +4,7 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.Post
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.commonLogger
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscribe
 import kotlinx.coroutines.experimental.channels.BroadcastChannel
+import kotlinx.coroutines.experimental.channels.Channel
 import kotlinx.coroutines.experimental.launch
 import org.h2.jdbc.JdbcSQLException
 import org.jetbrains.exposed.sql.*
@@ -13,14 +14,12 @@ import org.jetbrains.exposed.sql.transactions.transaction
 typealias PostIdRatingPair = Pair<Int, Int>
 typealias PostIdUserId = Pair<Int, Long>
 
-private const val countOfSubscriptions = 256
-
 private const val resultColumnName = "result"
 
 class PostsLikesTable : Table() {
-    val likesChannel = BroadcastChannel<PostIdUserId>(countOfSubscriptions)
-    val dislikesChannel = BroadcastChannel<PostIdUserId>(countOfSubscriptions)
-    val ratingsChannel = BroadcastChannel<PostIdRatingPair>(countOfSubscriptions)
+    val likesChannel = BroadcastChannel<PostIdUserId>(Channel.CONFLATED)
+    val dislikesChannel = BroadcastChannel<PostIdUserId>(Channel.CONFLATED)
+    val ratingsChannel = BroadcastChannel<PostIdRatingPair>(Channel.CONFLATED)
 
     private val userId = long("userId").primaryKey()
     private val postId = integer("postId").primaryKey()

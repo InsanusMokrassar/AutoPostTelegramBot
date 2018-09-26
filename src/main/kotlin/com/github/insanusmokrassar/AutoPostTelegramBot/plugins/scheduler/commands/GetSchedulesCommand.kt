@@ -5,7 +5,7 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.commonLogger
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.scheduler.PostsSchedulesTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.commands.Command
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.executeAsync
-import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.executeSync
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.executeBlocking
 import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.model.Message
 import com.pengrad.telegrambot.request.ForwardMessage
@@ -34,23 +34,23 @@ class GetSchedulesCommand(
             }
         }
 
-        try {
-            bot.executeSync(
-                SendMessage(
-                    chatId,
-                    "Let me prepare data"
-                )
-            )
-        } catch (e: Exception) {
-            commonLogger.throwing(
-                this::class.java.simpleName,
-                "sending message \"Prepare data\" to user",
-                e
-            )
-            return
-        }
-
         launch {
+            try {
+                bot.executeBlocking(
+                    SendMessage(
+                        chatId,
+                        "Let me prepare data"
+                    )
+                )
+            } catch (e: Exception) {
+                commonLogger.throwing(
+                    this::class.java.simpleName,
+                    "sending message \"Prepare data\" to user",
+                    e
+                )
+                return@launch
+            }
+
             postsSchedulesTable.registeredPostsTimes().sortedBy {
                 it.second
             }.let {
@@ -70,14 +70,14 @@ class GetSchedulesCommand(
                 } else {
                     it.forEach {
                         (postId, time) ->
-                        bot.executeSync(
+                        bot.executeBlocking(
                             ForwardMessage(
                                 chatId,
                                 sourceChatId,
                                 PostsMessagesTable.getMessagesOfPost(postId).firstOrNull() ?.messageId ?: return@forEach
                             )
                         )
-                        bot.executeSync(
+                        bot.executeBlocking(
                             SendMessage(
                                 chatId,
                                 "Post time: $time"

@@ -90,3 +90,20 @@ posts which too old or too young
 * Disabled availability to use infinity `executeSync` and `executeAsync`
 * `PostTransactionTable` now closeable - you can use `use` and other
 * Fix problem with forward posts which contain deleted posts
+
+## 0.4.5
+
+**BREAK CHANGES**
+
+* Added `SemaphoreK`
+* Add work with semaphore in execution bot extensions
+* Add availibility to set up requests regen settings
+* Add `PostTransaction`
+* **BREAK CHANGE**: `PostTransactionTable` was removed
+* **BREAK CHANGE**: Remove `executeSync`
+* Add `executeBlocking(T, TelegramBot, Int, Long)`
+    * Please, note that old methods as `executeAsync`
+    is not recommended to use
+* **ALL BROADCASTS NOW ARE CONFLATED**
+* `BotIncomeMessagesListener` version `0.9b` -> `0.9`
+* Fixes in Scheduler plugin

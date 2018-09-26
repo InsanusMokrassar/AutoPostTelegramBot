@@ -1,7 +1,7 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.base.commands
 
-import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.PostTransactionTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.exceptions.NothingToSaveException
+import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.commonLogger
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.commands.Command
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.executeAsync
 import com.pengrad.telegrambot.TelegramBot
@@ -16,14 +16,13 @@ class FixPost(
 
     override fun onCommand(updateId: Int, message: Message) {
         try {
-            PostTransactionTable.saveNewPost()
+            val userId: Long? = message.from() ?.id() ?.toLong() ?: message.chat() ?.id()
+            userId ?.let {
+                usersTransactions[it] ?.saveNewPost() ?: throw NothingToSaveException("Transaction was not started")
+                usersTransactions.remove(it)
+            }
         } catch (e: NothingToSaveException) {
-            botWR.get() ?.executeAsync(
-                SendMessage(
-                    message.chat().id(),
-                    "Nothing to save, transaction is empty"
-                )
-            )
+            commonLogger.warning("Nothing to save: ${e.message}")
         }
     }
 }

@@ -4,7 +4,7 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.Post
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.Config
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.DefaultPluginManager
-import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.executeSync
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.executeBlocking
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscribe
 import com.github.insanusmokrassar.BotIncomeMessagesListener.*
 import com.github.insanusmokrassar.IObjectKRealisations.load
@@ -14,6 +14,8 @@ import com.pengrad.telegrambot.model.CallbackQuery
 import com.pengrad.telegrambot.model.Message
 import com.pengrad.telegrambot.request.GetChat
 import kotlinx.coroutines.experimental.channels.BroadcastChannel
+import kotlinx.coroutines.experimental.channels.Channel
+import kotlinx.coroutines.experimental.runBlocking
 import okhttp3.Credentials
 import okhttp3.OkHttpClient
 import org.jetbrains.exposed.sql.Database
@@ -27,11 +29,9 @@ val realMessagesListener = UpdateCallbackChannel<Message>()
 val realCallbackQueryListener = UpdateCallbackChannel<CallbackQuery>()
 val realMediaGroupsListener = MediaGroupCallbackChannel()
 
-private const val subscriptionsCount = 256
-
-val messagesListener = BroadcastChannel<Pair<Int, Message>>(subscriptionsCount)
-val callbackQueryListener = BroadcastChannel<Pair<Int, CallbackQuery>>(subscriptionsCount)
-val mediaGroupsListener = BroadcastChannel<Pair<String, List<Message>>>(subscriptionsCount)
+val messagesListener = BroadcastChannel<Pair<Int, Message>>(Channel.CONFLATED)
+val callbackQueryListener = BroadcastChannel<Pair<Int, CallbackQuery>>(Channel.CONFLATED)
+val mediaGroupsListener = BroadcastChannel<Pair<String, List<Message>>>(Channel.CONFLATED)
 
 fun main(args: Array<String>) {
     val config = load(args[0]).toObject(Config::class.java).finalConfig
@@ -86,8 +86,12 @@ fun main(args: Array<String>) {
         }
     }
 
-    if (!bot.executeSync(GetChat(config.sourceChatId)).isOk || !bot.executeSync(GetChat(config.targetChatId)).isOk) {
-        throw IllegalArgumentException("Can't check chats availability")
+    config.regen ?.applyFor(bot)
+
+    runBlocking {
+        if (!bot.executeBlocking(GetChat(config.sourceChatId)).isOk || !bot.executeBlocking(GetChat(config.targetChatId)).isOk) {
+            throw IllegalArgumentException("Can't check chats availability")
+        }
     }
 
     val pluginManager = DefaultPluginManager(

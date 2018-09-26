@@ -1,7 +1,7 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.forwarders
 
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.PostMessage
-import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.executeSync
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.executeBlocking
 import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.model.Message
 import com.pengrad.telegrambot.model.request.ParseMode
@@ -16,7 +16,7 @@ class TextForwarder : Forwarder {
         return message.message ?. text() != null
     }
 
-    override fun forward(bot: TelegramBot, targetChatId: Long, vararg messages: PostMessage): Map<PostMessage, Message> {
+    override suspend fun forward(bot: TelegramBot, targetChatId: Long, vararg messages: PostMessage): Map<PostMessage, Message> {
         return messages.mapNotNull {
             postMessage ->
             val message = postMessage.message ?: return@mapNotNull null
@@ -28,7 +28,7 @@ class TextForwarder : Forwarder {
             )
         }.map {
             (original, request) ->
-            bot.executeSync(request).let {
+            bot.executeBlocking(request).let {
                 response ->
                 response.message() ?.let {
                     original to it

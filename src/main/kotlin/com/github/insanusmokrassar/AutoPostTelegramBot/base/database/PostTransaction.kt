@@ -5,38 +5,31 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.Post
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.PostMessage
 import kotlinx.coroutines.experimental.channels.BroadcastChannel
+import kotlinx.coroutines.experimental.channels.Channel
 import kotlinx.coroutines.experimental.launch
 import java.io.Closeable
 
-private const val broadcastSubscriptions = 256
+val transactionStartedChannel = BroadcastChannel<Unit>(Channel.CONFLATED)
+val transactionMessageAddedChannel = BroadcastChannel<Array<out PostMessage>>(Channel.CONFLATED)
+val transactionMessageRemovedChannel = BroadcastChannel<PostMessage>(Channel.CONFLATED)
+val transactionCompletedChannel = BroadcastChannel<Int>(Channel.CONFLATED)
 
-object PostTransactionTable : Closeable {
-    val transactionStartedChannel = BroadcastChannel<Unit>(broadcastSubscriptions)
-    val transactionMessageAddedChannel = BroadcastChannel<Array<out PostMessage>>(broadcastSubscriptions)
-    val transactionMessageRemovedChannel = BroadcastChannel<PostMessage>(broadcastSubscriptions)
-    val transactionCompletedChannel = BroadcastChannel<Int>(broadcastSubscriptions)
-
+class PostTransaction : Closeable {
     private val messages = ArrayList<PostMessage>()
-    var inTransaction: Boolean = false
+
+    var completed: Boolean = false
         private set
 
-    fun startTransaction() {
-        if (inTransaction) {
-            throw IllegalStateException("Already in transaction")
-        }
-        messages.clear()
-        inTransaction = true
-
+    init {
         launch {
             transactionStartedChannel.send(Unit)
         }
     }
 
     fun addMessageId(vararg message: PostMessage) {
-        if (!inTransaction) {
-            throw IllegalStateException("Not in transaction")
+        if (completed) {
+            throw IllegalStateException("Transaction already completed")
         }
-
         messages.addAll(message)
 
         launch {
@@ -45,10 +38,9 @@ object PostTransactionTable : Closeable {
     }
 
     fun removeMessageId(message: PostMessage) {
-        if (!inTransaction) {
-            throw IllegalStateException("Not in transaction")
+        if (completed) {
+            throw IllegalStateException("Transaction already completed")
         }
-
         messages.remove(message)
 
         launch {
@@ -57,9 +49,12 @@ object PostTransactionTable : Closeable {
     }
 
     private fun completeTransaction(): List<PostMessage> {
+        if (completed) {
+            throw IllegalStateException("Transaction already completed")
+        }
         return listOf(*messages.toTypedArray()).also {
             messages.clear()
-            inTransaction = false
+            completed = true
         }
     }
 
@@ -79,6 +74,7 @@ object PostTransactionTable : Closeable {
             transactionCompletedChannel.send(postId)
         }
     }
+
     override fun close() {
         saveNewPost()
     }

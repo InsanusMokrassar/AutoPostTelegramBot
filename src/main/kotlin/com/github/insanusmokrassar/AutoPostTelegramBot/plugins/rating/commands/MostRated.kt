@@ -11,6 +11,7 @@ import com.pengrad.telegrambot.model.request.InlineKeyboardButton
 import com.pengrad.telegrambot.model.request.InlineKeyboardMarkup
 import com.pengrad.telegrambot.request.ForwardMessage
 import com.pengrad.telegrambot.request.SendMessage
+import kotlinx.coroutines.experimental.launch
 import java.lang.ref.WeakReference
 
 class MostRated(
@@ -49,16 +50,18 @@ class MostRated(
                 )
             )
         } ?:let {
-            mostRated.mapNotNull {
-                PostsTable.postRegisteredMessage(it)
-            }.forEach {
-                bot.executeSync(
-                    ForwardMessage(
-                        chatId,
-                        chatId,
-                        it
+            launch {
+                mostRated.mapNotNull {
+                    PostsTable.postRegisteredMessage(it)
+                }.forEach {
+                    bot.executeBlocking(
+                        ForwardMessage(
+                            chatId,
+                            chatId,
+                            it
+                        )
                     )
-                )
+                }
             }
         }
     }

@@ -15,6 +15,7 @@ class Config (
         ""
     ),
     val proxy: ProxySettings? = null,
+    val regen: RequestsRegenConfig? = null,
     val plugins: List<PluginConfig> = emptyList(),
     val debug: Boolean = false
 ) {
@@ -27,6 +28,7 @@ class Config (
             botToken ?: throw IllegalArgumentException("Bot token (field \"botToken\") can't be null"),
             databaseConfig,
             proxy,
+            regen,
             plugins,
             debug
         )
@@ -46,6 +48,7 @@ class FinalConfig (
     val botToken: String,
     val databaseConfig: DatabaseConfig,
     val proxy: ProxySettings? = null,
+    val regen: RequestsRegenConfig? = null,
     val pluginsConfigs: List<PluginConfig> = emptyList(),
     val debug: Boolean = false
 )

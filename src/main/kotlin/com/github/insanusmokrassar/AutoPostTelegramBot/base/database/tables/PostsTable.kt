@@ -3,19 +3,18 @@ package com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.exceptions.CreationException
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.exceptions.NoRowFoundException
 import kotlinx.coroutines.experimental.channels.BroadcastChannel
+import kotlinx.coroutines.experimental.channels.Channel
 import kotlinx.coroutines.experimental.launch
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.joda.time.DateTime
 
-private const val countOfSubscriptions = 256
-
 typealias PostIdMessageId = Pair<Int, Int>
 
 object PostsTable : Table() {
-    val postAllocatedChannel = BroadcastChannel<Int>(countOfSubscriptions)
-    val postRemovedChannel = BroadcastChannel<Int>(countOfSubscriptions)
-    val postMessageRegisteredChannel = BroadcastChannel<PostIdMessageId>(countOfSubscriptions)
+    val postAllocatedChannel = BroadcastChannel<Int>(Channel.CONFLATED)
+    val postRemovedChannel = BroadcastChannel<Int>(Channel.CONFLATED)
+    val postMessageRegisteredChannel = BroadcastChannel<PostIdMessageId>(Channel.CONFLATED)
 
     private val id = integer("id").primaryKey().autoIncrement()
     private val postRegisteredMessageId = integer("postRegistered").nullable()

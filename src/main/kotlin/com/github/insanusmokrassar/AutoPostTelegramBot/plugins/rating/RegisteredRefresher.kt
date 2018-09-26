@@ -1,8 +1,8 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating
 
-import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.PostTransactionTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsMessagesTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsTable
+import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.transactionCompletedChannel
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.commonLogger
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.database.PostsLikesMessagesTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.database.PostsLikesTable
@@ -64,7 +64,7 @@ class RegisteredRefresher(
             true
         }
 
-        PostTransactionTable.transactionCompletedChannel.subscribeChecking {
+        transactionCompletedChannel.subscribeChecking {
             refreshRegisteredMessage(
                 sourceChatId,
                 botWR.get() ?: return@subscribeChecking false,

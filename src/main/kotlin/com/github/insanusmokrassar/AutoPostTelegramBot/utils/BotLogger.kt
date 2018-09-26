@@ -1,58 +1,36 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.utils
 
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.commonLogger
-import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.*
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.executeBlocking
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.splitForMessageWithAdditionalStep
 import com.pengrad.telegrambot.TelegramBot
-import com.pengrad.telegrambot.model.request.ParseMode
 import com.pengrad.telegrambot.request.SendMessage
-import kotlinx.coroutines.experimental.*
+import kotlinx.coroutines.experimental.channels.actor
+import kotlinx.coroutines.experimental.launch
 import java.lang.ref.WeakReference
-import java.util.*
 import java.util.logging.*
-import java.util.logging.Formatter
-
-private fun TelegramBot.sendLogRecord(record: String, chatId: Long) {
-    executeSync(
-        SendMessage(
-            chatId,
-            record
-        )
-    )
-}
-
-private fun TelegramBot.sendLogRecordAsync(record: String, chatId: Long) {
-    executeAsync(
-        SendMessage(
-            chatId,
-            record
-        )
-    )
-}
 
 private class LoggerHandler(
     loggerToHandle: Logger,
     bot: TelegramBot,
-    private val logsChatId: Long,
-    private val logMessagesDelay: Long = 1000L
+    private val logsChatId: Long
 ) : Handler() {
     private val botWR = WeakReference(bot)
 
     private val defaultFormatter = SimpleFormatter()
 
-    private val logsQueue: Queue<String> = ArrayDeque<String>()
-
-    private var logsSendingJob: Job? = null
-
-    private val sendRecordsBlock: suspend CoroutineScope.() -> Unit = {
-        try {
-            while (isActive && logsQueue.isNotEmpty()) {
-                botWR.get() ?.sendLogRecord() ?: break
-                delay(logMessagesDelay)
+    private val recordsActor = actor<LogRecord> {
+        for (msg in channel) {
+            val bot = botWR.get() ?: break
+            formatter.format(msg).splitForMessageWithAdditionalStep(6).forEach {
+                record ->
+                bot.executeBlocking(
+                    SendMessage(
+                        logsChatId,
+                        record
+                    )
+                )
             }
-        } catch (e: Exception) {
-            e.printStackTrace()
-        } finally {
-            logsSendingJob = null
         }
     }
 
@@ -61,43 +39,16 @@ private class LoggerHandler(
     }
 
     override fun publish(record: LogRecord?) {
-        record ?.also {
-            formatter.format(it).splitForMessageWithAdditionalStep(6).forEach {
-                record ->
-                addLogRecord(record)
-            }
+        launch {
+            recordsActor.send(record ?: return@launch)
         }
     }
 
-    override fun flush() {
-        runBlocking {
-            logsSendingJob ?.cancelAndJoin()
-            while (logsQueue.isNotEmpty()) {
-                botWR.get() ?.sendLogRecord(true) ?: logsQueue.poll()
-            }
-        }
-    }
+    override fun flush() {}
 
     override fun close() {
         botWR.clear()
-        logsQueue.clear()
-    }
-
-    private fun addLogRecord(record: String) {
-        logsQueue.offer(record)
-        refreshSendJob()
-    }
-
-    private fun refreshSendJob() {
-        logsSendingJob ?:also {
-            logsSendingJob = launch(block = sendRecordsBlock)
-        }
-    }
-
-    private fun TelegramBot.sendLogRecord(immediataly: Boolean = false) = if (immediataly) {
-        sendLogRecordAsync(logsQueue.poll(), logsChatId)
-    } else {
-        sendLogRecord(logsQueue.poll(), logsChatId)
+        recordsActor.close()
     }
 
     override fun getFormatter(): Formatter {

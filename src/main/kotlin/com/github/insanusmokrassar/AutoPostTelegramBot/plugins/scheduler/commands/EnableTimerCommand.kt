@@ -7,11 +7,12 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.scheduler.PostsSc
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.scheduler.converters
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.commands.Command
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.executeAsync
-import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.executeSync
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.executeBlocking
 import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.model.Message
 import com.pengrad.telegrambot.model.request.ParseMode
 import com.pengrad.telegrambot.request.*
+import kotlinx.coroutines.experimental.launch
 import java.lang.ref.WeakReference
 
 private val availableConvertersText = converters.joinToString("\n") {
@@ -80,25 +81,29 @@ class EnableTimerCommand(
                 parsed.also {
                     postsSchedulesTable.registerPostTime(postId, parsed)
 
-                    bot.executeSync(
-                        ForwardMessage(
-                            logsChatId,
-                            chatId,
-                            PostsMessagesTable.getMessagesOfPost(
-                                postId
-                            ).firstOrNull() ?.messageId ?: replyToMessage.messageId()
+                    launch {
+                        val messageId = bot.executeBlocking(
+                            ForwardMessage(
+                                logsChatId,
+                                chatId,
+                                PostsMessagesTable.getMessagesOfPost(
+                                    postId
+                                ).firstOrNull() ?.messageId ?: replyToMessage.messageId()
+                            )
+                        ).message().messageId()
+                        bot.executeAsync(
+                            SendMessage(
+                                logsChatId,
+                                "Chosen format: ${converter.formatPattern} (${converter.timeZoneId})\n" +
+                                    "Parsed time: $parsed\n" +
+                                    "Post saved with timer"
+                            ).parseMode(
+                                ParseMode.Markdown
+                            ).replyToMessageId(
+                                messageId
+                            )
                         )
-                    )
-                    bot.executeAsync(
-                        SendMessage(
-                            logsChatId,
-                            "Chosen format: ${converter.formatPattern} (${converter.timeZoneId})\n" +
-                                "Parsed time: $parsed\n" +
-                                "Post saved with timer"
-                        ).parseMode(
-                            ParseMode.Markdown
-                        )
-                    )
+                    }
                 }
             }
         } catch (e: NoRowFoundException) {

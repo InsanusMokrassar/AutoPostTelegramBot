@@ -1,9 +1,10 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.base.callbacks
 
-import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.PostTransactionTable
+import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.PostTransaction
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.PostMessage
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.Plugin
 import com.github.insanusmokrassar.AutoPostTelegramBot.mediaGroupsListener
+import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.base.commands.usersTransactions
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscribe
 import com.pengrad.telegrambot.model.Message
 import java.util.logging.Logger
@@ -37,25 +38,24 @@ class OnMediaGroup(
     ) {
         val first = messages.first()
         if (first.chat().id() == sourceChatId) {
-            if (PostTransactionTable.inTransaction) {
-                messages.forEach {
-                    PostTransactionTable.addMessageId(
-                        PostMessage(
-                            it.messageId(),
-                            it.mediaGroupId()
-                        )
-                    )
+            val userId: Long? = first.from() ?.id() ?.toLong() ?: first.chat() ?.id()
+
+            userId ?.let {
+                id ->
+                usersTransactions[id] ?.also {
+                    messages.forEach {
+                        message ->
+                        it.addMessageId(PostMessage(message))
+                    }
+                } ?:also {
+                    PostTransaction().use {
+                        transaction ->
+                        messages.forEach {
+                            message ->
+                            transaction.addMessageId(PostMessage(message))
+                        }
+                    }
                 }
-            } else {
-                PostTransactionTable.startTransaction()
-                messages.map {
-                    PostMessage(it)
-                }.also {
-                    PostTransactionTable.addMessageId(
-                        *it.toTypedArray()
-                    )
-                }
-                PostTransactionTable.saveNewPost()
             }
         }
     }
