@@ -93,13 +93,16 @@ posts which too old or too young
 
 ## 0.4.5
 
+**BREAK CHANGES**
+
 * Added `SemaphoreK`
 * Add work with semaphore in execution bot extensions
 * Add availibility to set up requests regen settings
 * Add `PostTransaction` - now recommended to use this
 class instead of `PostTransactionTable`
+* **BREAK CHANGE**: Remove `executeSync`
 * Add `executeBlocking(T, TelegramBot, Int, Long)`
     * Please, note that old methods as `executeAsync`
-    and `executeSync` are not recommended to use
+    is not recommended to use
 * **ALL BROADCASTS NOW ARE CONFLATED**
 * `BotIncomeMessagesListener` version `0.9b` -> `0.9`

@@ -3,7 +3,6 @@ package com.github.insanusmokrassar.AutoPostTelegramBot.base.database
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.exceptions.NothingToSaveException
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.PostMessage
 import java.io.Closeable
-import java.lang.IllegalStateException
 
 @Deprecated("Please, use PostTransaction class")
 object PostTransactionTable : Closeable {

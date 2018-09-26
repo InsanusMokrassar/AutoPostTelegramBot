@@ -14,7 +14,7 @@ interface Forwarder : Comparable<Forwarder> {
     fun canForward(message: PostMessage): Boolean
 
     @Throws(IOException::class)
-    fun forward(
+    suspend fun forward(
         bot: TelegramBot,
         targetChatId: Long,
         vararg messages: PostMessage

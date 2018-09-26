@@ -8,7 +8,6 @@ import kotlinx.coroutines.experimental.channels.BroadcastChannel
 import kotlinx.coroutines.experimental.channels.Channel
 import kotlinx.coroutines.experimental.launch
 import java.io.Closeable
-import java.lang.IllegalStateException
 
 val transactionStartedChannel = BroadcastChannel<Unit>(Channel.CONFLATED)
 val transactionMessageAddedChannel = BroadcastChannel<Array<out PostMessage>>(Channel.CONFLATED)

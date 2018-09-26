@@ -1,35 +1,14 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.utils
 
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.commonLogger
-import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.*
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.executeBlocking
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.splitForMessageWithAdditionalStep
 import com.pengrad.telegrambot.TelegramBot
-import com.pengrad.telegrambot.model.request.ParseMode
 import com.pengrad.telegrambot.request.SendMessage
-import kotlinx.coroutines.experimental.*
 import kotlinx.coroutines.experimental.channels.actor
-import kotlinx.coroutines.experimental.channels.sendBlocking
+import kotlinx.coroutines.experimental.launch
 import java.lang.ref.WeakReference
-import java.util.*
 import java.util.logging.*
-import java.util.logging.Formatter
-
-private fun TelegramBot.sendLogRecord(record: String, chatId: Long) {
-    executeSync(
-        SendMessage(
-            chatId,
-            record
-        )
-    )
-}
-
-private fun TelegramBot.sendLogRecordAsync(record: String, chatId: Long) {
-    executeAsync(
-        SendMessage(
-            chatId,
-            record
-        )
-    )
-}
 
 private class LoggerHandler(
     loggerToHandle: Logger,

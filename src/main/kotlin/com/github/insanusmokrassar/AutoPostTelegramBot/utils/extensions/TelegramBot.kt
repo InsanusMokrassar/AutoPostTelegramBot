@@ -9,7 +9,6 @@ import com.pengrad.telegrambot.response.BaseResponse
 import kotlinx.coroutines.experimental.*
 import org.slf4j.LoggerFactory
 import java.io.IOException
-import java.lang.Exception
 import java.lang.ref.WeakReference
 import kotlin.coroutines.experimental.suspendCoroutine
 
@@ -125,19 +124,6 @@ suspend fun <T: BaseRequest<T, R>, R: BaseResponse> TelegramBot.executeBlocking(
         )
     }
 }
-
-@Throws(IOException::class)
-fun <T: BaseRequest<T, R>, R: BaseResponse> TelegramBot.executeSync(
-    request: T,
-    retries: Int = 0,
-    retriesDelay: Long = 1000L
-): R {
-    return runBlocking {
-        executeBlocking(request, retries, retriesDelay)
-    }
-}
-
-
 
 fun TelegramBot.queryAnswer(
         id: String,

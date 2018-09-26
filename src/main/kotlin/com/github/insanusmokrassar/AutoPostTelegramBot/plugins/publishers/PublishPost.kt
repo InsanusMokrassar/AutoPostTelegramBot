@@ -5,11 +5,13 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.Post
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.choosers.Chooser
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.commands.Command
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.executeAsync
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.executeBlocking
 import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.model.Message
 import com.pengrad.telegrambot.model.request.ParseMode
 import com.pengrad.telegrambot.request.DeleteMessage
 import com.pengrad.telegrambot.request.SendMessage
+import kotlinx.coroutines.experimental.launch
 import java.lang.ref.WeakReference
 
 class PublishPost(
@@ -89,15 +91,15 @@ class PublishPost(
         botWR.get() ?.let {
             bot ->
 
-            bot.executeAsync(
-                SendMessage(
-                    logsChatId,
-                    "Was chosen to publish: ${choosen.size}. (Repeats of choosing was excluded)"
-                ).parseMode(
-                    ParseMode.Markdown
-                ),
-                onResponse = {
-                    _,  _ ->
+            launch {
+                bot.executeBlocking(
+                    SendMessage(
+                        logsChatId,
+                        "Was chosen to publish: ${choosen.size}. (Repeats of choosing was excluded)"
+                    ).parseMode(
+                        ParseMode.Markdown
+                    )
+                ).message() ?.let {
                     choosen.forEach {
                         publisher.publishPost(
                             it
@@ -110,7 +112,7 @@ class PublishPost(
                         )
                     )
                 }
-            )
+            }
         }
     }
 }

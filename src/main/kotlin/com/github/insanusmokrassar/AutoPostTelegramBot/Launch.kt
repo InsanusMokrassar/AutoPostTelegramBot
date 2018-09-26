@@ -4,7 +4,7 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.Post
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.Config
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.DefaultPluginManager
-import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.executeSync
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.executeBlocking
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscribe
 import com.github.insanusmokrassar.BotIncomeMessagesListener.*
 import com.github.insanusmokrassar.IObjectKRealisations.load
@@ -15,6 +15,7 @@ import com.pengrad.telegrambot.model.Message
 import com.pengrad.telegrambot.request.GetChat
 import kotlinx.coroutines.experimental.channels.BroadcastChannel
 import kotlinx.coroutines.experimental.channels.Channel
+import kotlinx.coroutines.experimental.runBlocking
 import okhttp3.Credentials
 import okhttp3.OkHttpClient
 import org.jetbrains.exposed.sql.Database
@@ -87,8 +88,10 @@ fun main(args: Array<String>) {
 
     config.regen ?.applyFor(bot)
 
-    if (!bot.executeSync(GetChat(config.sourceChatId)).isOk || !bot.executeSync(GetChat(config.targetChatId)).isOk) {
-        throw IllegalArgumentException("Can't check chats availability")
+    runBlocking {
+        if (!bot.executeBlocking(GetChat(config.sourceChatId)).isOk || !bot.executeBlocking(GetChat(config.targetChatId)).isOk) {
+            throw IllegalArgumentException("Can't check chats availability")
+        }
     }
 
     val pluginManager = DefaultPluginManager(
