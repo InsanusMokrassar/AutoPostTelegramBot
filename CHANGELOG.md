@@ -106,3 +106,4 @@ posts which too old or too young
     is not recommended to use
 * **ALL BROADCASTS NOW ARE CONFLATED**
 * `BotIncomeMessagesListener` version `0.9b` -> `0.9`
+* Fixes in Scheduler plugin
