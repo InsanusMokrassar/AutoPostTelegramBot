@@ -109,3 +109,5 @@ posts which too old or too young
 * Fixes in Scheduler plugin
 
 ## 0.4.6
+
+* Add handling of possible throws from `resume` in `Semaphore`
