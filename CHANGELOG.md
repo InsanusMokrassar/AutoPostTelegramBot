@@ -116,3 +116,8 @@ posts which too old or too young
 * Fixes in `BotLogger`
     * Note: temporary you will not be able to change log level
     of `commonLogger` (now it is FINER)
+
+## 0.4.7
+
+* Hotfix for `0.4.6`
+    * Fix of GarbageCollector

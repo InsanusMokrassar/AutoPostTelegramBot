@@ -83,7 +83,7 @@ class GarbageCollector(
         baseConfig: FinalConfig
     ) {
         if (
-            dataPair.second < config.minimalRate || PostsMessagesTable.getMessagesOfPost(dataPair.first).isEmpty()
+            (dataPair.second < config.minimalRate || PostsMessagesTable.getMessagesOfPost(dataPair.first).isEmpty())
             && creatingDate.plus(config.trackingDelay ?: 0).isBeforeNow
         ) {
             deletePost(
