@@ -112,3 +112,4 @@ posts which too old or too young
 
 * Add handling of possible throws from `resume` in `Semaphore`
 * GarbageCollector can receive parameter `trackingDelay`
+* Removed redundant `PluginVersion` typealias

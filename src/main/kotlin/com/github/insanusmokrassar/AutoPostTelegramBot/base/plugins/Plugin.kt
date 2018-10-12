@@ -4,7 +4,6 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.FinalConfig
 import com.pengrad.telegrambot.TelegramBot
 import java.util.logging.Logger
 
-typealias PluginVersion = Long
 typealias PluginName = String
 
 val commonLogger = Logger.getLogger("common")
