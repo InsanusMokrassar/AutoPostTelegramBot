@@ -113,3 +113,6 @@ posts which too old or too young
 * Add handling of possible throws from `resume` in `Semaphore`
 * GarbageCollector can receive parameter `trackingDelay`
 * Removed redundant `PluginVersion` typealias
+* Fixes in `BotLogger`
+    * Note: temporary you will not be able to change log level
+    of `commonLogger` (now it is FINER)
