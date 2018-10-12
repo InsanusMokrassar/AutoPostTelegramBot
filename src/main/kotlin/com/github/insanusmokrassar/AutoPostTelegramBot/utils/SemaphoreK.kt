@@ -1,5 +1,6 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.utils
 
+import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.commonLogger
 import kotlinx.coroutines.experimental.channels.*
 import kotlinx.coroutines.experimental.isActive
 import kotlinx.coroutines.experimental.launch
@@ -33,9 +34,14 @@ class SemaphoreK(
         for (i in (free - 1) downTo 0) {
             continuations[i].poll() ?.let {
                 if (it.context.isActive) {
-                    it.resume(Unit)
-                    free -= (i + 1)
-                    checkContinuations()
+                    try {
+                        it.resume(Unit)
+                        free -= (i + 1)
+                        checkContinuations()
+                    } catch (e: Throwable) {
+                        commonLogger.warning("Can't continue some of coroutines: $it")
+                        null
+                    }
                 } else {
                     null
                 }

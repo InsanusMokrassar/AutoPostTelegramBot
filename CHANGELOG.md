@@ -107,3 +107,12 @@ posts which too old or too young
 * **ALL BROADCASTS NOW ARE CONFLATED**
 * `BotIncomeMessagesListener` version `0.9b` -> `0.9`
 * Fixes in Scheduler plugin
+
+## 0.4.6
+
+* Add handling of possible throws from `resume` in `Semaphore`
+* GarbageCollector can receive parameter `trackingDelay`
+* Removed redundant `PluginVersion` typealias
+* Fixes in `BotLogger`
+    * Note: temporary you will not be able to change log level
+    of `commonLogger` (now it is FINER)

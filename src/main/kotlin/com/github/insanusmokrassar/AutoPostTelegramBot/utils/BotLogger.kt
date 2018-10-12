@@ -5,6 +5,7 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.executeB
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.splitForMessageWithAdditionalStep
 import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.request.SendMessage
+import kotlinx.coroutines.experimental.channels.Channel
 import kotlinx.coroutines.experimental.channels.actor
 import kotlinx.coroutines.experimental.launch
 import java.lang.ref.WeakReference
@@ -17,9 +18,9 @@ private class LoggerHandler(
 ) : Handler() {
     private val botWR = WeakReference(bot)
 
-    private val defaultFormatter = SimpleFormatter()
-
-    private val recordsActor = actor<LogRecord> {
+    private val recordsActor = actor<LogRecord>(
+        capacity = Channel.UNLIMITED
+    ) {
         for (msg in channel) {
             val bot = botWR.get() ?: break
             formatter.format(msg).splitForMessageWithAdditionalStep(6).forEach {
@@ -36,6 +37,8 @@ private class LoggerHandler(
 
     init {
         loggerToHandle.addHandler(this)
+
+        formatter = SimpleFormatter()
     }
 
     override fun publish(record: LogRecord?) {
@@ -49,10 +52,6 @@ private class LoggerHandler(
     override fun close() {
         botWR.clear()
         recordsActor.close()
-    }
-
-    override fun getFormatter(): Formatter {
-        return super.getFormatter() ?: defaultFormatter
     }
 }
 

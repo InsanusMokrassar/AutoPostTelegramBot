@@ -1,6 +1,7 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.plugins
 
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsMessagesTable
+import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.FinalConfig
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.*
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.base.commands.deletePost
@@ -12,10 +13,12 @@ import com.github.insanusmokrassar.IObjectKRealisations.toObject
 import com.pengrad.telegrambot.TelegramBot
 import kotlinx.coroutines.experimental.delay
 import kotlinx.coroutines.experimental.launch
+import org.joda.time.DateTime
 import java.lang.ref.WeakReference
 
 private data class GarbageCollectorConfig(
     val minimalRate: Int = -3,
+    val trackingDelay: Long? = null,
     val manualCheckDelay: Long? = null
 )
 
@@ -68,8 +71,21 @@ class GarbageCollector(
         dataPair: PostIdRatingPair,
         bot: TelegramBot,
         baseConfig: FinalConfig
+    ) = PostsTable.getPostCreationDateTime(dataPair.first) ?.also {
+        creatingDate ->
+        check(dataPair, creatingDate, bot, baseConfig)
+    }
+
+    private fun check(
+        dataPair: PostIdRatingPair,
+        creatingDate: DateTime,
+        bot: TelegramBot,
+        baseConfig: FinalConfig
     ) {
-        if (dataPair.second < config.minimalRate || PostsMessagesTable.getMessagesOfPost(dataPair.first).isEmpty()) {
+        if (
+            dataPair.second < config.minimalRate || PostsMessagesTable.getMessagesOfPost(dataPair.first).isEmpty()
+            && creatingDate.plus(config.trackingDelay ?: 0).isBeforeNow
+        ) {
             deletePost(
                 bot,
                 baseConfig.sourceChatId,
