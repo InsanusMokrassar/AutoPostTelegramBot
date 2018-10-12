@@ -245,12 +245,15 @@
           "classname": "com.github.insanusmokrassar.AutoPostTelegramBot.plugins.GarbageCollector",
           "params": {
             "minimalRate": -2,
-            "manualCheckDelay": 3200000
+            "manualCheckDelay": 3200000,
+            "trackingDelay": 3200000
           }
         }
     ```
     Отсутствие `manualCheckDelay` в настройках отключит проверку раз в какое-то время и будет реагировать
-    только на события изменений в плагине `RatingPlugin`
+    только на события изменений в плагине `RatingPlugin`. `trackingDelay` позволит включить режим неприкосновенности
+    на время с момента поста - `GarbageCollector` будет игнорировать пост пока с момента его создания не пройдёт
+    указанное количество миллисекунд
 * [BotLogger](src/main/kotlin/com/github/insanusmokrassar/AutoPostTelegramBot/plugins/BotLogger.kt) - по-факту,
 инициализирует `LogHandler` через вызов
 [initHandler](src/main/kotlin/com/github/insanusmokrassar/AutoPostTelegramBot/utils/BotLogger.kt#97) в момент

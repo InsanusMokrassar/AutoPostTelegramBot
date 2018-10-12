@@ -111,3 +111,4 @@ posts which too old or too young
 ## 0.4.6
 
 * Add handling of possible throws from `resume` in `Semaphore`
+* GarbageCollector can receive parameter `trackingDelay`
