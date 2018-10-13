@@ -14,7 +14,7 @@ class Config (
         "sa",
         ""
     ),
-    val proxy: ProxySettings? = null,
+    val clientConfig: HttpClientConfig? = null,
     val regen: RequestsRegenConfig? = null,
     val plugins: List<PluginConfig> = emptyList(),
     val debug: Boolean = false
@@ -27,7 +27,7 @@ class Config (
             logsChatId ?: sourceChatId,
             botToken ?: throw IllegalArgumentException("Bot token (field \"botToken\") can't be null"),
             databaseConfig,
-            proxy,
+            clientConfig,
             regen,
             plugins,
             debug
@@ -47,7 +47,7 @@ class FinalConfig (
     val logsChatId: Long,
     val botToken: String,
     val databaseConfig: DatabaseConfig,
-    val proxy: ProxySettings? = null,
+    val clientConfig: HttpClientConfig? = null,
     val regen: RequestsRegenConfig? = null,
     val pluginsConfigs: List<PluginConfig> = emptyList(),
     val debug: Boolean = false

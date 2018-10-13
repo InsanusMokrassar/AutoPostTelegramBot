@@ -16,13 +16,9 @@ import com.pengrad.telegrambot.request.GetChat
 import kotlinx.coroutines.experimental.channels.BroadcastChannel
 import kotlinx.coroutines.experimental.channels.Channel
 import kotlinx.coroutines.experimental.runBlocking
-import okhttp3.Credentials
-import okhttp3.OkHttpClient
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.transactions.transaction
-import java.net.InetSocketAddress
-import java.net.Proxy
 
 // SUBSCRIBE WITH CAUTION
 val realMessagesListener = UpdateCallbackChannel<Message>()
@@ -42,33 +38,8 @@ fun main(args: Array<String>) {
         if (config.debug) {
             debug()
         }
-        config.proxy ?.let {
-            proxy ->
-            okHttpClient(
-                OkHttpClient.Builder().apply {
-                    proxy(
-                        Proxy(
-                            Proxy.Type.SOCKS,
-                            InetSocketAddress(
-                                proxy.host,
-                                proxy.port
-                            )
-                        )
-                    )
-                    proxy.password ?.let {
-                        password ->
-                        proxyAuthenticator {
-                            _, response ->
-                            response.request().newBuilder().apply {
-                                addHeader(
-                                    "Proxy-Authorization",
-                                    Credentials.basic(proxy.username ?: "", password)
-                                )
-                            }.build()
-                        }
-                    }
-                }.build()
-            )
+        config.clientConfig ?.also {
+            okHttpClient(it.createClient())
         }
         build()
     }
