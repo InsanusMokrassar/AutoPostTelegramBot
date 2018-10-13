@@ -127,3 +127,5 @@ posts which too old or too young
 * Now you can subscribe directly on `ReceiveChannel` updates
 * Rewrite `debounce`, now it is more compact and effective
 * Proxy settings was replaced into `clientConfig` settings
+* Add `Message#textOrCaptionToMarkdown()`, now you can use
+simple way to preformat messages
