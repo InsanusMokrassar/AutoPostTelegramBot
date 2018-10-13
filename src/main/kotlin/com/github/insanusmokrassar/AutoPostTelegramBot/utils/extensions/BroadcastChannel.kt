@@ -79,37 +79,32 @@ fun <T> ReceiveChannel<T>.subscribe(
     }
 }
 
-fun <T> ReceiveChannel<T>.debounce(delayMs: Long): BroadcastChannel<T> {
-    val channel = BroadcastChannel<T>(Channel.CONFLATED)
-    var lastReceived: Pair<Long, T>? = null
-    var job: Job? = null
-    launch {
-        while (isActive && !isClosedForReceive) {
-            val received = receive()
 
-            lastReceived = Pair(System.currentTimeMillis() + delayMs, received)
+fun <T> BroadcastChannel<T>.debounce(
+    delay: Long,
+    timeUnit: TimeUnit = TimeUnit.MILLISECONDS
+): BroadcastChannel<T> {
+    return openSubscription().debounce(
+        delay,
+        timeUnit
+    )
+}
 
-            job ?:let {
-                job = launch {
-                    try {
-                        var now = System.currentTimeMillis()
-                        while (isActive && lastReceived?.first ?: now >= now) {
-                            delay((lastReceived ?.first ?: now) - now, TimeUnit.MILLISECONDS)
-                            now = System.currentTimeMillis()
-                        }
 
-                        lastReceived?.second?.also {
-                            channel.send(it)
-                        }
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                    } finally {
-                        job = null
-                    }
-                }
+fun <T> ReceiveChannel<T>.debounce(
+    delay: Long,
+    timeUnit: TimeUnit = TimeUnit.MILLISECONDS
+): BroadcastChannel<T> {
+    return BroadcastChannel<T>(Channel.CONFLATED).also {
+        outBroadcast ->
+        var lastReceived: Job? = null
+        subscribe {
+            lastReceived ?.cancel()
+            lastReceived = launch {
+                delay(delay, timeUnit)
+
+                outBroadcast.send(it)
             }
         }
-        cancel()
     }
-    return channel
 }

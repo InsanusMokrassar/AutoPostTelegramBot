@@ -125,3 +125,4 @@ posts which too old or too young
 ## 0.5.0
 
 * Now you can subscribe directly on `ReceiveChannel` updates
+* Rewrite `debounce`, now it is more compact and effective
