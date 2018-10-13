@@ -31,8 +31,8 @@ private fun MessageEntity.asPreformattedPart(stringToModify: String): String {
     }
 }
 
-fun Message.textOrCaptionToMarkdown(): String {
-    val text = caption() ?: text()
+fun Message.textOrCaptionToMarkdown(): String? {
+    val text = caption() ?: text() ?: return null
     val entities: List<MessageEntity> = (captionEntities() ?: entities()) ?.sortedBy { it.offset() } ?: kotlin.collections.emptyList()
 
     val deformatters = kotlin.collections.mutableListOf<MessageEntityDeformatter>()

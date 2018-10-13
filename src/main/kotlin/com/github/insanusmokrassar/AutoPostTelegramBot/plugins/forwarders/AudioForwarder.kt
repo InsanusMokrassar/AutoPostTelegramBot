@@ -2,8 +2,10 @@ package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.forwarders
 
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.PostMessage
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.executeBlocking
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.textOrCaptionToMarkdown
 import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.model.Message
+import com.pengrad.telegrambot.model.request.ParseMode
 import com.pengrad.telegrambot.request.SendAudio
 import java.io.IOException
 
@@ -23,8 +25,12 @@ class AudioForwarder : Forwarder {
                     targetChatId,
                     it.audio().fileId()
                 ).apply {
-                    it.caption() ?.let {
-                        caption(it)
+                    it.textOrCaptionToMarkdown() ?.also {
+                        caption ->
+                        caption(caption)
+                        parseMode(
+                            ParseMode.Markdown
+                        )
                     }
                     it.audio().also {
                         it.title() ?.let {

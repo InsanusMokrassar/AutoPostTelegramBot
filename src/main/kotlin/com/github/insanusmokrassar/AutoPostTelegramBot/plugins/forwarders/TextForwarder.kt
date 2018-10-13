@@ -2,6 +2,7 @@ package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.forwarders
 
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.PostMessage
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.executeBlocking
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.textOrCaptionToMarkdown
 import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.model.Message
 import com.pengrad.telegrambot.model.request.ParseMode
@@ -22,7 +23,7 @@ class TextForwarder : Forwarder {
             val message = postMessage.message ?: return@mapNotNull null
             postMessage to SendMessage(
                 targetChatId,
-                message.text()
+                message.textOrCaptionToMarkdown()
             ).parseMode(
                 ParseMode.Markdown
             )

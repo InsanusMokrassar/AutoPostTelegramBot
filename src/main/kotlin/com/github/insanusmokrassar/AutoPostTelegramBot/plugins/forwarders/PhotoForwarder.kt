@@ -2,6 +2,7 @@ package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.forwarders
 
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.PostMessage
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.executeBlocking
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.textOrCaptionToMarkdown
 import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.model.Message
 import com.pengrad.telegrambot.model.request.ParseMode
@@ -26,8 +27,12 @@ class PhotoForwarder : Forwarder {
                     it.fileId()
                 )
             } ?.apply {
-                message.caption() ?.let {
-                    caption(it)
+                message.textOrCaptionToMarkdown() ?.also {
+                    caption ->
+                    caption(caption)
+                    parseMode(
+                        ParseMode.Markdown
+                    )
                 }
                 parseMode(ParseMode.Markdown)
             } ?.let {

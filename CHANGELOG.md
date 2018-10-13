@@ -129,3 +129,5 @@ posts which too old or too young
 * Proxy settings was replaced into `clientConfig` settings
 * Add `Message#textOrCaptionToMarkdown()`, now you can use
 simple way to preformat messages
+* Forwarders now work with preformatted text (like
+[this](#0.5.0) or **this**)
