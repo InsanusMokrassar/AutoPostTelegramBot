@@ -260,7 +260,10 @@
 инициализации плагина. Подключение:
     ```json
         {
-          "classname": "com.github.insanusmokrassar.AutoPostTelegramBot.plugins.BotLogger"
+          "classname": "com.github.insanusmokrassar.AutoPostTelegramBot.plugins.BotLogger",
+          "params": {
+            // опциональное поле, заполняемое как commonBot в корне конфига
+          }
         }
     ```
 
