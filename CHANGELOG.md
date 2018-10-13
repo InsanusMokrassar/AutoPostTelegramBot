@@ -121,3 +121,5 @@ posts which too old or too young
 
 * Hotfix for `0.4.6`
     * Fix of GarbageCollector
+
+## 0.5.0
