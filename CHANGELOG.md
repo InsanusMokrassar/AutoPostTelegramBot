@@ -123,3 +123,5 @@ posts which too old or too young
     * Fix of GarbageCollector
 
 ## 0.5.0
+
+* Now you can subscribe directly on `ReceiveChannel` updates

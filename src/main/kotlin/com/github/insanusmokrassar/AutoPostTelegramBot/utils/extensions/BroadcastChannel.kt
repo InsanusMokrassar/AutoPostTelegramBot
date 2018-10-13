@@ -11,29 +11,11 @@ fun <T> BroadcastChannel<T>.subscribeChecking(
     },
     by: suspend (T) -> Boolean
 ): ReceiveChannel<T> {
-    return openSubscription().also {
-        launch {
-            while (isActive && !it.isClosedForReceive) {
-                try {
-                    val received = it.receive()
-
-                    launch {
-                        try {
-                            if (!by(received)) {
-                                it.cancel()
-                            }
-                        } catch (e: Throwable) {
-                            if (!throwableHandler(e)) {
-                                it.cancel()
-                            }
-                        }
-                    }
-                } catch (e: CancellationException) {
-                    break
-                }
-            }
-            it.cancel()
-        }
+    return openSubscription().apply {
+        subscribeChecking(
+            throwableHandler,
+            by
+        )
     }
 }
 
@@ -44,6 +26,53 @@ fun <T> BroadcastChannel<T>.subscribe(
     },
     by: suspend (T) -> Unit
 ): ReceiveChannel<T> {
+    return openSubscription().apply {
+        subscribeChecking(throwableHandler) {
+            by(it)
+            true
+        }
+    }
+}
+
+fun <T> ReceiveChannel<T>.subscribeChecking(
+    throwableHandler: (Throwable) -> Boolean = {
+        it.printStackTrace()
+        true
+    },
+    by: suspend (T) -> Boolean
+) {
+    val channel = this
+    launch {
+        while (isActive && !channel.isClosedForReceive) {
+            try {
+                val received = channel.receive()
+
+                launch {
+                    try {
+                        if (!by(received)) {
+                            channel.cancel()
+                        }
+                    } catch (e: Throwable) {
+                        if (!throwableHandler(e)) {
+                            channel.cancel()
+                        }
+                    }
+                }
+            } catch (e: CancellationException) {
+                break
+            }
+        }
+        channel.cancel()
+    }
+}
+
+fun <T> ReceiveChannel<T>.subscribe(
+    throwableHandler: (Throwable) -> Boolean = {
+        it.printStackTrace()
+        true
+    },
+    by: suspend (T) -> Unit
+) {
     return subscribeChecking(throwableHandler) {
         by(it)
         true
