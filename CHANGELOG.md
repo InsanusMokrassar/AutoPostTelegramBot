@@ -140,3 +140,5 @@ simple way to preformat messages
 * Now `BotLogger` may have `params` section with `token`
 for creating independent bot instance. It will be useful for
 free real bot
+* Added `BotConfig` and temporary keep old settings,
+but update instruction to use new config schema

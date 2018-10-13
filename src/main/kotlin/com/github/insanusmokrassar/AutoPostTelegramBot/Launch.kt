@@ -9,7 +9,6 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscrib
 import com.github.insanusmokrassar.BotIncomeMessagesListener.*
 import com.github.insanusmokrassar.IObjectKRealisations.load
 import com.github.insanusmokrassar.IObjectKRealisations.toObject
-import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.model.CallbackQuery
 import com.pengrad.telegrambot.model.Message
 import com.pengrad.telegrambot.request.GetChat
@@ -32,17 +31,7 @@ val mediaGroupsListener = BroadcastChannel<Pair<String, List<Message>>>(Channel.
 fun main(args: Array<String>) {
     val config = load(args[0]).toObject(Config::class.java).finalConfig
 
-    val bot = TelegramBot.Builder(
-        config.botToken
-    ).run {
-        if (config.debug) {
-            debug()
-        }
-        config.clientConfig ?.also {
-            okHttpClient(it.createClient())
-        }
-        build()
-    }
+    val bot = config.bot
 
     config.databaseConfig.apply {
         Database.connect(
@@ -56,8 +45,6 @@ fun main(args: Array<String>) {
             SchemaUtils.createMissingTablesAndColumns(PostsTable, PostsMessagesTable)
         }
     }
-
-    config.regen ?.applyFor(bot)
 
     runBlocking {
         if (!bot.executeBlocking(GetChat(config.sourceChatId)).isOk || !bot.executeBlocking(GetChat(config.targetChatId)).isOk) {
