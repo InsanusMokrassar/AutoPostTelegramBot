@@ -124,6 +124,12 @@ posts which too old or too young
 
 ## 0.5.0
 
+**BREAK CHANGES**
+
+This update contains changes which related to behaviour of
+publishing of posts. If to be exactly - now you do not need
+to use raw markdown for posts
+
 * Now you can subscribe directly on `ReceiveChannel` updates
 * Rewrite `debounce`, now it is more compact and effective
 * Proxy settings was replaced into `clientConfig` settings
