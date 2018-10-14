@@ -2,6 +2,7 @@ package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.forwarders
 
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.PostMessage
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.executeBlocking
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.textOrCaptionToMarkdown
 import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.model.Message
 import com.pengrad.telegrambot.model.request.ParseMode
@@ -24,8 +25,12 @@ class DocumentForwarder : Forwarder {
                     targetChatId,
                     it.document().fileId()
                 ).apply {
-                    it.caption() ?.let {
-                        caption(it)
+                    it.textOrCaptionToMarkdown() ?.also {
+                        caption ->
+                        caption(caption)
+                        parseMode(
+                            ParseMode.Markdown
+                        )
                     }
                     it.document().fileName() ?.let {
                         fileName(it)

@@ -121,3 +121,24 @@ posts which too old or too young
 
 * Hotfix for `0.4.6`
     * Fix of GarbageCollector
+
+## 0.5.0
+
+**BREAK CHANGES**
+
+This update contains changes which related to behaviour of
+publishing of posts. If to be exactly - now you do not need
+to use raw markdown for posts
+
+* Now you can subscribe directly on `ReceiveChannel` updates
+* Rewrite `debounce`, now it is more compact and effective
+* Proxy settings was replaced into `clientConfig` settings
+* Add `Message#textOrCaptionToMarkdown()`, now you can use
+simple way to preformat messages
+* Forwarders now work with preformatted text (like
+[this](#0.5.0) or **this**)
+* Now `BotLogger` may have `params` section with `token`
+for creating independent bot instance. It will be useful for
+free real bot
+* Added `BotConfig` and temporary keep old settings,
+but update instruction to use new config schema

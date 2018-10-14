@@ -1,6 +1,7 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.base.models
 
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.PluginConfig
+import com.pengrad.telegrambot.TelegramBot
 import org.h2.Driver
 
 class Config (
@@ -14,23 +15,28 @@ class Config (
         "sa",
         ""
     ),
-    val proxy: ProxySettings? = null,
+    val clientConfig: HttpClientConfig? = null,
     val regen: RequestsRegenConfig? = null,
     val plugins: List<PluginConfig> = emptyList(),
-    val debug: Boolean = false
+    val commonBot: BotConfig? = null
 ) {
+    private val botConfig: BotConfig by lazy {
+        commonBot ?: BotConfig(
+            botToken,
+            clientConfig,
+            regen
+        )
+    }
+
     val finalConfig: FinalConfig
         @Throws(IllegalArgumentException::class)
         get() = FinalConfig(
             targetChatId ?: throw IllegalArgumentException("Target chat id (field \"targetChatId\") can't be null"),
             sourceChatId ?: throw IllegalArgumentException("Source chat id (field \"sourceChatId\") can't be null"),
             logsChatId ?: sourceChatId,
-            botToken ?: throw IllegalArgumentException("Bot token (field \"botToken\") can't be null"),
+            botConfig.createBot(),
             databaseConfig,
-            proxy,
-            regen,
-            plugins,
-            debug
+            plugins
         )
 }
 
@@ -45,10 +51,7 @@ class FinalConfig (
     val targetChatId: Long,
     val sourceChatId: Long,
     val logsChatId: Long,
-    val botToken: String,
+    val bot: TelegramBot,
     val databaseConfig: DatabaseConfig,
-    val proxy: ProxySettings? = null,
-    val regen: RequestsRegenConfig? = null,
-    val pluginsConfigs: List<PluginConfig> = emptyList(),
-    val debug: Boolean = false
+    val pluginsConfigs: List<PluginConfig> = emptyList()
 )

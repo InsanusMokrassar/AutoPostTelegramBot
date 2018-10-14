@@ -2,6 +2,7 @@ package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.forwarders
 
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.PostMessage
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.executeBlocking
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.textOrCaptionToMarkdown
 import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.model.Message
 import com.pengrad.telegrambot.model.request.*
@@ -45,8 +46,13 @@ class MediaGroupForwarder : Forwarder {
                                 it.fileId()
                             )
                         }) ?.apply {
-                            caption(message.caption())
-                            parseMode(ParseMode.Markdown)
+                            message.textOrCaptionToMarkdown() ?.also {
+                                caption ->
+                                caption(caption)
+                                parseMode(
+                                    ParseMode.Markdown
+                                )
+                            }
                         }
                     }
                 }.toTypedArray()

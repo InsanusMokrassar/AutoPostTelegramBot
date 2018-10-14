@@ -9,20 +9,15 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscrib
 import com.github.insanusmokrassar.BotIncomeMessagesListener.*
 import com.github.insanusmokrassar.IObjectKRealisations.load
 import com.github.insanusmokrassar.IObjectKRealisations.toObject
-import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.model.CallbackQuery
 import com.pengrad.telegrambot.model.Message
 import com.pengrad.telegrambot.request.GetChat
 import kotlinx.coroutines.experimental.channels.BroadcastChannel
 import kotlinx.coroutines.experimental.channels.Channel
 import kotlinx.coroutines.experimental.runBlocking
-import okhttp3.Credentials
-import okhttp3.OkHttpClient
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.transactions.transaction
-import java.net.InetSocketAddress
-import java.net.Proxy
 
 // SUBSCRIBE WITH CAUTION
 val realMessagesListener = UpdateCallbackChannel<Message>()
@@ -36,42 +31,7 @@ val mediaGroupsListener = BroadcastChannel<Pair<String, List<Message>>>(Channel.
 fun main(args: Array<String>) {
     val config = load(args[0]).toObject(Config::class.java).finalConfig
 
-    val bot = TelegramBot.Builder(
-        config.botToken
-    ).run {
-        if (config.debug) {
-            debug()
-        }
-        config.proxy ?.let {
-            proxy ->
-            okHttpClient(
-                OkHttpClient.Builder().apply {
-                    proxy(
-                        Proxy(
-                            Proxy.Type.SOCKS,
-                            InetSocketAddress(
-                                proxy.host,
-                                proxy.port
-                            )
-                        )
-                    )
-                    proxy.password ?.let {
-                        password ->
-                        proxyAuthenticator {
-                            _, response ->
-                            response.request().newBuilder().apply {
-                                addHeader(
-                                    "Proxy-Authorization",
-                                    Credentials.basic(proxy.username ?: "", password)
-                                )
-                            }.build()
-                        }
-                    }
-                }.build()
-            )
-        }
-        build()
-    }
+    val bot = config.bot
 
     config.databaseConfig.apply {
         Database.connect(
@@ -85,8 +45,6 @@ fun main(args: Array<String>) {
             SchemaUtils.createMissingTablesAndColumns(PostsTable, PostsMessagesTable)
         }
     }
-
-    config.regen ?.applyFor(bot)
 
     runBlocking {
         if (!bot.executeBlocking(GetChat(config.sourceChatId)).isOk || !bot.executeBlocking(GetChat(config.targetChatId)).isOk) {

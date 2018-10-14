@@ -13,6 +13,16 @@ fun String.splitByStep(step: Int): List<String> {
     }
 }
 
+fun String.toMarkdown(): String {
+    return replace(
+        "*",
+        "\\*"
+    ).replace(
+        "_",
+        "\\_"
+    )
+}
+
 private const val maxMessageSymbols = 4095
 
 fun String.splitForMessage(): List<String> = splitByStep(maxMessageSymbols)

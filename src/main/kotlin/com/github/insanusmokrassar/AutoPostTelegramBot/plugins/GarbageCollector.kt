@@ -82,10 +82,10 @@ class GarbageCollector(
         bot: TelegramBot,
         baseConfig: FinalConfig
     ) {
-        if (
-            (dataPair.second < config.minimalRate || PostsMessagesTable.getMessagesOfPost(dataPair.first).isEmpty())
-            && creatingDate.plus(config.trackingDelay ?: 0).isBeforeNow
-        ) {
+        if (creatingDate.plus(config.trackingDelay ?: 0).isAfterNow) {
+            return
+        }
+        if (dataPair.second < config.minimalRate || PostsMessagesTable.getMessagesOfPost(dataPair.first).isEmpty()) {
             deletePost(
                 bot,
                 baseConfig.sourceChatId,

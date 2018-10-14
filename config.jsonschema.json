@@ -1,0 +1,167 @@
+{
+  "type": "object",
+  "properties": {
+    "targetChatId": {
+      "$ref": "#/definitions/chatId"
+    },
+    "sourceChatId": {
+      "$ref": "#/definitions/chatId"
+    },
+    "logsChatId": {
+      "$ref": "#/definitions/chatId",
+      "default": "Equal to sourceChatId"
+    },
+    "databaseConfig": {
+      "$ref": "#/definitions/databaseConfig"
+    },
+    "commonBot": {
+      "$ref": "#/definitions/bot"
+    },
+    "plugins": {
+      "type": "array",
+      "items": [
+        {
+          "$ref": "#/definitions/plugin"
+        }
+      ]
+    }
+  },
+  "definitions": {
+    "chatId": {
+      "type": "number"
+    },
+    "port": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 65535
+    },
+    "botToken": {
+      "type": "string",
+      "pattern": "^[0-9]{9}:[A-Za-z\\d]{35}$"
+    },
+    "classname": {
+      "type": "string",
+      "pattern": "^[\\w][\\w\\d]*(\\.[\\w][\\w\\d]*)*$"
+    },
+    "proxy": {
+      "type": "object",
+      "properties": {
+        "host": {
+          "type": "string",
+          "description": "URL of target proxy (or IP)"
+        },
+        "port": {
+          "$ref": "#/definitions/port"
+        },
+        "username": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        }
+      }
+    },
+    "databaseConfig": {
+      "type": "object",
+      "properties": {
+        "username": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string"
+        },
+        "driver": {
+          "$ref": "#/definitions/classname"
+        }
+      },
+      "required": [
+        "url",
+        "driver"
+      ]
+    },
+    "clientConfig": {
+      "properties": {
+        "proxy": {
+          "$ref": "#/definitions/proxy"
+        },
+        "connectTimeout": {
+          "$ref": "#/definitions/timeout",
+          "default": 0
+        },
+        "writeTimeout": {
+          "$ref": "#/definitions/timeout",
+          "default": 0
+        },
+        "readTimeout": {
+          "$ref": "#/definitions/timeout",
+          "default": 0
+        },
+        "debug": {
+          "type": "boolean",
+          "description": "Flag to use debug output"
+        }
+      }
+    },
+    "timeout": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Timeout in millis"
+    },
+    "regen": {
+      "type": "object",
+      "properties": {
+        "delay": {
+          "$ref": "#/definitions/timeout"
+        },
+        "regen": {
+          "type": "integer",
+          "description": "Count of restoring messages per delay",
+          "minimum": 0
+        },
+        "max": {
+          "type": "integer",
+          "description": "Max count of available messages for one time"
+        }
+      }
+    },
+    "plugin": {
+      "type": "object",
+      "properties": {
+        "classname": {
+          "$ref": "#/definitions/classname"
+        },
+        "params": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "classname"
+      ]
+    },
+    "bot": {
+      "type": "object",
+      "properties": {
+        "botToken": {
+          "$ref": "#/definitions/botToken"
+        },
+        "clientConfig": {
+          "$ref": "#/definitions/clientConfig"
+        },
+        "regen": {
+          "$ref": "#/definitions/regen"
+        }
+      },
+      "required": [
+        "botToken"
+      ]
+    }
+  },
+  "required": [
+    "targetChatId",
+    "sourceChatId",
+    "commonBot"
+  ]
+}
