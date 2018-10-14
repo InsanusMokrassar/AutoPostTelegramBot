@@ -137,8 +137,9 @@ to use raw markdown for posts
 simple way to preformat messages
 * Forwarders now work with preformatted text (like
 [this](#0.5.0) or **this**)
-* Now `BotLogger` may have `params` section with `token`
-for creating independent bot instance. It will be useful for
-free real bot
+* Now `BotLogger` may have `params` section which look like
+`commonBot` section in general config for creating
+independent bot instance. It will be useful for free real
+bot
 * Added `BotConfig` and temporary keep old settings,
 but update instruction to use new config schema

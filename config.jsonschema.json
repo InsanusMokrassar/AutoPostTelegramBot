@@ -37,7 +37,7 @@
     },
     "botToken": {
       "type": "string",
-      "pattern": "^[0-9]{9}:[A-Za-z\\d]{35}$"
+      "pattern": "^[0-9]{9}:[A-Za-z\\d_]{35}$"
     },
     "classname": {
       "type": "string",
