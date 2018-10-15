@@ -1,6 +1,6 @@
 # Auto Post Telegram Bot
 
-[![Download](https://api.bintray.com/packages/insanusmokrassar/StandardRepository/AutoPostTelegramBot/images/download.svg)](https://bintray.com/insanusmokrassar/StandardRepository/AutoPostTelegramBot/_latestVersion)
+[![Download](https://api.bintray.com/packages/insanusmokrassar/StandardRepository/AutoPostTelegramBot/images/download.svg)](https://bintray.com/insanusmokrassar/StandardRepository/AutoPostTelegramBot/_latestVersion) [![Build Status](https://jenkins.insanusmokrassar.com/job/AutoPostTelegramBot_master/badge/icon)](https://jenkins.insanusmokrassar.com/job/AutoPostTelegramBot_master/)
 
 [![Get automatic notifications about new "AutoPostTelegramBot" versions](https://www.bintray.com/docs/images/bintray_badge_color.png)](https://bintray.com/insanusmokrassar/StandardRepository/AutoPostTelegramBot?source=watch)
 
