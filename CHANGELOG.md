@@ -152,3 +152,5 @@ but update instruction to use new config schema
     * z - fix version
 * Add util for work with time
 (`String.parseDateTimes(): List<CalculatedDateTime>`)
+* Added extension for planning actions
+(`Iterable<CalculatedDateTime>.launchNearFuture(suspend () -> R): Deferred<R>`)
