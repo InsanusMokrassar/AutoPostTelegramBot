@@ -165,3 +165,5 @@ but update instruction to use new config schema
 Fixed SmartChooser wrong time checker
 
 ### 0.6.2
+
+* Add `CalculatedDateTime#nearInPast`

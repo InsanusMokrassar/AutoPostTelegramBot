@@ -41,3 +41,14 @@ fun Iterable<CalculatedDateTime>.asPairs(): List<CalculatedPeriod> {
 
     return result
 }
+
+val CalculatedDateTime.nearInPast: DateTime
+    get() {
+        val asNow = asNow
+
+        return if (asNow.isBeforeNow) {
+            asNow
+        } else {
+            asNow.minus(futureDifference)
+        }
+    }
