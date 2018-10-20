@@ -170,3 +170,4 @@ Fixed SmartChooser wrong time checker
 * Add `CalculatedDateTime#asFor`
 * Add `CalculatedDateTime#asFutureFor`
 * Add `CalculatedDateTime#asPastFor`
+* Add `CalculatedDateTime#isBetween`
