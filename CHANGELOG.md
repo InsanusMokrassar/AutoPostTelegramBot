@@ -159,3 +159,7 @@ but update instruction to use new config schema
 * Rewrite plugins to use new dates utils:
     * `SmartChooser`
     * `Scheduler`
+
+### 0.6.1
+
+Fixed SmartChooser wrong time checker

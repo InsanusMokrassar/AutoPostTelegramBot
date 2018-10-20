@@ -107,7 +107,7 @@ private class SmartChooserConfigItem (
     ): Boolean {
         timePairs.forEach {
             (from, to) ->
-            val fromAsFuture = from.asFuture
+            val fromAsFuture = from.asNow
             val toAsFuture = to.asFuture
             if ((fromAsFuture.isBefore(now) || fromAsFuture.isEqual(now)) && toAsFuture.isAfter(now)) {
                 return true
