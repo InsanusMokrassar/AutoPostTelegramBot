@@ -167,3 +167,6 @@ Fixed SmartChooser wrong time checker
 ### 0.6.2
 
 * Add `CalculatedDateTime#nearInPast`
+* Add `CalculatedDateTime#asFor`
+* Add `CalculatedDateTime#asFutureFor`
+* Add `CalculatedDateTime#asPastFor`
