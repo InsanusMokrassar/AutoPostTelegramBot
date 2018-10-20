@@ -105,6 +105,16 @@ class PostsSchedulesTable : Table() {
         return transaction { selectAll().map { it[postId] to it[postTime] } }
     }
 
+    fun registeredPostsTimes(period: Pair<DateTime, DateTime>): List<PostIdPostTime> {
+        return transaction {
+            select {
+                postTime.between(period.first, period.second)
+            }.map {
+                it[postId] to it[postTime]
+            }
+        }
+    }
+
     fun nearPost(): PostIdPostTime? {
         return transaction {
             selectAll().sortedBy {

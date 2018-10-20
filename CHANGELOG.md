@@ -143,3 +143,19 @@ independent bot instance. It will be useful for free real
 bot
 * Added `BotConfig` and temporary keep old settings,
 but update instruction to use new config schema
+
+## 0.6.0
+
+* Changed version naming strategy: now it is `x.y.z` where:
+    * x - major version (release version)
+    * y - minor version (feature version)
+    * z - fix version
+* Add util for work with time
+(`String.parseDateTimes(): List<CalculatedDateTime>`)
+* Added extension for planning actions
+(`Iterable<CalculatedDateTime>.launchNearFuture(suspend () -> R): Deferred<R>`)
+* Added extension for pairs of dates and times
+(`Iterable<CalculatedDateTime>.asPairs(): List<CalculatedPeriod>`)
+* Rewrite plugins to use new dates utils:
+    * `SmartChooser`
+    * `Scheduler`

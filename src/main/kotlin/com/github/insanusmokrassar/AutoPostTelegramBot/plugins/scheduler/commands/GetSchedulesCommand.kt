@@ -3,9 +3,9 @@ package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.scheduler.comman
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsMessagesTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.commonLogger
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.scheduler.PostsSchedulesTable
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.*
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.commands.Command
-import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.executeAsync
-import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.executeBlocking
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.*
 import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.model.Message
 import com.pengrad.telegrambot.request.ForwardMessage
@@ -19,20 +19,12 @@ class GetSchedulesCommand(
     private val botWR: WeakReference<TelegramBot>,
     private val sourceChatId: Long
 ) : Command() {
-    override val commandRegex: Regex = Regex("^/getPublishSchedule( \\d+)?$")
+    override val commandRegex: Regex = Regex("^/getPublishSchedule( (\\d+)|(${periodRegex.pattern}))?$")
 
     override fun onCommand(updateId: Int, message: Message) {
         val bot = botWR.get() ?: return
 
         val chatId = message.from() ?.id() ?: message.chat().id()
-
-        val count = message.text().split(" ").let {
-            if (it.size == 1) {
-                null
-            } else {
-                it[1].toInt()
-            }
-        }
 
         launch {
             try {
@@ -51,15 +43,32 @@ class GetSchedulesCommand(
                 return@launch
             }
 
-            postsSchedulesTable.registeredPostsTimes().sortedBy {
-                it.second
-            }.let {
-                if (count == null || it.size <= count) {
-                    it
+            val posts = message.text().split(" ").let {
+                if (it.size == 1) {
+                    postsSchedulesTable.registeredPostsTimes()
                 } else {
-                    it.subList(0, count)
+                    it[1].let {
+                        filter ->
+                        filter.toIntOrNull() ?.let {
+                            count ->
+                            postsSchedulesTable.registeredPostsTimes().sortedBy {
+                                it.second
+                            }.let {
+                                if (it.size <= count) {
+                                    it
+                                } else {
+                                    it.subList(0, count)
+                                }
+                            }
+                        } ?: filter.parseDateTimes().asPairs().flatMap {
+                            (from, to) ->
+                            postsSchedulesTable.registeredPostsTimes(from.asFuture to to.asFuture)
+                        }
+                    }
                 }
-            }.let {
+            }
+
+            posts.let {
                 if (it.isEmpty()) {
                     bot.executeAsync(
                         SendMessage(
