@@ -171,3 +171,4 @@ Fixed SmartChooser wrong time checker
 * Add `CalculatedDateTime#asFutureFor`
 * Add `CalculatedDateTime#asPastFor`
 * Add `CalculatedDateTime#isBetween`
+* Rewrite `SmartTimer` item method `isActual` to use `isBetween` for pairs
