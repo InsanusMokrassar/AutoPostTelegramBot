@@ -156,3 +156,5 @@ but update instruction to use new config schema
 (`Iterable<CalculatedDateTime>.launchNearFuture(suspend () -> R): Deferred<R>`)
 * Added extension for pairs of dates and times
 (`Iterable<CalculatedDateTime>.asPairs(): List<CalculatedPeriod>`)
+* Rewrite plugins to use new dates utils:
+    * `SmartChooser`
