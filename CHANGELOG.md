@@ -154,3 +154,5 @@ but update instruction to use new config schema
 (`String.parseDateTimes(): List<CalculatedDateTime>`)
 * Added extension for planning actions
 (`Iterable<CalculatedDateTime>.launchNearFuture(suspend () -> R): Deferred<R>`)
+* Added extension for pairs of dates and times
+(`Iterable<CalculatedDateTime>.asPairs(): List<CalculatedPeriod>`)

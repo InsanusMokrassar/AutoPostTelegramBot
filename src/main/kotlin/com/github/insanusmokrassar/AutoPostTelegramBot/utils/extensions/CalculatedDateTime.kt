@@ -4,6 +4,8 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.utils.CalculatedDateTime
 import kotlinx.coroutines.experimental.*
 import org.joda.time.DateTime
 
+typealias CalculatedPeriod = Pair<CalculatedDateTime, CalculatedDateTime>
+
 fun <R> Iterable<CalculatedDateTime>.launchNearFuture(block: suspend () -> R): Deferred<R>? {
     var dateTimeToTrigger: DateTime? = null
     forEach {
@@ -20,4 +22,22 @@ fun <R> Iterable<CalculatedDateTime>.launchNearFuture(block: suspend () -> R): D
             block()
         }
     }
+}
+
+fun Iterable<CalculatedDateTime>.asPairs(): List<CalculatedPeriod> {
+    var first: CalculatedDateTime? = null
+    val result = mutableListOf<CalculatedPeriod>()
+
+    forEach {
+        first = first ?.let {
+            currentFirst ->
+            result.add(currentFirst to it)
+            null
+        } ?: it.let {
+            _ ->
+            it
+        }
+    }
+
+    return result
 }
