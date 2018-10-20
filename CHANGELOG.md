@@ -150,3 +150,5 @@ but update instruction to use new config schema
     * x - major version (release version)
     * y - minor version (feature version)
     * z - fix version
+* Add util for work with time
+(`String.parseDateTimes(): List<CalculatedDateTime>`)
