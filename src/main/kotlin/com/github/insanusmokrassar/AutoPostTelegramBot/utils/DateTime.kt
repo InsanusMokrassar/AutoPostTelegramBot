@@ -16,17 +16,20 @@ private val timeConverters = listOf(
     DefaultConverter(
         "mm",
         DateTime(0L, DateTimeZone.UTC).plusHours(1).millis,
-        setOf(DateTimeFieldType.minuteOfHour())
+        setOf(DateTimeFieldType.minuteOfHour()),
+        setOf(DateTimeFieldType.secondOfMinute(), DateTimeFieldType.millisOfSecond())
     ),
     DefaultConverter(
         "HH:mm",
         DateTime(0L, DateTimeZone.UTC).plusDays(1).millis,
-        setOf(DateTimeFieldType.minuteOfHour(), DateTimeFieldType.hourOfDay())
+        setOf(DateTimeFieldType.minuteOfHour(), DateTimeFieldType.hourOfDay()),
+        setOf(DateTimeFieldType.secondOfMinute(), DateTimeFieldType.millisOfSecond())
     ),
     DefaultConverter(
         "HH:mm:ss",
         DateTime(0L, DateTimeZone.UTC).plusDays(1).millis,
-        setOf(DateTimeFieldType.minuteOfHour(), DateTimeFieldType.hourOfDay(), DateTimeFieldType.secondOfMinute())
+        setOf(DateTimeFieldType.minuteOfHour(), DateTimeFieldType.hourOfDay(), DateTimeFieldType.secondOfMinute()),
+        setOf(DateTimeFieldType.millisOfSecond())
     ),
     DefaultConverter(
         "HH:mm:ss.SSS",
@@ -36,7 +39,8 @@ private val timeConverters = listOf(
             DateTimeFieldType.hourOfDay(),
             DateTimeFieldType.secondOfMinute(),
             DateTimeFieldType.millisOfSecond()
-        )
+        ),
+        emptySet()
     )
 )
 
@@ -44,22 +48,26 @@ private val dateConverters = listOf(
     DefaultConverter(
         "dd",
         DateTime(0L, DateTimeZone.UTC).plusMonths(1).millis,
-        setOf(DateTimeFieldType.dayOfMonth())
+        setOf(DateTimeFieldType.dayOfMonth()),
+        emptySet()
     ),
     DefaultConverter(
         "dd/MM",
         DateTime(0L, DateTimeZone.UTC).plusYears(1).millis,
-        setOf(DateTimeFieldType.dayOfMonth(), DateTimeFieldType.monthOfYear())
+        setOf(DateTimeFieldType.dayOfMonth(), DateTimeFieldType.monthOfYear()),
+        emptySet()
     ),
     DefaultConverter(
         "dd/MM/yy",
         DateTime(0L, DateTimeZone.UTC).plusYears(100).millis,
-        setOf(DateTimeFieldType.dayOfMonth(), DateTimeFieldType.monthOfYear(), DateTimeFieldType.year())
+        setOf(DateTimeFieldType.dayOfMonth(), DateTimeFieldType.monthOfYear(), DateTimeFieldType.year()),
+        emptySet()
     ),
     DefaultConverter(
         "dd/MM/yyyy",
         DateTime(0L, DateTimeZone.UTC).plusYears(10000).millis,
-        setOf(DateTimeFieldType.dayOfMonth(), DateTimeFieldType.monthOfYear(), DateTimeFieldType.year())
+        setOf(DateTimeFieldType.dayOfMonth(), DateTimeFieldType.monthOfYear(), DateTimeFieldType.year()),
+        emptySet()
     )
 )
 
@@ -78,9 +86,10 @@ private object CommonConverter : Converter {
                     it[1].calculateTime()
                 )
 
-                var dateTime = DateTime(0L)
+                var dateTime = zeroDateTime
                 val importantFields = calculated.flatMap {
                     fieldsOwner ->
+
                     fieldsOwner.importantFields.forEach {
                         field ->
                         dateTime = dateTime.withField(
@@ -92,13 +101,16 @@ private object CommonConverter : Converter {
                     fieldsOwner.importantFields
                 }.toSet()
 
+                val zeroFields = calculated.commonZeroFields(importantFields)
+
                 CalculatedDateTime(
                     from,
                     dateTime,
                     calculated.maxBy {
                         it.futureDifference
                     } ?.futureDifference ?: throw IllegalStateException(),
-                    importantFields
+                    importantFields,
+                    zeroFields
                 )
             }
         } else {
@@ -110,7 +122,8 @@ private object CommonConverter : Converter {
 private class DefaultConverter(
     format: String,
     private val futureDifference: Long,
-    private val importantFields: Set<DateTimeFieldType>
+    private val importantFields: Set<DateTimeFieldType>,
+    private val zeroFields: Set<DateTimeFieldType>? = null
 ) : Converter {
     private val formatter = DateTimeFormat.forPattern(format)
 
@@ -120,7 +133,8 @@ private class DefaultConverter(
                 from,
                 formatter.parseDateTime(from),
                 futureDifference,
-                importantFields
+                importantFields,
+                zeroFields
             )
         } catch (e: Throwable) {
             null
@@ -128,11 +142,14 @@ private class DefaultConverter(
     }
 }
 
+private val zeroDateTime = DateTime(0, DateTimeZone.UTC)
+
 data class CalculatedDateTime internal constructor(
     internal val source: String,
     internal val dateTime: DateTime,
     internal val futureDifference: Long,
-    internal val importantFields: Set<DateTimeFieldType>
+    internal val importantFields: Set<DateTimeFieldType>,
+    internal val zeroFields: Set<DateTimeFieldType>? = null
 ) {
     val withoutTimeZoneOffset: DateTime
         get() {
@@ -147,6 +164,13 @@ data class CalculatedDateTime internal constructor(
     val asNow: DateTime
         get() {
             var now: DateTime = DateTime.now()
+
+            zeroFields ?.forEach {
+                now = now.withField(
+                    it,
+                    zeroDateTime[it]
+                )
+            }
 
             importantFields.forEach {
                 now = now.withField(
@@ -210,6 +234,8 @@ fun String.parseDateTimes(): List<CalculatedDateTime> {
                     step ->
 
                     val importantFields = pair.first.importantFields.plus(pair.second.importantFields)
+                    val zeroFields = pair.bothZeroFields(importantFields)
+
                     val futureDifference = pair.first.futureDifference.let {
                         first ->
                         pair.second.futureDifference.let {
@@ -232,7 +258,8 @@ fun String.parseDateTimes(): List<CalculatedDateTime> {
                             this,
                             DateTime(it),
                             futureDifference,
-                            importantFields
+                            importantFields,
+                            zeroFields
                         )
                     }
                 }
@@ -246,4 +273,32 @@ fun String.parseDateTimes(): List<CalculatedDateTime> {
     } else {
         emptyList()
     }
+}
+
+fun Pair<CalculatedDateTime, CalculatedDateTime>.bothZeroFields(
+    importantFields: Set<DateTimeFieldType> = first.importantFields.plus(second.importantFields)
+): Set<DateTimeFieldType>? {
+    return first.zeroFields ?.let {
+        firstZeroFields ->
+        second.zeroFields ?.let {
+            secondZeroFields ->
+            firstZeroFields
+                .asSequence()
+                .plus(secondZeroFields)
+                .minus(importantFields)
+                .toSet()
+        } ?: firstZeroFields
+    } ?: second.zeroFields
+}
+
+fun Iterable<CalculatedDateTime>.commonZeroFields(
+    importantFields: Set<DateTimeFieldType> = flatMap {
+        it.importantFields
+    }.toSet()
+): Set<DateTimeFieldType>? {
+    return mapNotNull {
+        it.zeroFields
+    }.flatMap {
+        it
+    }.asSequence().minus(importantFields).toSet()
 }
