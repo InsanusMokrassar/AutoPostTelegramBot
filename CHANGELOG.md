@@ -158,3 +158,4 @@ but update instruction to use new config schema
 (`Iterable<CalculatedDateTime>.asPairs(): List<CalculatedPeriod>`)
 * Rewrite plugins to use new dates utils:
     * `SmartChooser`
+    * `Scheduler`

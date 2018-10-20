@@ -4,20 +4,16 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.exceptions.
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsMessagesTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.scheduler.PostsSchedulesTable
-import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.scheduler.converters
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.commands.Command
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.executeAsync
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.executeBlocking
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.parseDateTimes
 import com.pengrad.telegrambot.TelegramBot
 import com.pengrad.telegrambot.model.Message
 import com.pengrad.telegrambot.model.request.ParseMode
 import com.pengrad.telegrambot.request.*
 import kotlinx.coroutines.experimental.launch
 import java.lang.ref.WeakReference
-
-private val availableConvertersText = converters.joinToString("\n") {
-    "${it.formatPattern} (${it.timeZoneId})"
-}
 
 private const val setPostTimeCommandName = "setPublishTime"
 
@@ -29,9 +25,7 @@ private fun sendHelpForUsage(
         SendMessage(
             chatId,
             "Usage: `/$setPostTimeCommandName [time format]`.\n" +
-                "Reply post registered message and write command + time in correct format" +
-                "\nAvailable time formats:" +
-                "\n$availableConvertersText"
+                "Reply post registered message and write command + time in correct format"
         ).parseMode(
             ParseMode.Markdown
         )
@@ -71,13 +65,10 @@ class EnableTimerCommand(
                 }
             }
 
-            converters.map {
-                it to it.tryConvert(preparsedText)
-            }.firstOrNull {
-                it.second != null
-            } ?.also {
-                (converter, parsed) ->
-                parsed ?: return@also
+            preparsedText.parseDateTimes().asSequence().map {
+                it.asFuture
+            }.min() ?.also {
+                parsed ->
                 parsed.also {
                     postsSchedulesTable.registerPostTime(postId, parsed)
 
@@ -94,7 +85,6 @@ class EnableTimerCommand(
                         bot.executeAsync(
                             SendMessage(
                                 logsChatId,
-                                "Chosen format: ${converter.formatPattern} (${converter.timeZoneId})\n" +
                                     "Parsed time: $parsed\n" +
                                     "Post saved with timer"
                             ).parseMode(
