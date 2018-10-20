@@ -3,9 +3,7 @@ package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.choosers
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.commonLogger
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.database.PostIdRatingPair
-import com.github.insanusmokrassar.AutoPostTelegramBot.utils.CalculatedDateTime
-import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.CalculatedPeriod
-import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.asPairs
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.*
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.parseDateTimes
 import com.github.insanusmokrassar.IObjectK.interfaces.IObject
 import com.github.insanusmokrassar.IObjectKRealisations.toObject
@@ -102,18 +100,13 @@ private class SmartChooserConfigItem (
         } ?: time ?.parseDateTimes() ?: emptyList()).asPairs()
     }
 
-    fun actual(
-        now: Long = System.currentTimeMillis()
+    fun isActual(
+        now: DateTime = DateTime.now()
     ): Boolean {
-        timePairs.forEach {
-            (from, to) ->
-            val fromAsFuture = from.asNow
-            val toAsFuture = to.asFuture
-            if ((fromAsFuture.isBefore(now) || fromAsFuture.isEqual(now)) && toAsFuture.isAfter(now)) {
-                return true
-            }
-        }
-        return false
+        return timePairs.firstOrNull {
+            pair ->
+            pair.isBetween(now)
+        } != null
     }
 
     val chooser: InnerChooser?
@@ -158,7 +151,7 @@ class SmartChooser(
     }
 
     override fun triggerChoose(): Collection<Int> {
-        val actualItem = config.times.firstOrNull { it.actual() }
+        val actualItem = config.times.firstOrNull { it.isActual() }
         return actualItem ?.let {
             postsLikesTable ?.getRateRange(
                 it.minRate,

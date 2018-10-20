@@ -163,3 +163,12 @@ but update instruction to use new config schema
 ### 0.6.1
 
 Fixed SmartChooser wrong time checker
+
+### 0.6.2
+
+* Add `CalculatedDateTime#nearInPast`
+* Add `CalculatedDateTime#asFor`
+* Add `CalculatedDateTime#asFutureFor`
+* Add `CalculatedDateTime#asPastFor`
+* Add `CalculatedDateTime#isBetween`
+* Rewrite `SmartTimer` item method `isActual` to use `isBetween` for pairs

@@ -107,8 +107,8 @@ private object CommonConverter : Converter {
                     from,
                     dateTime,
                     calculated.maxBy {
-                        it.futureDifference
-                    } ?.futureDifference ?: throw IllegalStateException(),
+                        it.changeDifference
+                    } ?.changeDifference ?: throw IllegalStateException(),
                     importantFields,
                     zeroFields
                 )
@@ -147,7 +147,7 @@ private val zeroDateTime = DateTime(0, DateTimeZone.UTC)
 data class CalculatedDateTime internal constructor(
     internal val source: String,
     internal val dateTime: DateTime,
-    internal val futureDifference: Long,
+    internal val changeDifference: Long,
     internal val importantFields: Set<DateTimeFieldType>,
     internal val zeroFields: Set<DateTimeFieldType>? = null
 ) {
@@ -161,36 +161,53 @@ data class CalculatedDateTime internal constructor(
                 )
             }
         }
-    val asNow: DateTime
-        get() {
-            var now: DateTime = DateTime.now()
 
-            zeroFields ?.forEach {
-                now = now.withField(
-                    it,
-                    zeroDateTime[it]
-                )
-            }
+    fun asFor(source: DateTime): DateTime {
+        var result: DateTime = source
 
-            importantFields.forEach {
-                now = now.withField(
-                    it,
-                    dateTime[it]
-                )
-            }
-            return now
+        zeroFields ?.forEach {
+            result = result.withField(
+                it,
+                zeroDateTime[it]
+            )
         }
+
+        importantFields.forEach {
+            result = result.withField(
+                it,
+                dateTime[it]
+            )
+        }
+        return result
+    }
+    val asNow: DateTime
+        get() = asFor(DateTime.now())
+
+    fun asFutureFor(source: DateTime): DateTime {
+        return asFor(source).run {
+            if (isBefore(source)) {
+                source.plus(changeDifference)
+            } else {
+                this
+            }
+        }
+    }
 
     val asFuture: DateTime
-        get() {
-            val now = asNow
+        get() = asFutureFor(DateTime.now())
 
-            if (now.isAfterNow) {
-                return now
+    fun asPastFor(source: DateTime): DateTime {
+        return asFor(source).run {
+            if (isAfter(source)) {
+                source.plus(changeDifference)
+            } else {
+                this
             }
-
-            return now.plus(futureDifference)
         }
+    }
+
+    val asPast: DateTime
+        get() = asPastFor(DateTime.now())
 }
 
 private fun String.calculateTime(): CalculatedDateTime? {
@@ -236,9 +253,9 @@ fun String.parseDateTimes(): List<CalculatedDateTime> {
                     val importantFields = pair.first.importantFields.plus(pair.second.importantFields)
                     val zeroFields = pair.bothZeroFields(importantFields)
 
-                    val futureDifference = pair.first.futureDifference.let {
+                    val futureDifference = pair.first.changeDifference.let {
                         first ->
-                        pair.second.futureDifference.let {
+                        pair.second.changeDifference.let {
                             second ->
                             kotlin.math.max(first, second)
                         }
