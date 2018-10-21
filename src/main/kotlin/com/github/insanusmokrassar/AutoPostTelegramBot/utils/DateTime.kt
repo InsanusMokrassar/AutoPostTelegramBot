@@ -199,7 +199,7 @@ data class CalculatedDateTime internal constructor(
     fun asPastFor(source: DateTime): DateTime {
         return asFor(source).run {
             if (isAfter(source)) {
-                source.plus(changeDifference)
+                source.minus(changeDifference)
             } else {
                 this
             }
