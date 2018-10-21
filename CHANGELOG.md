@@ -174,3 +174,5 @@ Fixed SmartChooser wrong time checker
 * Rewrite `SmartTimer` item method `isActual` to use `isBetween` for pairs
 
 ### 0.6.3
+
+* Optimise `CalculatedDateTime#isBetween`

@@ -43,11 +43,8 @@ fun Iterable<CalculatedDateTime>.asPairs(): List<CalculatedPeriod> {
 }
 
 fun CalculatedPeriod.isBetween(dateTime: DateTime): Boolean {
-    var firstDateTime = first.asFor(dateTime)
     val secondDateTime = second.asFutureFor(dateTime)
-    if (firstDateTime.isAfter(secondDateTime)) {
-        firstDateTime = first.asPastFor(dateTime)
-    }
+    var firstDateTime = first.asPastFor(secondDateTime)
     return dateTime.isAfter(firstDateTime) && dateTime.isBefore(secondDateTime)
 }
 
