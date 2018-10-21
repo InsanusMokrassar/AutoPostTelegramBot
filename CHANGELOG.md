@@ -185,3 +185,7 @@ Fix of get scheduled posts command
 ### 0.6.5
 
 Fix of recognising of get command argument
+
+### 0.6.6
+
+Fix of calculating of future and past
