@@ -43,32 +43,34 @@ class GetSchedulesCommand(
                 return@launch
             }
 
-            val posts = message.text().split(" ").let {
-                if (it.size == 1) {
-                    postsSchedulesTable.registeredPostsTimes()
+            val arg: String? = message.text().indexOf(" ").let {
+                if (it > -1) {
+                    message.text().substring(it + 1)
                 } else {
-                    it[1].let {
-                        filter ->
-                        filter.toIntOrNull() ?.let {
-                            count ->
-                            postsSchedulesTable.registeredPostsTimes().sortedBy {
-                                it.second
-                            }.let {
-                                if (it.size <= count) {
-                                    it
-                                } else {
-                                    it.subList(0, count)
-                                }
-                            }
-                        } ?: filter.parseDateTimes().asPairs().flatMap {
-                            (from, to) ->
-                            val asFutureFrom = from.asFuture
-                            val asFutureTo = to.asFutureFor(asFutureFrom)
-                            postsSchedulesTable.registeredPostsTimes(asFutureFrom to asFutureTo)
-                        }
-                    }
+                    null
                 }
             }
+
+            val posts = arg ?.let {
+                _ ->
+                arg.toIntOrNull() ?.let {
+                    count ->
+                    postsSchedulesTable.registeredPostsTimes().sortedBy {
+                        it.second
+                    }.let {
+                        if (it.size <= count) {
+                            it
+                        } else {
+                            it.subList(0, count)
+                        }
+                    }
+                } ?: arg.parseDateTimes().asPairs().flatMap {
+                    (from, to) ->
+                    val asFutureFrom = from.asFuture
+                    val asFutureTo = to.asFutureFor(asFutureFrom)
+                    postsSchedulesTable.registeredPostsTimes(asFutureFrom to asFutureTo)
+                }
+            } ?: postsSchedulesTable.registeredPostsTimes()
 
             posts.let {
                 if (it.isEmpty()) {
