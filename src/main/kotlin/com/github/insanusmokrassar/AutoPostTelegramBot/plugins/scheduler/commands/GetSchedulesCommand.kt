@@ -19,7 +19,7 @@ class GetSchedulesCommand(
     private val botWR: WeakReference<TelegramBot>,
     private val sourceChatId: Long
 ) : Command() {
-    override val commandRegex: Regex = Regex("^/getPublishSchedule( (\\d+)|(${periodRegex.pattern}))?$")
+    override val commandRegex: Regex = Regex("^/getPublishSchedule(( ${periodRegex.pattern})|( \\d+))?$")
 
     override fun onCommand(updateId: Int, message: Message) {
         val bot = botWR.get() ?: return
@@ -62,7 +62,9 @@ class GetSchedulesCommand(
                             }
                         } ?: filter.parseDateTimes().asPairs().flatMap {
                             (from, to) ->
-                            postsSchedulesTable.registeredPostsTimes(from.asFuture to to.asFuture)
+                            val asFutureFrom = from.asFuture
+                            val asFutureTo = to.asFutureFor(asFutureFrom)
+                            postsSchedulesTable.registeredPostsTimes(asFutureFrom to asFutureTo)
                         }
                     }
                 }
