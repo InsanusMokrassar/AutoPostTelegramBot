@@ -177,3 +177,5 @@ Fixed SmartChooser wrong time checker
 
 * Optimise `CalculatedDateTime#isBetween`
 * Fix `CalculatedDateTime#asPartFor`
+
+### 0.6.4
