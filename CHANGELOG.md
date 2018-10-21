@@ -181,3 +181,7 @@ Fixed SmartChooser wrong time checker
 ### 0.6.4
 
 Fix of get scheduled posts command
+
+### 0.6.5
+
+Fix of recognising of get command argument
