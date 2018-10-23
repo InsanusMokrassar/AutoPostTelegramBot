@@ -199,3 +199,7 @@ Fix of calculating of future and past
 ### 0.6.8
 
 Fix of `CalculatedDateTime#asPastFor` - now it will decrease time even if source is equal
+
+### 0.6.9
+
+Fix of `GarbageCollector#check`
