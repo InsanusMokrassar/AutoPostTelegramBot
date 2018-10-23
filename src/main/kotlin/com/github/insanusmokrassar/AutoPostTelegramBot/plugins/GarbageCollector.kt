@@ -117,7 +117,9 @@ class GarbageCollector(
         baseConfig: FinalConfig
     ) {
         for (period in config.skipDateTime) {
-            period.isBetween(creatingDate)
+            if (period.isBetween(creatingDate)) {
+                return
+            }
         }
         if (dataPair.second < config.minimalRate || PostsMessagesTable.getMessagesOfPost(dataPair.first).isEmpty()) {
             deletePost(
