@@ -189,3 +189,8 @@ Fix of recognising of get command argument
 ### 0.6.6
 
 Fix of calculating of future and past
+
+### 0.6.7
+
+* Now `GarbageCollector` receive `skipTime` instead of `trackingDelay` in format of standard date time
+* Now `GarbageCollector` receive `manualCheckTime` instead of `manualCheckDelay` in format of standard date time
