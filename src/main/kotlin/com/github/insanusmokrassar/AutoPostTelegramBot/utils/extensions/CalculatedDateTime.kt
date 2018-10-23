@@ -6,10 +6,11 @@ import org.joda.time.DateTime
 
 typealias CalculatedPeriod = Pair<CalculatedDateTime, CalculatedDateTime>
 
-fun <R> Iterable<CalculatedDateTime>.launchNearFuture(block: suspend () -> R): Deferred<R>? {
+fun <R> Iterable<CalculatedDateTime>.executeNearFuture(block: suspend () -> R): Deferred<R>? {
+    val now = DateTime.now()
     var dateTimeToTrigger: DateTime? = null
     forEach {
-        val currentAsFuture = it.asFuture
+        val currentAsFuture = it.asFutureFor(now)
         if (dateTimeToTrigger == null || currentAsFuture.isBefore(dateTimeToTrigger)) {
             dateTimeToTrigger = currentAsFuture
         }

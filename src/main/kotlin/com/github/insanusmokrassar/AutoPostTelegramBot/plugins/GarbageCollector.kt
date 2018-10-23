@@ -89,8 +89,8 @@ class GarbageCollector(
         config.manualCheckDateTimes ?.let {
             launch {
                 while (isActive) {
-                    it.launchNearFuture {
-                        val botSR = botWR.get() ?: return@launchNearFuture null
+                    it.executeNearFuture {
+                        val botSR = botWR.get() ?: return@executeNearFuture null
                         postsLikesMessagesTable.getEnabledPostsIdAndRatings().forEach {
                             pair ->
                             check(pair, botSR, baseConfig)
