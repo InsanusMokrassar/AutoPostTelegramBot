@@ -7,20 +7,52 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.*
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.base.commands.deletePost
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.RatingPlugin
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.database.PostIdRatingPair
-import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscribeChecking
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.CalculatedDateTime
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.*
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.parseDateTimes
 import com.github.insanusmokrassar.IObjectK.interfaces.IObject
 import com.github.insanusmokrassar.IObjectKRealisations.toObject
 import com.pengrad.telegrambot.TelegramBot
-import kotlinx.coroutines.experimental.delay
 import kotlinx.coroutines.experimental.launch
 import org.joda.time.DateTime
+import org.joda.time.DateTimeZone
 import java.lang.ref.WeakReference
+
+private val zeroDateTime: DateTime by lazy {
+    DateTime(0, DateTimeZone.UTC)
+}
 
 private data class GarbageCollectorConfig(
     val minimalRate: Int = -3,
-    val trackingDelay: Long? = null,
-    val manualCheckDelay: Long? = null
-)
+    private val skipTime: String? = null,
+    private val manualCheckTime: String? = null
+) {
+    val skipDateTime: List<CalculatedPeriod> by lazy {
+        skipTime ?.parseDateTimes() ?.let {
+            parsed ->
+            if (parsed.size > 1) {
+                parsed.asPairs()
+            } else {
+                parsed.firstOrNull() ?.let {
+                    firstParsed ->
+                    listOf(
+                        CalculatedDateTime(
+                            "",
+                            zeroDateTime,
+                            0L,
+                            firstParsed.importantFields,
+                            firstParsed.zeroFields
+                        ) to firstParsed
+                    )
+                }
+            }
+        } ?: emptyList()
+    }
+
+    val manualCheckDateTimes: List<CalculatedDateTime>? by lazy {
+        manualCheckTime ?.parseDateTimes()
+    }
+}
 
 class GarbageCollector(
     params: IObject<Any>?
@@ -54,14 +86,16 @@ class GarbageCollector(
             } ?: false
         }
 
-        config.manualCheckDelay ?.let {
+        config.manualCheckDateTimes ?.let {
             launch {
                 while (isActive) {
-                    val bot = botWR.get() ?: break
-                    postsLikesMessagesTable.getEnabledPostsIdAndRatings().forEach {
-                        check(it, bot, baseConfig)
-                    }
-                    delay(it)
+                    it.executeNearFuture {
+                        val botSR = botWR.get() ?: return@executeNearFuture null
+                        postsLikesMessagesTable.getEnabledPostsIdAndRatings().forEach {
+                            pair ->
+                            check(pair, botSR, baseConfig)
+                        }
+                    } ?.await() ?: break
                 }
             }
         }
@@ -82,8 +116,10 @@ class GarbageCollector(
         bot: TelegramBot,
         baseConfig: FinalConfig
     ) {
-        if (creatingDate.plus(config.trackingDelay ?: 0).isAfterNow) {
-            return
+        for (period in config.skipDateTime) {
+            if (period.isBetween(creatingDate)) {
+                return
+            }
         }
         if (dataPair.second < config.minimalRate || PostsMessagesTable.getMessagesOfPost(dataPair.first).isEmpty()) {
             deletePost(
