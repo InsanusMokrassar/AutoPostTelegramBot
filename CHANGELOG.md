@@ -195,3 +195,7 @@ Fix of calculating of future and past
 * Now `GarbageCollector` receive `skipTime` instead of `trackingDelay` in format of standard date time
 * Now `GarbageCollector` receive `manualCheckTime` instead of `manualCheckDelay` in format of standard date time
 * Renaming and improvement for `List<CalculatedDateTime>#executeNearFuture`
+
+### 0.6.8
+
+Fix of `CalculatedDateTime#asPastFor` - now it will decrease time even if source is equal
