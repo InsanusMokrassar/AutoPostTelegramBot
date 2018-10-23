@@ -27,7 +27,7 @@ private data class GarbageCollectorConfig(
     private val skipTime: String? = null,
     private val manualCheckTime: String? = null
 ) {
-    val skipDateTime: List<CalculatedPeriod> by lazy {
+    val skipDateTime: List<Pair<Long, Long>> by lazy {
         skipTime ?.parseDateTimes() ?.let {
             parsed ->
             if (parsed.size > 1) {
@@ -46,6 +46,8 @@ private data class GarbageCollectorConfig(
                     )
                 }
             }
+        } ?.map {
+            it.first.withoutTimeZoneOffset.millis to it.second.withoutTimeZoneOffset.millis
         } ?: emptyList()
     }
 
@@ -91,9 +93,10 @@ class GarbageCollector(
                 while (isActive) {
                     it.executeNearFuture {
                         val botSR = botWR.get() ?: return@executeNearFuture null
+                        val now = DateTime.now()
                         postsLikesMessagesTable.getEnabledPostsIdAndRatings().forEach {
                             pair ->
-                            check(pair, botSR, baseConfig)
+                            check(pair, botSR, baseConfig, now)
                         }
                     } ?.await() ?: break
                 }
@@ -104,20 +107,24 @@ class GarbageCollector(
     private fun check(
         dataPair: PostIdRatingPair,
         bot: TelegramBot,
-        baseConfig: FinalConfig
+        baseConfig: FinalConfig,
+        now: DateTime = DateTime.now()
     ) = PostsTable.getPostCreationDateTime(dataPair.first) ?.also {
         creatingDate ->
-        check(dataPair, creatingDate, bot, baseConfig)
+        check(dataPair, creatingDate, bot, baseConfig, now)
     }
 
     private fun check(
         dataPair: PostIdRatingPair,
         creatingDate: DateTime,
         bot: TelegramBot,
-        baseConfig: FinalConfig
+        baseConfig: FinalConfig,
+        now: DateTime = DateTime.now()
     ) {
         for (period in config.skipDateTime) {
-            if (period.isBetween(creatingDate)) {
+            val leftBoundary = now.minus(period.second)
+            val rightBoundary = now.minus(period.first)
+            if (creatingDate.isAfter(leftBoundary) && creatingDate.isBefore(rightBoundary)) {
                 return
             }
         }
