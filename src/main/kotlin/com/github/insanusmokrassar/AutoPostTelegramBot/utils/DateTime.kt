@@ -1,5 +1,6 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.utils
 
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.withoutTimeZoneOffset
 import org.joda.time.*
 import org.joda.time.format.DateTimeFormat
 import java.lang.IllegalStateException
@@ -151,16 +152,9 @@ data class CalculatedDateTime internal constructor(
     internal val importantFields: Set<DateTimeFieldType>,
     internal val zeroFields: Set<DateTimeFieldType>? = null
 ) {
-    val withoutTimeZoneOffset: DateTime
-        get() {
-            return dateTime.run {
-                withZone(
-                    DateTimeZone.UTC
-                ).plus(
-                    zone.toTimeZone().rawOffset.toLong()
-                )
-            }
-        }
+    val withoutTimeZoneOffset: DateTime by lazy {
+        dateTime.withoutTimeZoneOffset()
+    }
 
     fun asFor(source: DateTime): DateTime {
         var result: DateTime = source
@@ -185,7 +179,7 @@ data class CalculatedDateTime internal constructor(
 
     fun asFutureFor(source: DateTime): DateTime {
         return asFor(source).run {
-            if (isBefore(source)) {
+            if (isBefore(source) || isEqual(source)) {
                 plus(changeDifference)
             } else {
                 this

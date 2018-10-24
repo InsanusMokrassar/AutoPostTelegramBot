@@ -47,7 +47,7 @@ private data class GarbageCollectorConfig(
                 }
             }
         } ?.map {
-            it.first.withoutTimeZoneOffset.millis to it.second.withoutTimeZoneOffset.millis
+            it.first.withoutTimeZoneOffset.millis to it.second.asFutureFor(it.first.dateTime).withoutTimeZoneOffset().millis
         } ?: emptyList()
     }
 
@@ -122,9 +122,7 @@ class GarbageCollector(
         now: DateTime = DateTime.now()
     ) {
         for (period in config.skipDateTime) {
-            val leftBoundary = now.minus(period.second)
-            val rightBoundary = now.minus(period.first)
-            if (creatingDate.isAfter(leftBoundary) && creatingDate.isBefore(rightBoundary)) {
+            if (creatingDate.plus(period.second).isAfter(now) && creatingDate.plus(period.first).isBefore(now)) {
                 return
             }
         }
