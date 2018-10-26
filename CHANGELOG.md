@@ -206,3 +206,5 @@ Fix of `CalculatedDateTime#asPastFor` - now it will decrease time even if source
 * Add extension `DateTime#withoutTimeZoneOffset`
 * Fix of `GarbageCollector` time detection
 * `CalculatedDateTime#asFutureFor` will guarantee return future datetime even if `source` is equal to generated `now`
+
+## 0.7.0
