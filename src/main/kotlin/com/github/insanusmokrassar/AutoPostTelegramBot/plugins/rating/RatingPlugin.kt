@@ -48,10 +48,10 @@ class RatingPlugin : Plugin {
         }
 
         likeReceiver ?: let {
-            likeReceiver = LikeReceiver(bot, postsLikesTable)
+            likeReceiver = LikeReceiver(bot, baseConfig.sourceChatId, postsLikesTable, postsLikesMessagesTable)
         }
         dislikeReceiver ?: let {
-            dislikeReceiver = DislikeReceiver(bot, postsLikesTable)
+            dislikeReceiver = DislikeReceiver(bot, baseConfig.sourceChatId, postsLikesTable, postsLikesMessagesTable)
         }
         disableReceiver ?: let {
             disableReceiver = DisableReceiver(bot, baseConfig.sourceChatId, postsLikesMessagesTable)

@@ -93,9 +93,9 @@ class DisableReceiver(
 
     override fun invoke(
         query: CallbackQuery,
-        bot: TelegramBot?
+        bot: TelegramBot
     ) {
-        bot ?: return
+        bot
         extractDisableInline(query.data())?.let {
             val userId = query.from().id().toLong()
             awaitApprove.add(userId to it)

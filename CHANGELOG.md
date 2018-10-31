@@ -210,3 +210,5 @@ Fix of `CalculatedDateTime#asPastFor` - now it will decrease time even if source
 ## 0.7.0
 
 * Add `CallbackQueryReceivers` package with receivers interface and implementations
+* Rewrite rating receivers to use `SafeCallbackQueryReceiver`
+* Now rating receivers will automatically register message for post as likes message if have no registered

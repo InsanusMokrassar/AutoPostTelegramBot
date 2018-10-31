@@ -93,9 +93,9 @@ class EnableReceiver(
 
     override fun invoke(
         query: CallbackQuery,
-        bot: TelegramBot?
+        bot: TelegramBot
     ) {
-        bot ?: return
+        bot
         extractDisableInline(query.data())?.let {
             awaitApprove[query.from().id().toLong()] = it
             bot.queryAnswer(
