@@ -208,3 +208,5 @@ Fix of `CalculatedDateTime#asPastFor` - now it will decrease time even if source
 * `CalculatedDateTime#asFutureFor` will guarantee return future datetime even if `source` is equal to generated `now`
 
 ## 0.7.0
+
+* Add `CallbackQueryReceivers` package with receivers interface and implementations
