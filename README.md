@@ -259,12 +259,12 @@
 * [TimerTrigger](src/main/kotlin/com/github/insanusmokrassar/AutoPostTelegramBot/plugins/triggers/TimerTriggerStrategy.kt)
     \- предоставляет возможность осуществлять автоматическую публикацию раз в строго определённое время. Для
     работы требует подключенные `Chooser` и `Publisher` плагины. В момент триггера спросит у `Chooser`
-    посты для публикации и передаст их `Publisher`. Подключение:
+    посты для публикации и передаст их `Publisher`. Как параметр принимает `time` принимает стандартный формат времени. Подключение:
     ```json
         {
           "classname": "com.github.insanusmokrassar.AutoPostTelegramBot.plugins.triggers.TimerTriggerStrategy",
           "params": {
-            "delay": 3600000
+            "time": "00:30-00:30 01:00"
           }
         }
     ```
