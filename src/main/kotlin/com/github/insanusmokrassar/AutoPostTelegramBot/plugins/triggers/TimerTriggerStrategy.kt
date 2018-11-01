@@ -1,10 +1,7 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.triggers
 
-import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsMessagesTable
-import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.FinalConfig
-import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.Plugin
-import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.PluginManager
+import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.*
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.choosers.Chooser
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.publishers.Publisher
 import com.github.insanusmokrassar.IObjectK.interfaces.IObject
@@ -32,16 +29,16 @@ class TimerTriggerStrategy (
             while (isActive) {
                 val nextTriggerTime = System.currentTimeMillis() + config.delay
                 launch {
-                    synchronized(PostsTable) {
-                        synchronized(PostsMessagesTable) {
-                            try {
-                                chooser.triggerChoose().forEach {
-                                    publisher.publishPost(it)
-                                }
-                            } catch (e: Exception) {
-                                e.printStackTrace()
-                            }
+                    try {
+                        chooser.triggerChoose().forEach {
+                            publisher.publishPost(it)
                         }
+                    } catch (e: Exception) {
+                        commonLogger.throwing(
+                            this@TimerTriggerStrategy::class.java.simpleName,
+                            "Trigger of publishing",
+                            e
+                        )
                     }
                 }
                 delay(nextTriggerTime - System.currentTimeMillis())
