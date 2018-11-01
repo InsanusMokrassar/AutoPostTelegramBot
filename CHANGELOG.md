@@ -213,3 +213,4 @@ Fix of `CalculatedDateTime#asPastFor` - now it will decrease time even if source
 * Rewrite rating receivers to use `SafeCallbackQueryReceiver`
 * Now rating receivers will automatically register message for post as likes message if have no registered
 * `TimerTriggerStrategy` now do not using synchronisations
+* Add `Iterable<CalculatedDateTime>#nearDateTime`
