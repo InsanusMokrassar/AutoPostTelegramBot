@@ -215,3 +215,4 @@ Fix of `CalculatedDateTime#asPastFor` - now it will decrease time even if source
 * `TimerTriggerStrategy` now do not using synchronisations
 * Add `Iterable<CalculatedDateTime>#nearDateTime`
 * `TimerTriggerStrategy` config now receive time as parameter
+* Now `DatabaseConfig` is independent class which can connect to Database

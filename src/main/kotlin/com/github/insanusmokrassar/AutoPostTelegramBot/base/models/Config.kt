@@ -40,13 +40,6 @@ class Config (
         )
 }
 
-data class DatabaseConfig(
-    val url: String,
-    val driver: String,
-    val username: String,
-    val password: String
-)
-
 class FinalConfig (
     val targetChatId: Long,
     val sourceChatId: Long,
