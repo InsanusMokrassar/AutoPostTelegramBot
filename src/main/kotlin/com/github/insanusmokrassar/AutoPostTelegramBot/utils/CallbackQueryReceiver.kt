@@ -1,27 +1,12 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.utils
 
-import com.github.insanusmokrassar.AutoPostTelegramBot.callbackQueryListener
-import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscribe
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.CallbackQueryReceivers.UnsafeCallbackQueryReceiver
 import com.pengrad.telegrambot.TelegramBot
-import com.pengrad.telegrambot.model.CallbackQuery
-import java.lang.ref.WeakReference
 
+@Deprecated(
+    "Will be removed for the reason of extending of callback query receivers",
+    ReplaceWith("UnsafeCallbackQueryReceiver")
+)
 abstract class CallbackQueryReceiver(
     bot: TelegramBot
-) {
-    init {
-        val botWR = WeakReference(bot)
-
-        callbackQueryListener.subscribe {
-            invoke(
-                it.second,
-                botWR.get()
-            )
-        }
-    }
-
-    protected abstract fun invoke(
-        query: CallbackQuery,
-        bot: TelegramBot?
-    )
-}
+) : UnsafeCallbackQueryReceiver(bot)

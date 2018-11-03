@@ -1,7 +1,9 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.receivers
 
+import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.database.PostsLikesMessagesTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.database.PostsLikesTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.CallbackQueryReceiver
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.CallbackQueryReceivers.SafeCallbackQueryReceiver
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.queryAnswer
 import com.github.insanusmokrassar.IObjectK.exceptions.ReadException
 import com.github.insanusmokrassar.IObjectKRealisations.toIObject
@@ -23,25 +25,32 @@ fun extractLikeInline(from: String): Int? = try {
 
 class LikeReceiver(
     bot: TelegramBot,
-    private val postsLikesTable: PostsLikesTable
-) : CallbackQueryReceiver(bot) {
+    sourceChatId: Long,
+    private val postsLikesTable: PostsLikesTable,
+    private val postsLikesMessagesTable: PostsLikesMessagesTable
+) : SafeCallbackQueryReceiver(bot, sourceChatId) {
     override fun invoke(
         query: CallbackQuery,
-        bot: TelegramBot?
+        bot: TelegramBot
     ) {
         extractLikeInline(
             query.data()
         )?.let {
             postId ->
 
+            postsLikesMessagesTable.messageIdByPostId(postId) ?: query.message().messageId().also {
+                messageId ->
+                postsLikesMessagesTable.enableLikes(postId, messageId)
+            }
+
             postsLikesTable.userLikePost(
                 query.from().id().toLong(),
                 postId
             )
 
-            bot ?. queryAnswer(
+            bot.queryAnswer(
                 query.id(),
-                "Voted"
+                "Voted +"
             )
         }
     }

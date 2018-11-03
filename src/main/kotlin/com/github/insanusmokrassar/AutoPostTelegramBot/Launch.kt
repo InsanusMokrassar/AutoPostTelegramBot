@@ -34,12 +34,7 @@ fun main(args: Array<String>) {
     val bot = config.bot
 
     config.databaseConfig.apply {
-        Database.connect(
-            url,
-            driver,
-            username,
-            password
-        )
+        connect()
 
         transaction {
             SchemaUtils.createMissingTablesAndColumns(PostsTable, PostsMessagesTable)

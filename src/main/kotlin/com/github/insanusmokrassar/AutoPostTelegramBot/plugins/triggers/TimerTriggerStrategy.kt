@@ -1,21 +1,34 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.triggers
 
-import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsMessagesTable
-import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.FinalConfig
-import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.Plugin
-import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.PluginManager
+import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.*
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.choosers.Chooser
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.publishers.Publisher
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.CalculatedDateTime
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.nearDateTime
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.parseDateTimes
 import com.github.insanusmokrassar.IObjectK.interfaces.IObject
 import com.github.insanusmokrassar.IObjectKRealisations.toObject
 import com.pengrad.telegrambot.TelegramBot
 import kotlinx.coroutines.experimental.delay
 import kotlinx.coroutines.experimental.launch
+import org.joda.time.DateTime
 
 private data class TimerStrategyConfig(
-    val delay: Long = 60 * 60 *1000
-)
+    private val delay: Long? = null,
+    private val time: String = "00:00-00:00 01:00"
+) {
+    private var lastTime = DateTime.now()
+
+    private val timesOfTriggering: List<CalculatedDateTime> by lazy {
+        time.parseDateTimes()
+    }
+    val nextTriggerTime: DateTime?
+        get() = delay ?.let {
+            lastTime = lastTime.plus(it)
+            lastTime
+        } ?: timesOfTriggering.nearDateTime()
+}
 
 class TimerTriggerStrategy (
     config: IObject<Any>?
@@ -30,21 +43,20 @@ class TimerTriggerStrategy (
 
         launch {
             while (isActive) {
-                val nextTriggerTime = System.currentTimeMillis() + config.delay
                 launch {
-                    synchronized(PostsTable) {
-                        synchronized(PostsMessagesTable) {
-                            try {
-                                chooser.triggerChoose().forEach {
-                                    publisher.publishPost(it)
-                                }
-                            } catch (e: Exception) {
-                                e.printStackTrace()
-                            }
+                    try {
+                        chooser.triggerChoose().forEach {
+                            publisher.publishPost(it)
                         }
+                    } catch (e: Exception) {
+                        commonLogger.throwing(
+                            this@TimerTriggerStrategy::class.java.simpleName,
+                            "Trigger of publishing",
+                            e
+                        )
                     }
                 }
-                delay(nextTriggerTime - System.currentTimeMillis())
+                delay(config.nextTriggerTime ?.millis ?.minus(System.currentTimeMillis()) ?: break)
             }
         }
     }

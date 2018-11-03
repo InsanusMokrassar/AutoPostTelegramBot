@@ -6,15 +6,21 @@ import org.joda.time.DateTime
 
 typealias CalculatedPeriod = Pair<CalculatedDateTime, CalculatedDateTime>
 
-fun <R> Iterable<CalculatedDateTime>.executeNearFuture(block: suspend () -> R): Deferred<R>? {
+fun Iterable<CalculatedDateTime>.nearDateTime(): DateTime? {
     val now = DateTime.now()
-    var dateTimeToTrigger: DateTime? = null
+    var found: DateTime? = null
     forEach {
         val currentAsFuture = it.asFutureFor(now)
-        if (dateTimeToTrigger == null || currentAsFuture.isBefore(dateTimeToTrigger)) {
-            dateTimeToTrigger = currentAsFuture
+        if (found == null || currentAsFuture.isBefore(found)) {
+            found = currentAsFuture
         }
     }
+
+    return found
+}
+
+fun <R> Iterable<CalculatedDateTime>.executeNearFuture(block: suspend () -> R): Deferred<R>? {
+    val dateTimeToTrigger: DateTime? = nearDateTime()
 
     return dateTimeToTrigger ?.let {
         async {
