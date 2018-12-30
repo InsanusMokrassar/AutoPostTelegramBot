@@ -2,6 +2,8 @@
 out/*
 *.iml
 target
+build/*
+.gradle/
 
 config.json
 
