@@ -2,11 +2,7 @@
 out/*
 *.iml
 target
-<<<<<<< HEAD
 build/*
-=======
-build/
->>>>>>> d46d85f... add .gradle/ onto gitignore
 .gradle/
 
 config.json
