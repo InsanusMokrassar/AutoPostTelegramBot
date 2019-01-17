@@ -6,13 +6,17 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.Plugin
 import com.github.insanusmokrassar.AutoPostTelegramBot.messagesListener
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.base.commands.usersTransactions
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscribe
-import com.pengrad.telegrambot.model.Message
+import com.github.insanusmokrassar.TelegramBotAPI.types.ChatIdentifier
+import com.github.insanusmokrassar.TelegramBotAPI.types.MessageEntity.BotCommandMessageEntity
+import com.github.insanusmokrassar.TelegramBotAPI.types.message.abstracts.ContentMessage
+import com.github.insanusmokrassar.TelegramBotAPI.types.message.abstracts.Message
+import com.github.insanusmokrassar.TelegramBotAPI.types.message.content.TextContent
 import java.util.logging.Logger
 
 private val logger = Logger.getLogger(Plugin::class.java.simpleName)
 
 class OnMessage(
-    sourceChatId: Long
+    sourceChatId: ChatIdentifier
 ) {
     init {
         messagesListener.subscribe(
@@ -26,7 +30,7 @@ class OnMessage(
             }
         ) {
             invoke(
-                it.second,
+                it.data,
                 sourceChatId
             )
         }
@@ -34,17 +38,19 @@ class OnMessage(
 
     private fun invoke(
         message: Message,
-        sourceChatId: Long
+        sourceChatId: ChatIdentifier
     ) {
-        if (message.chat().id() == sourceChatId) {
-            message.text() ?. let {
-                if (it.startsWith("/")) {
-                    return
+        if (message.chat.id == sourceChatId) {
+            if (message is ContentMessage<*>) {
+                (message.content as? TextContent) ?.also { content ->
+                    if (content.entities.firstOrNull { it is BotCommandMessageEntity } != null) {
+                        return
+                    }
                 }
             }
-            val userId: Long? = message.from() ?.id() ?.toLong() ?: message.chat() ?.id()
-            userId ?.let {
-                id ->
+
+            val userId: ChatIdentifier? = message.chat.id
+            userId ?.let { id ->
                 usersTransactions[userId] ?.also {
                     it.addMessageId(PostMessage(message))
                 } ?: also {

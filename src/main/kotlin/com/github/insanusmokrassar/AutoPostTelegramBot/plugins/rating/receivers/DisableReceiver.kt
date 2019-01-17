@@ -1,108 +1,123 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.receivers
 
+import com.github.insanusmokrassar.AutoPostTelegramBot.allMessagesListener
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.database.PostsLikesMessagesTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.disableLikesForPost
-import com.github.insanusmokrassar.AutoPostTelegramBot.realMessagesListener
-import com.github.insanusmokrassar.AutoPostTelegramBot.utils.CallbackQueryReceiver
-import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.*
-import com.github.insanusmokrassar.IObjectK.exceptions.ReadException
-import com.github.insanusmokrassar.IObjectKRealisations.toIObject
-import com.pengrad.telegrambot.TelegramBot
-import com.pengrad.telegrambot.model.CallbackQuery
-import com.pengrad.telegrambot.model.request.ParseMode
-import com.pengrad.telegrambot.request.SendMessage
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.CallbackQueryReceivers.CallbackQueryReceiver
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.NewDefaultCoroutineScope
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscribe
+import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
+import com.github.insanusmokrassar.TelegramBotAPI.requests.answers.createAnswer
+import com.github.insanusmokrassar.TelegramBotAPI.requests.send.SendMessage
+import com.github.insanusmokrassar.TelegramBotAPI.types.CallbackQuery.CallbackQuery
+import com.github.insanusmokrassar.TelegramBotAPI.types.CallbackQuery.DataCallbackQuery
+import com.github.insanusmokrassar.TelegramBotAPI.types.ChatIdentifier
+import com.github.insanusmokrassar.TelegramBotAPI.types.ParseMode.MarkdownParseMode
+import com.github.insanusmokrassar.TelegramBotAPI.types.UserId
+import com.github.insanusmokrassar.TelegramBotAPI.types.message.abstracts.*
+import com.github.insanusmokrassar.TelegramBotAPI.types.message.content.TextContent
+import com.github.insanusmokrassar.TelegramBotAPI.types.update.abstracts.Update
+import kotlinx.coroutines.launch
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerializationException
+import kotlinx.serialization.json.JSON
 import java.lang.ref.WeakReference
 
-const val disable = "❌"
+@Serializable
+private data class DisableData(
+    val disableRatings: Int
+)
 
-internal fun makeDisableText() = disable
-
-private const val disableIdentifier = "disableRatings"
-
-fun makeDisableInline(postId: Int): String = "$disableIdentifier: $postId"
+fun makeDisableInline(postId: Int): String = JSON.stringify(
+    DisableData.serializer(),
+    DisableData(postId)
+)
 fun extractDisableInline(from: String): Int? = try {
-    from.toIObject().get<String>(disableIdentifier).toInt()
-} catch (e: ReadException) {
+    JSON.parse(DisableData.serializer(), from).disableRatings
+} catch (e: SerializationException) {
     null
 }
 
 private fun makeTextToApproveRemove(postId: Int) =
     "Please, write to me `${makeDisableInline(postId)}` if you want to disable ratings for this post"
 
-private typealias UserIdPostId = Pair<Long, Int>
+private typealias UserIdPostId = Pair<UserId, Int>
 
 class DisableReceiver(
-    bot: TelegramBot,
-    sourceChatId: Long,
+    executor: RequestsExecutor,
+    sourceChatId: ChatIdentifier,
     postsLikesMessagesTable: PostsLikesMessagesTable
-) : CallbackQueryReceiver(bot) {
+) : CallbackQueryReceiver(executor) {
     private val awaitApprove = HashSet<UserIdPostId>()
 
     init {
-        val botWR = WeakReference(bot)
-        realMessagesListener.broadcastChannel.subscribeChecking {
-            message ->
-            val userId = message.second.chat().id()
+        allMessagesListener.subscribe { update ->
+            val message = update.data
+            val userId = (message as? FromUserMessage) ?.user ?.id ?: message.chat.id
 
-            val bot = botWR.get() ?: return@subscribeChecking false
-            awaitApprove.firstOrNull { it.first == userId } ?.let {
-                val (userId, postId) = it
-                if (extractDisableInline(message.second.text()) == postId) {
-                    awaitApprove.remove(it)
-                    disableLikesForPost(
-                        postId,
-                        bot,
-                        sourceChatId,
-                        postsLikesMessagesTable
-                    )
-
-                    bot.executeAsync(
-                        SendMessage(
-                            userId,
-                            "Rating was disabled"
-                        ).parseMode(
-                            ParseMode.Markdown
-                        )
-                    )
-                }
-            } ?:let {
-                val forwardFrom = message.second.forwardFromChat()
-                if (forwardFrom != null && forwardFrom.id() == sourceChatId) {
-                    val postId = postsLikesMessagesTable.postIdByMessageId(
-                        message.second.forwardFromMessageId()
-                    ) ?: return@let
-                    bot.executeAsync(
-                        SendMessage(
-                            userId,
-                            makeTextToApproveRemove(
-                                postId
+            val bot = executorWR.get() ?: return@subscribe
+            awaitApprove.firstOrNull { it.first == userId } ?.let { userIdPostId ->
+                val (userId, postId) = userIdPostId
+                if (message is ContentMessage<*>) {
+                    val content = message.content
+                    when (content) {
+                        is TextContent -> if (extractDisableInline(content.text) == postId) {
+                            awaitApprove.remove(userIdPostId)
+                            disableLikesForPost(
+                                postId,
+                                bot,
+                                sourceChatId,
+                                postsLikesMessagesTable
                             )
-                        ).parseMode(
-                            ParseMode.Markdown
-                        ),
-                        onResponse = {
-                            _, _ ->
-                            awaitApprove.add(userId to postId)
+
+                            bot.execute(
+                                SendMessage(
+                                    userId,
+                                    "Rating was disabled",
+                                    parseMode = MarkdownParseMode
+                                )
+                            )
+                        } else {
+                            null
                         }
-                    )
+                        else -> null
+                    }
+                } else {
+                    null
+                }
+            } ?: if (message is AbleToBeForwardedMessage) {
+                val forwarded = message.forwarded
+                val from = forwarded ?.from
+                if (forwarded != null && from ?.id == sourceChatId) {
+                    val postId = postsLikesMessagesTable.postIdByMessageId(
+                        forwarded.messageId
+                    ) ?.let { postId ->
+                        bot.execute(
+                            SendMessage(
+                                userId,
+                                makeTextToApproveRemove(
+                                    postId
+                                ),
+                                parseMode = MarkdownParseMode
+                            )
+                        )
+                        awaitApprove.add(userId to postId)
+                    }
                 }
             }
-            true
         }
     }
 
-    override fun invoke(
-        query: CallbackQuery,
-        bot: TelegramBot
-    ) {
-        bot
-        extractDisableInline(query.data())?.let {
-            val userId = query.from().id().toLong()
+    override suspend fun invoke(update: Update<CallbackQuery>) {
+        val query = update.data as? DataCallbackQuery ?: return
+        extractDisableInline(query.data)?.let {
+            val userId = query.user.id
             awaitApprove.add(userId to it)
-            bot.queryAnswer(
-                query.id(),
-                makeTextToApproveRemove(it),
-                true
+            executorWR.get() ?.execute(
+                query.createAnswer(
+                    makeTextToApproveRemove(it),
+                    true
+                )
             )
         }
     }

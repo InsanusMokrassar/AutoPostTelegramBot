@@ -1,7 +1,7 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins
 
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.FinalConfig
-import com.pengrad.telegrambot.TelegramBot
+import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
 
 interface PluginManager {
     val plugins: List<Plugin>
@@ -10,8 +10,8 @@ interface PluginManager {
         it.name == name
     }
 
-    fun onInit(
-        bot: TelegramBot,
+    suspend fun onInit(
+        executor: RequestsExecutor,
         baseConfig: FinalConfig
     )
 }

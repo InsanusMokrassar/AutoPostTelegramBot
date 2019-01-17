@@ -3,33 +3,42 @@ package com.github.insanusmokrassar.AutoPostTelegramBot
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsMessagesTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.Config
+import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.FinalConfig
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.DefaultPluginManager
-import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.executeBlocking
-import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscribe
-import com.github.insanusmokrassar.BotIncomeMessagesListener.*
-import com.github.insanusmokrassar.IObjectKRealisations.load
-import com.github.insanusmokrassar.IObjectKRealisations.toObject
-import com.pengrad.telegrambot.model.CallbackQuery
-import com.pengrad.telegrambot.model.Message
-import com.pengrad.telegrambot.request.GetChat
-import kotlinx.coroutines.experimental.channels.BroadcastChannel
-import kotlinx.coroutines.experimental.channels.Channel
-import kotlinx.coroutines.experimental.runBlocking
-import org.jetbrains.exposed.sql.Database
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.load
+import com.github.insanusmokrassar.TelegramBotAPI.requests.chat.get.GetChat
+import com.github.insanusmokrassar.TelegramBotAPI.types.CallbackQuery.CallbackQuery
+import com.github.insanusmokrassar.TelegramBotAPI.types.CallbackQuery.MessageDataCallbackQuery
+import com.github.insanusmokrassar.TelegramBotAPI.types.MediaGroupIdentifier
+import com.github.insanusmokrassar.TelegramBotAPI.types.message.abstracts.*
+import com.github.insanusmokrassar.TelegramBotAPI.types.update.abstracts.Update
+import com.github.insanusmokrassar.TelegramBotAPI.utils.extensions.startGettingOfUpdates
+import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.BroadcastChannel
+import kotlinx.coroutines.channels.Channel
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.transactions.transaction
 
-// SUBSCRIBE WITH CAUTION
-val realMessagesListener = UpdateCallbackChannel<Message>()
-val realCallbackQueryListener = UpdateCallbackChannel<CallbackQuery>()
-val realMediaGroupsListener = MediaGroupCallbackChannel()
+@Deprecated("Old naming of vairable", ReplaceWith("allMessagesListener"))
+val realMessagesListener
+    get() = allMessagesListener
+@Deprecated("Old naming of vairable", ReplaceWith("allCallbackQueryListener"))
+val realCallbackQueryListener
+    get() = allCallbackQueryListener
+@Deprecated("Old naming of vairable", ReplaceWith("allMediaGroupsListener"))
+val realMediaGroupsListener
+    get() = allMediaGroupsListener
 
-val messagesListener = BroadcastChannel<Pair<Int, Message>>(Channel.CONFLATED)
-val callbackQueryListener = BroadcastChannel<Pair<Int, CallbackQuery>>(Channel.CONFLATED)
-val mediaGroupsListener = BroadcastChannel<Pair<String, List<Message>>>(Channel.CONFLATED)
+val allMessagesListener = BroadcastChannel<Update<Message>>(Channel.UNLIMITED)
+val allCallbackQueryListener = BroadcastChannel<Update<CallbackQuery>>(Channel.UNLIMITED)
+val allMediaGroupsListener = BroadcastChannel<List<Update<Message>>>(Channel.UNLIMITED)
+
+val messagesListener = BroadcastChannel<Update<Message>>(Channel.CONFLATED)
+val callbackQueryListener = BroadcastChannel<Update<CallbackQuery>>(Channel.CONFLATED)
+val mediaGroupsListener = BroadcastChannel<List<Update<Message>>>(Channel.CONFLATED)
 
 fun main(args: Array<String>) {
-    val config = load(args[0]).toObject(Config::class.java).finalConfig
+    val config: FinalConfig = load(args[0], Config.serializer()).finalConfig
 
     val bot = config.bot
 
@@ -42,45 +51,92 @@ fun main(args: Array<String>) {
     }
 
     runBlocking {
-        if (!bot.executeBlocking(GetChat(config.sourceChatId)).isOk || !bot.executeBlocking(GetChat(config.targetChatId)).isOk) {
-            throw IllegalArgumentException("Can't check chats availability")
-        }
-    }
+        bot.execute(GetChat(config.sourceChatId)).extractChat()
+        bot.execute(GetChat(config.targetChatId)).extractChat()
 
-    val pluginManager = DefaultPluginManager(
-        config.pluginsConfigs
-    )
-
-    pluginManager.onInit(
-        bot,
-        config
-    )
-
-    realMessagesListener.broadcastChannel.subscribe {
-        if (it.second.chat().id() == config.sourceChatId) {
-            messagesListener.send(it)
-        }
-    }
-
-    realCallbackQueryListener.broadcastChannel.subscribe {
-        if (it.second.message().chat().id() == config.sourceChatId) {
-            callbackQueryListener.send(it)
-        }
-    }
-
-    realMediaGroupsListener.broadcastChannel.subscribe {
-        if (it.second.firstOrNull { it.chat().id() != config.sourceChatId } == null) {
-            mediaGroupsListener.send(it)
-        }
-    }
-
-    bot.setUpdatesListener(
-        BotIncomeMessagesListener(
-            realMessagesListener,
-            onChannelPost = realMessagesListener,
-            onCallbackQuery = realCallbackQueryListener,
-            onMessageMediaGroup = realMediaGroupsListener,
-            onChannelPostMediaGroup = realMediaGroupsListener
+        val pluginManager = DefaultPluginManager(
+            config.pluginsConfigs
         )
+
+        pluginManager.onInit(
+            bot,
+            config
+        )
+
+        coroutineScope {
+            allMessagesListener.openSubscription().also {
+                launch {
+                    for (message in it) {
+                        if (message.data.chat.id == config.sourceChatId) {
+                            messagesListener.send(message)
+                        }
+                    }
+                }
+            }
+
+            allMessagesListener.openSubscription().also {
+                launch {
+                    var mediaGroudId: MediaGroupIdentifier? = null
+                    val mediaGroup: MutableList<Update<Message>> = mutableListOf()
+                    suspend fun pushData() {
+                        allMediaGroupsListener.send(
+                            ArrayList(mediaGroup)
+                        )
+                        mediaGroup.clear()
+                        mediaGroudId = null
+                    }
+                    for (message in it) {
+                        val data = message.data
+                        when (data) {
+                            is MediaGroupMessage -> {
+                                if (data.mediaGroupId != mediaGroudId) {
+                                    pushData()
+                                    mediaGroudId = data.mediaGroupId
+                                }
+                                mediaGroup.add(message)
+                            }
+                            else -> if (mediaGroup.isNotEmpty()) {
+                                pushData()
+                            }
+                        }
+                    }
+                }
+            }
+
+            allCallbackQueryListener.openSubscription().also {
+                launch {
+                    for (queryUpdate in it) {
+                        (queryUpdate.data as? MessageDataCallbackQuery) ?.also {
+                            if (it.message.chat.id == config.sourceChatId) {
+                                callbackQueryListener.send(queryUpdate)
+                            }
+                        }
+                    }
+                }
+            }
+            allMediaGroupsListener.openSubscription().also {
+                launch {
+                    for (mediaGroup in it) {
+                        val mediaGroupChatId = mediaGroup.firstOrNull() ?.data ?.chat ?.id ?: continue
+                        if (mediaGroupChatId == config.sourceChatId) {
+                            mediaGroupsListener.send(mediaGroup)
+                        }
+                    }
+                }
+            }
+        }
+
+    }
+
+    bot.startGettingOfUpdates(
+        messageCallback = {
+            allMessagesListener.send(this)
+        },
+        channelPostCallback = {
+            allMessagesListener.send(this)
+        },
+        callbackQueryCallback = {
+            allCallbackQueryListener.send(this)
+        }
     )
 }

@@ -5,8 +5,9 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.commonLogger
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.database.PostIdRatingPair
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.*
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.parseDateTimes
-import com.github.insanusmokrassar.IObjectK.interfaces.IObject
-import com.github.insanusmokrassar.IObjectKRealisations.toObject
+import kotlinx.serialization.Optional
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
 import java.util.*
@@ -72,28 +73,40 @@ private val commonInnerChoosers = mapOf<String, InnerChooser>(
     }
 )
 
-private class SmartChooserConfigItem (
+@Serializable
+data class SmartChooserConfigItem (
+    @Optional
     val minRate: Int? = null,
+    @Optional
     val maxRate: Int? = null,
+    @Optional
     val time: String? = null,
+    @Optional
     val times: List<String>? = null,
+    @Optional
     val sort: String = defaultSort,
+    @Optional
     val count: Int = 1,
+    @Optional
     val minAge: Long? = null,
+    @Optional
     val maxAge: Long? = null
 ) {
+    @Transient
     private val minAgeAsDateTime: DateTime? by lazy {
         minAge ?.let {
             DateTime.now().withZone(DateTimeZone.UTC).withMillis(it).withZone(DateTimeZone.getDefault())
         }
     }
 
+    @Transient
     private val maxAgeAsDateTime: DateTime? by lazy {
         maxAge ?.let {
             DateTime.now().withZone(DateTimeZone.UTC).withMillis(it).withZone(DateTimeZone.getDefault())
         }
     }
 
+    @Transient
     private val timePairs: List<CalculatedPeriod> by lazy {
         (times ?.flatMap {
             it.parseDateTimes()
@@ -109,6 +122,7 @@ private class SmartChooserConfigItem (
         } != null
     }
 
+    @Transient
     val chooser: InnerChooser?
         get() = commonInnerChoosers[sort]
 
@@ -137,17 +151,17 @@ private class SmartChooserConfigItem (
     }
 }
 
-private class SmartChooserConfig(
+@Serializable
+data class SmartChooserConfig(
     val times: List<SmartChooserConfigItem> = emptyList()
 )
 
+@Serializable
 class SmartChooser(
-    config: IObject<Any>
+    private val config: SmartChooserConfig
 ) : RateChooser() {
-    private val config = config.toObject(SmartChooserConfig::class.java)
-
     init {
-        commonLogger.info("Smart chooser inited: ${this.config.times.joinToString(separator = "\n") { it.toString() }}")
+        commonLogger.info("Smart chooser inited: ${config.times.joinToString(separator = "\n") { it.toString() }}")
     }
 
     override fun triggerChoose(): Collection<Int> {

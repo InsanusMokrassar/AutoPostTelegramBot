@@ -1,8 +1,10 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.utils
 
+import com.github.insanusmokrassar.TelegramBotAPI.types.MessageIdentifier
+
 fun makeLinkToMessage(
     username: String,
-    messageId: Int
+    messageId: MessageIdentifier
 ): String = "https://telegram.me/$username/$messageId"
 
 fun makePhotoLink(

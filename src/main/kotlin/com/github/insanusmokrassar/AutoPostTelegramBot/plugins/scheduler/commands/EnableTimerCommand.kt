@@ -4,61 +4,67 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.exceptions.
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsMessagesTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.scheduler.PostsSchedulesTable
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.NewDefaultCoroutineScope
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.commands.Command
-import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.executeAsync
-import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.executeBlocking
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.parseDateTimes
-import com.pengrad.telegrambot.TelegramBot
-import com.pengrad.telegrambot.model.Message
-import com.pengrad.telegrambot.model.request.ParseMode
-import com.pengrad.telegrambot.request.*
-import kotlinx.coroutines.experimental.launch
+import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
+import com.github.insanusmokrassar.TelegramBotAPI.requests.DeleteMessage
+import com.github.insanusmokrassar.TelegramBotAPI.requests.ForwardMessage
+import com.github.insanusmokrassar.TelegramBotAPI.requests.send.SendMessage
+import com.github.insanusmokrassar.TelegramBotAPI.types.*
+import com.github.insanusmokrassar.TelegramBotAPI.types.ParseMode.MarkdownParseMode
+import com.github.insanusmokrassar.TelegramBotAPI.types.message.abstracts.CommonMessage
+import com.github.insanusmokrassar.TelegramBotAPI.types.message.content.TextContent
+import com.github.insanusmokrassar.TelegramBotAPI.utils.extensions.executeAsync
+import kotlinx.coroutines.launch
 import java.lang.ref.WeakReference
 
 private const val setPostTimeCommandName = "setPublishTime"
 
 private fun sendHelpForUsage(
-    bot: TelegramBot,
-    chatId: Long
+    executor: RequestsExecutor,
+    chatId: ChatId
 ) {
-    bot.executeAsync(
+    executor.executeAsync(
         SendMessage(
             chatId,
             "Usage: `/$setPostTimeCommandName [time format]`.\n" +
-                "Reply post registered message and write command + time in correct format"
-        ).parseMode(
-            ParseMode.Markdown
+                "Reply post registered message and write command + time in correct format",
+            parseMode = MarkdownParseMode
         )
     )
 }
 
+private val EnableTimerCommandScope = NewDefaultCoroutineScope(1)
+
 class EnableTimerCommand(
     private val postsSchedulesTable: PostsSchedulesTable,
-    private val botWR: WeakReference<TelegramBot>,
-    private val logsChatId: Long
+    private val executorWR: WeakReference<RequestsExecutor>,
+    private val logsChatId: ChatIdentifier
 ) : Command() {
     override val commandRegex: Regex = Regex("^/$setPostTimeCommandName.*")
     private val removeCommand: Regex = Regex("^/$setPostTimeCommandName ?")
 
-    override fun onCommand(updateId: Int, message: Message) {
-        val bot = botWR.get() ?: return
-        val replyToMessage = message.replyToMessage() ?:let {
+    override suspend fun onCommand(updateId: UpdateIdentifier, message: CommonMessage<*>) {
+        val content = message.content as? TextContent ?: return
+        val executor = executorWR.get() ?: return
+        val replyToMessage = message.replyTo ?:let {
             sendHelpForUsage(
-                bot,
-                message.chat().id()
+                executor,
+                message.chat.id
             )
             return
         }
         try {
-            val postId = PostsTable.findPost(replyToMessage.messageId())
-            val chatId = message.chat().id()
+            val postId = PostsTable.findPost(replyToMessage.messageId)
+            val chatId = message.chat.id
 
-            val preparsedText = message.text().let {
+            val preparsedText = content.text.let {
                 it.replaceFirst(removeCommand, "").also {
                     if (it.isEmpty()) {
                         sendHelpForUsage(
-                            bot,
-                            message.chat().id()
+                            executor,
+                            message.chat.id
                         )
                         return
                     }
@@ -68,29 +74,27 @@ class EnableTimerCommand(
             preparsedText.parseDateTimes().asSequence().map {
                 it.asFuture
             }.min() ?.also {
-                parsed ->
+                    parsed ->
                 parsed.also {
                     postsSchedulesTable.registerPostTime(postId, parsed)
 
-                    launch {
-                        val messageId = bot.executeBlocking(
+                    EnableTimerCommandScope.launch {
+                        val messageId = executor.execute(
                             ForwardMessage(
                                 logsChatId,
                                 chatId,
                                 PostsMessagesTable.getMessagesOfPost(
                                     postId
-                                ).firstOrNull() ?.messageId ?: replyToMessage.messageId()
+                                ).firstOrNull() ?.messageId ?: replyToMessage.messageId
                             )
-                        ).message().messageId()
-                        bot.executeAsync(
+                        ).messageId
+                        executor.executeAsync(
                             SendMessage(
                                 logsChatId,
-                                    "Parsed time: $parsed\n" +
-                                    "Post saved with timer"
-                            ).parseMode(
-                                ParseMode.Markdown
-                            ).replyToMessageId(
-                                messageId
+                                "Parsed time: $parsed\n" +
+                                    "Post saved with timer",
+                                parseMode = MarkdownParseMode,
+                                replyToMessageId = messageId
                             )
                         )
                     }
@@ -98,14 +102,14 @@ class EnableTimerCommand(
             }
         } catch (e: NoRowFoundException) {
             sendHelpForUsage(
-                bot,
-                message.chat().id()
+                executor,
+                message.chat.id
             )
         } finally {
-            bot.executeAsync(
+            executor.executeAsync(
                 DeleteMessage(
-                    message.chat().id(),
-                    message.messageId()
+                    message.chat.id,
+                    message.messageId
                 )
             )
         }

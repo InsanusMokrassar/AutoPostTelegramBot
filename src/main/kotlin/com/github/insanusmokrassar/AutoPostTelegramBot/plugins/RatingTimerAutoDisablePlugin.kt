@@ -7,11 +7,12 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.disableLik
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.scheduler.SchedulerPlugin
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscribe
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscribeChecking
-import com.pengrad.telegrambot.TelegramBot
+import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
+
 import java.lang.ref.WeakReference
 
 class RatingTimerAutoDisablePlugin : Plugin {
-    override fun onInit(bot: TelegramBot, baseConfig: FinalConfig, pluginManager: PluginManager) {
+    override suspend fun onInit(executor: RequestsExecutor, baseConfig: FinalConfig, pluginManager: PluginManager) {
         val ratingPlugin: RatingPlugin = pluginManager.plugins.firstOrNull {
             it is RatingPlugin
         } as? RatingPlugin ?:let {
@@ -26,7 +27,7 @@ class RatingTimerAutoDisablePlugin : Plugin {
             return
         }
 
-        val botWR = WeakReference(bot)
+        val botWR = WeakReference(executor)
         val sourceChatId = baseConfig.sourceChatId
 
         schedulerPlugin.timerSchedulesTable.postTimeRegisteredChannel.subscribeChecking(

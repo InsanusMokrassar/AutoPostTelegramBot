@@ -1,23 +1,27 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables
 
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.PostMessage
-import kotlinx.coroutines.experimental.channels.BroadcastChannel
-import kotlinx.coroutines.experimental.channels.Channel
-import kotlinx.coroutines.experimental.launch
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.NewDefaultCoroutineScope
+import com.github.insanusmokrassar.TelegramBotAPI.types.MessageIdentifier
+import kotlinx.coroutines.channels.BroadcastChannel
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.launch
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 
-typealias PostIdToMessagesIds = Pair<Int, Collection<Int>>
+typealias PostIdToMessagesIds = Pair<Int, Collection<MessageIdentifier>>
+
+val PostsMessagesTableScope = NewDefaultCoroutineScope()
 
 object PostsMessagesTable : Table() {
     val newMessagesOfPost = BroadcastChannel<PostIdToMessagesIds>(Channel.CONFLATED)
 
     @Deprecated("This channel is not determine post id", ReplaceWith("removedMessageOfPost"))
-    val removeMessageOfPost = BroadcastChannel<Int>(Channel.CONFLATED)
+    val removeMessageOfPost = BroadcastChannel<MessageIdentifier>(Channel.CONFLATED)
     val removedMessagesOfPost = BroadcastChannel<PostIdToMessagesIds>(Channel.CONFLATED)
     val removedMessageOfPost = BroadcastChannel<PostIdMessageId>(Channel.CONFLATED)
 
-    private val messageId = integer("messageId").primaryKey()
+    private val messageId = long("messageId").primaryKey()
     private val mediaGroupId = text("mediaGroupId").nullable()
     private val postId = integer("postId")
 
@@ -27,7 +31,7 @@ object PostsMessagesTable : Table() {
                 PostsMessagesTable.postId.eq(postId)
             }.map {
                 PostMessage(
-                    it[messageId],
+                    it[messageId].toLong(),
                     it[mediaGroupId]
                 )
             }
@@ -45,7 +49,7 @@ object PostsMessagesTable : Table() {
                 }
                 message.messageId
             }.let {
-                launch {
+                PostsMessagesTableScope.launch {
                     newMessagesOfPost.send(PostIdToMessagesIds(postId, it))
                 }
             }
@@ -53,10 +57,10 @@ object PostsMessagesTable : Table() {
     }
 
     @Deprecated("This method will be deprecated in near releases", ReplaceWith("removePostMessage"))
-    fun removeMessageOfPost(messageId: Int) {
+    fun removeMessageOfPost(messageId: MessageIdentifier) {
         transaction {
             if (deleteWhere { PostsMessagesTable.messageId.eq(messageId) } > 0) {
-                launch {
+                PostsMessagesTableScope.launch {
                     removeMessageOfPost.send(messageId)
                 }
             }
@@ -77,17 +81,17 @@ object PostsMessagesTable : Table() {
             }
         }.also {
             if (it.isNotEmpty()) {
-                launch {
+                PostsMessagesTableScope.launch {
                     removedMessagesOfPost.send(postId to it)
                 }
             }
         }
     }
 
-    fun removePostMessage(postId: Int, messageId: Int): Boolean {
+    fun removePostMessage(postId: Int, messageId: MessageIdentifier): Boolean {
         return transaction {
             if (deleteWhere { PostsMessagesTable.messageId.eq(messageId) } > 0) {
-                launch {
+                PostsMessagesTableScope.launch {
                     removedMessageOfPost.send(postId to messageId)
                 }
                 true

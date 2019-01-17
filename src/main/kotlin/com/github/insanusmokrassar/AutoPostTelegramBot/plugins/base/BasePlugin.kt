@@ -6,7 +6,8 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.PluginManage
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.base.callbacks.OnMediaGroup
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.base.callbacks.OnMessage
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.base.commands.*
-import com.pengrad.telegrambot.TelegramBot
+import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
+
 import java.lang.ref.WeakReference
 
 class BasePlugin : Plugin {
@@ -21,8 +22,8 @@ class BasePlugin : Plugin {
 
     val postsUsedTable = PostsUsedTable()
 
-    override fun onInit(bot: TelegramBot, baseConfig: FinalConfig, pluginManager: PluginManager) {
-        val botWR = WeakReference(bot)
+    override suspend fun onInit(executor: RequestsExecutor, baseConfig: FinalConfig, pluginManager: PluginManager) {
+        val botWR = WeakReference(executor)
 
         deletePost = DeletePost(
             baseConfig.logsChatId,
@@ -37,7 +38,7 @@ class BasePlugin : Plugin {
         onMessage = OnMessage(baseConfig.sourceChatId)
 
         defaultPostRegisteredMessage = DefaultPostRegisteredMessage(
-            bot,
+            executor,
             baseConfig.sourceChatId
         )
     }

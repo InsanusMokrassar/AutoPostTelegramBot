@@ -3,7 +3,6 @@ package com.github.insanusmokrassar.AutoPostTelegramBot.utils
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.withoutTimeZoneOffset
 import org.joda.time.*
 import org.joda.time.format.DateTimeFormat
-import java.lang.IllegalStateException
 
 
 val dateRegex = Regex("[\\d]{2}(/[\\d]{2}(/[\\d]{2}([\\d]{2})?)?)?")

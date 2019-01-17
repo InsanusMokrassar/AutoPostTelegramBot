@@ -7,23 +7,33 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.commonLogger
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.database.PostsLikesMessagesTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.database.PostsLikesTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.receivers.*
-import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.*
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscribeChecking
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.toTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.makeLinkToMessage
-import com.pengrad.telegrambot.TelegramBot
-import com.pengrad.telegrambot.model.request.*
-import com.pengrad.telegrambot.request.*
+import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
+import com.github.insanusmokrassar.TelegramBotAPI.requests.DeleteMessage
+import com.github.insanusmokrassar.TelegramBotAPI.requests.edit.text.EditChatMessageText
+import com.github.insanusmokrassar.TelegramBotAPI.requests.send.SendMessage
+import com.github.insanusmokrassar.TelegramBotAPI.types.ChatId
+import com.github.insanusmokrassar.TelegramBotAPI.types.ChatIdentifier
+import com.github.insanusmokrassar.TelegramBotAPI.types.ParseMode.MarkdownParseMode
+import com.github.insanusmokrassar.TelegramBotAPI.types.buttons.InlineKeyboardButtons.*
+import com.github.insanusmokrassar.TelegramBotAPI.types.buttons.InlineKeyboardMarkup
+import com.github.insanusmokrassar.TelegramBotAPI.utils.extensions.executeAsync
+import com.github.insanusmokrassar.TelegramBotAPI.utils.matrix
+import com.github.insanusmokrassar.TelegramBotAPI.utils.row
 import java.lang.ref.WeakReference
 
-fun disableLikesForPost(
+suspend fun disableLikesForPost(
     postId: Int,
-    bot: TelegramBot,
-    sourceChatId: Long,
+    executor: RequestsExecutor,
+    sourceChatId: ChatIdentifier,
     postsLikesMessagesTable: PostsLikesMessagesTable
 ) {
     postsLikesMessagesTable.messageIdByPostId(postId) ?.let {
         messageId ->
 
-        bot.executeAsync(
+        executor.execute(
             DeleteMessage(
                 sourceChatId,
                 messageId
@@ -35,12 +45,12 @@ fun disableLikesForPost(
 }
 
 class RegisteredRefresher(
-    sourceChatId: Long,
-    bot: TelegramBot,
+    sourceChatId: ChatId,
+    executor: RequestsExecutor,
     postsLikesTable: PostsLikesTable,
     postsLikesMessagesTable: PostsLikesMessagesTable
 ) {
-    private val botWR = WeakReference(bot)
+    private val botWR = WeakReference(executor)
 
     init {
         postsLikesTable.ratingsChannel.subscribeChecking(
@@ -97,66 +107,55 @@ class RegisteredRefresher(
 }
 
 internal fun refreshRegisteredMessage(
-    chatId: Long,
-    bot: TelegramBot,
+    chatId: ChatId,
+    executor: RequestsExecutor,
     postId: Int,
     postsLikesTable: PostsLikesTable,
     postsLikesMessagesTable: PostsLikesMessagesTable,
     postRating: Int = postsLikesTable.getPostRating(postId),
     username: String? = null
 ) {
-    val likeButton = InlineKeyboardButton(
+    val likeButton = CallbackDataInlineKeyboardButton(
         makeDislikeText(
             postsLikesTable.postDislikes(postId)
-        )
-    ).callbackData(
+        ),
         makeDislikeInline(postId)
     )
-    val dislikeButton = InlineKeyboardButton(
+    val dislikeButton = CallbackDataInlineKeyboardButton(
         makeLikeText(
             postsLikesTable.postLikes(postId)
-        )
-    ).callbackData(
+        ),
         makeLikeInline(postId)
     )
 
-    val buttons = mutableListOf<MutableList<InlineKeyboardButton>>(
-        mutableListOf(
-            likeButton,
-            dislikeButton
-        )
-    )
-
-    username ?.let {
-        chatUsername ->
-        PostsMessagesTable.getMessagesOfPost(
-            postId
-        ).map {
-            makeLinkToMessage(
-                chatUsername,
-                it.messageId
-            )
-        }.mapIndexed {
-            index, s ->
-            InlineKeyboardButton(
-                (index + 1).toString()
-            ).url(
-                s
-            )
-        }.toTable(4).let {
-            buttons.addAll(
-                it.map {
-                    it.toMutableList()
-                }
-            )
+    val buttons = matrix<InlineKeyboardButton> {
+        row {
+            add(likeButton)
+            add(dislikeButton)
         }
+    }.let { base ->
+        username ?.let {
+                chatUsername ->
+            PostsMessagesTable.getMessagesOfPost(
+                postId
+            ).map {
+                makeLinkToMessage(
+                    chatUsername,
+                    it.messageId
+                )
+            }.mapIndexed {
+                    index, s ->
+                URLInlineKeyboardButton(
+                    (index + 1).toString(),
+                    s
+                )
+            }.toTable(4)
+        } ?.let {
+            base + it
+        } ?: base
     }
 
-    val markup = InlineKeyboardMarkup(
-        *buttons.map {
-            it.toTypedArray()
-        }.toTypedArray()
-    )
+    val markup = InlineKeyboardMarkup(buttons)
 
     val message = "Rating: $postRating"
 
@@ -165,23 +164,19 @@ internal fun refreshRegisteredMessage(
     if (registeredMessageId == null) {
         SendMessage(
             chatId,
-            message
-        ).parseMode(
-            ParseMode.Markdown
-        ).replyMarkup(
-            markup
-        ).replyToMessageId(
-            PostsMessagesTable.getMessagesOfPost(postId).firstOrNull() ?.messageId ?: return
+            message,
+            replyMarkup = markup,
+            replyToMessageId = PostsMessagesTable.getMessagesOfPost(postId).firstOrNull() ?.messageId ?: return,
+            parseMode = MarkdownParseMode
         ).let {
-            bot.executeAsync(
+            executor.executeAsync(
                 it,
-                onResponse = {
-                    _, sendResponse ->
-                    if (!postsLikesMessagesTable.enableLikes(postId, sendResponse.message().messageId())) {
-                        bot.executeAsync(
+                onSuccess = { response ->
+                    if (!postsLikesMessagesTable.enableLikes(postId, response.messageId)) {
+                        executor.executeAsync(
                             DeleteMessage(
                                 chatId,
-                                sendResponse.message().messageId()
+                                response.messageId
                             )
                         )
                     }
@@ -189,14 +184,13 @@ internal fun refreshRegisteredMessage(
             )
         }
     } else {
-        EditMessageText(
+        EditChatMessageText(
             chatId,
             registeredMessageId,
-            message
-        ).replyMarkup(
-            markup
+            message,
+            replyMarkup = markup
         ).let {
-            bot.executeAsync(it)
+            executor.executeAsync(it)
         }
     }
 }

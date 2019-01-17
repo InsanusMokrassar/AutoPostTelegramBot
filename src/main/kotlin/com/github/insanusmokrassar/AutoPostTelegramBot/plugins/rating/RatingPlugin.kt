@@ -9,7 +9,8 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.commands.M
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.database.PostsLikesMessagesTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.database.PostsLikesTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.receivers.*
-import com.pengrad.telegrambot.TelegramBot
+import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
+
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.lang.ref.WeakReference
@@ -36,28 +37,28 @@ class RatingPlugin : Plugin {
         }
     }
 
-    override fun onInit(
-        bot: TelegramBot,
+    override suspend fun onInit(
+        executor: RequestsExecutor,
         baseConfig: FinalConfig,
         pluginManager: PluginManager
     ) {
-        val botWR = WeakReference(bot)
+        val botWR = WeakReference(executor)
 
         (pluginManager.plugins.firstOrNull { it is BasePlugin } as? BasePlugin)?.also {
             postsLikesMessagesTable.postsUsedTablePluginName = it.postsUsedTable to name
         }
 
         likeReceiver ?: let {
-            likeReceiver = LikeReceiver(bot, baseConfig.sourceChatId, postsLikesTable, postsLikesMessagesTable)
+            likeReceiver = LikeReceiver(executor, baseConfig.sourceChatId, postsLikesTable, postsLikesMessagesTable)
         }
         dislikeReceiver ?: let {
-            dislikeReceiver = DislikeReceiver(bot, baseConfig.sourceChatId, postsLikesTable, postsLikesMessagesTable)
+            dislikeReceiver = DislikeReceiver(executor, baseConfig.sourceChatId, postsLikesTable, postsLikesMessagesTable)
         }
         disableReceiver ?: let {
-            disableReceiver = DisableReceiver(bot, baseConfig.sourceChatId, postsLikesMessagesTable)
+            disableReceiver = DisableReceiver(executor, baseConfig.sourceChatId, postsLikesMessagesTable)
         }
         enableReceiver ?: let {
-            enableReceiver = EnableReceiver(bot, baseConfig.sourceChatId, postsLikesTable, postsLikesMessagesTable)
+            enableReceiver = EnableReceiver(executor, baseConfig.sourceChatId, postsLikesTable, postsLikesMessagesTable)
         }
 
         mostRated ?:let {
@@ -69,7 +70,7 @@ class RatingPlugin : Plugin {
 
         registeredRefresher = RegisteredRefresher(
             baseConfig.sourceChatId,
-            bot,
+            executor,
             postsLikesTable,
             postsLikesMessagesTable
         )

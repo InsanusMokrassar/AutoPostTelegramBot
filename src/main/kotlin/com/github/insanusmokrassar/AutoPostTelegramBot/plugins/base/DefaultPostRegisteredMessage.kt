@@ -4,45 +4,41 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.Post
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.transactionCompletedChannel
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.commonLogger
-import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.executeAsync
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscribeChecking
-import com.pengrad.telegrambot.TelegramBot
-import com.pengrad.telegrambot.model.request.ParseMode
-import com.pengrad.telegrambot.request.DeleteMessage
-import com.pengrad.telegrambot.request.SendMessage
+import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
+import com.github.insanusmokrassar.TelegramBotAPI.requests.DeleteMessage
+import com.github.insanusmokrassar.TelegramBotAPI.requests.send.SendMessage
+import com.github.insanusmokrassar.TelegramBotAPI.types.ChatIdentifier
+import com.github.insanusmokrassar.TelegramBotAPI.types.MessageIdentifier
+import com.github.insanusmokrassar.TelegramBotAPI.types.ParseMode.MarkdownParseMode
 import java.lang.ref.WeakReference
 
-private fun registerPostMessage(
-    bot: TelegramBot,
-    sourceChatId: Long,
+private suspend fun registerPostMessage(
+    executor: RequestsExecutor,
+    sourceChatId: ChatIdentifier,
     registeredPostId: Int
 ) {
     try {
-        bot.executeAsync(
+        val response = executor.execute(
             SendMessage(
                 sourceChatId,
-                "Post registered"
-            ).parseMode(
-                ParseMode.Markdown
-            ).replyToMessageId(
-                PostsMessagesTable.getMessagesOfPost(
+                "Post registered",
+                parseMode = MarkdownParseMode,
+                replyToMessageId = PostsMessagesTable.getMessagesOfPost(
                     registeredPostId
                 ).firstOrNull() ?.messageId ?: return
-            ),
-            onResponse = {
-                _, sendResponse ->
-                if (PostsTable.postRegisteredMessage(registeredPostId) == null) {
-                    PostsTable.postRegistered(registeredPostId, sendResponse.message().messageId())
-                } else {
-                    bot.executeAsync(
-                        DeleteMessage(
-                            sendResponse.message().chat().id(),
-                            sendResponse.message().messageId()
-                        )
-                    )
-                }
-            }
+            )
         )
+        if (PostsTable.postRegisteredMessage(registeredPostId) == null) {
+            PostsTable.postRegistered(registeredPostId, response.messageId)
+        } else {
+            executor.execute(
+                DeleteMessage(
+                    response.asMessage.chat.id,
+                    response.messageId
+                )
+            )
+        }
     } catch (e: Exception) {
         commonLogger.throwing(
             DefaultPostRegisteredMessage::class.java.simpleName,
@@ -53,11 +49,11 @@ private fun registerPostMessage(
 }
 
 class DefaultPostRegisteredMessage(
-    bot: TelegramBot,
-    sourceChatId: Long
+    executor: RequestsExecutor,
+    sourceChatId: ChatIdentifier
 ) {
     init {
-        val botWR = WeakReference(bot)
+        val botWR = WeakReference(executor)
 
         transactionCompletedChannel.subscribeChecking {
             registerPostMessage(

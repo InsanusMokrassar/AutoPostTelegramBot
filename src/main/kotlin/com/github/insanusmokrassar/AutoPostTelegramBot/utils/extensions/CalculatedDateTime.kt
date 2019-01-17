@@ -1,7 +1,8 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions
 
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.CalculatedDateTime
-import kotlinx.coroutines.experimental.*
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.NewDefaultCoroutineScope
+import kotlinx.coroutines.*
 import org.joda.time.DateTime
 
 typealias CalculatedPeriod = Pair<CalculatedDateTime, CalculatedDateTime>
@@ -19,11 +20,13 @@ fun Iterable<CalculatedDateTime>.nearDateTime(): DateTime? {
     return found
 }
 
+private val futureTasksScope = NewDefaultCoroutineScope()
+
 fun <R> Iterable<CalculatedDateTime>.executeNearFuture(block: suspend () -> R): Deferred<R>? {
     val dateTimeToTrigger: DateTime? = nearDateTime()
 
     return dateTimeToTrigger ?.let {
-        async {
+        futureTasksScope.async {
             delay(it.millis - System.currentTimeMillis())
 
             block()

@@ -35,6 +35,15 @@ dependencies {
     implementation "org.jetbrains.kotlinx:kotlinx-serialization-runtime:$kotlin_serialisation_runtime_version"
     implementation "com.github.insanusmokrassar:TelegramBotAPI:$telegram_bot_api_version"
 
+    implementation "org.jetbrains.exposed:exposed:$kotlin_exposed_version"
+    implementation "com.h2database:h2:$h2_version"
+
     // Use JUnit test framework
     testImplementation 'junit:junit:4.12'
+}
+
+compileKotlin {
+    kotlinOptions {
+        freeCompilerArgs += [ disableImplicitReflectionSerializerAnnotation ]
+    }
 }
