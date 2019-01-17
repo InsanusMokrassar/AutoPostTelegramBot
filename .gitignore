@@ -12,3 +12,5 @@ build/
 config.json
 
 settings.xml
+
+build/

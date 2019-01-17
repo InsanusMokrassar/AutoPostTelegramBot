@@ -6,6 +6,7 @@ import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
 import com.github.insanusmokrassar.TelegramBotAPI.types.*
 import kotlinx.serialization.Optional
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 import org.h2.Driver
 
 @Serializable
@@ -14,7 +15,7 @@ class Config (
     val targetChatId: Long,
     val sourceChatId: Long,
     @Optional
-    val logsChatId: Long = sourceChatId,
+    val logsChatId: Long? = null,
     @Optional
     val databaseConfig: DatabaseConfig = DatabaseConfig(
         "jdbc:h2:mem:test;DB_CLOSE_DELAY=-1",
@@ -30,6 +31,7 @@ class Config (
     @Optional
     val commonBot: BotConfig? = null
 ) {
+    @Transient
     private val botConfig: BotConfig by lazy {
         commonBot ?: BotConfig(
             botToken,
@@ -37,12 +39,13 @@ class Config (
         )
     }
 
+    @Transient
     val finalConfig: FinalConfig
         @Throws(IllegalArgumentException::class)
         get() = FinalConfig(
             targetChatId.toChatId(),
             sourceChatId.toChatId(),
-            logsChatId.toChatId(),
+            (logsChatId ?: sourceChatId).toChatId(),
             botConfig.createBot(),
             databaseConfig,
             plugins
