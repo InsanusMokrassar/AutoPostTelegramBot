@@ -15,12 +15,17 @@ import java.lang.ref.WeakReference
 
 @Serializable
 class SchedulerPlugin : Plugin {
+    @Transient
     val timerSchedulesTable = PostsSchedulesTable()
 
+    @Transient
     private lateinit var enableTimerCommand: EnableTimerCommand
+    @Transient
     private lateinit var getSchedulesCommand: GetSchedulesCommand
+    @Transient
     private lateinit var disableTimerCommand: DisableTimerCommand
 
+    @Transient
     private lateinit var scheduler: Scheduler
 
     init {
