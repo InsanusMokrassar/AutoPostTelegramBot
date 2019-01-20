@@ -8,6 +8,7 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.publishers.Publis
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.scheduler.commands.*
 import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.transactions.transaction
