@@ -220,3 +220,4 @@ Fix of `CalculatedDateTime#asPastFor` - now it will decrease time even if source
 # 1.0.0
 
 * Rewrite to use new version of library for telegram bot API
+* Add automatic connect by after configuration into database
