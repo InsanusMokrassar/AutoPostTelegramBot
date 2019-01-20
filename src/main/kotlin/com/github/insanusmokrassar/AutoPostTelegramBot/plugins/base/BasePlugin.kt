@@ -7,9 +7,11 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.base.callbacks.On
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.base.callbacks.OnMessage
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.base.commands.*
 import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
+import kotlinx.serialization.Serializable
 
 import java.lang.ref.WeakReference
 
+@Serializable
 class BasePlugin : Plugin {
     private var deletePost: DeletePost? = null
     private var startPost: StartPost? = null

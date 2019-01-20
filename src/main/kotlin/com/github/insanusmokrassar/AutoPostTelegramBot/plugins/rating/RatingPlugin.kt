@@ -10,11 +10,13 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.database.P
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.database.PostsLikesTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.receivers.*
 import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
+import kotlinx.serialization.Serializable
 
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.lang.ref.WeakReference
 
+@Serializable
 class RatingPlugin : Plugin {
     private var likeReceiver: LikeReceiver? = null
     private var dislikeReceiver: DislikeReceiver? = null

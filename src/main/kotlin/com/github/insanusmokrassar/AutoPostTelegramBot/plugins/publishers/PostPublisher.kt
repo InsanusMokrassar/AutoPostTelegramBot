@@ -20,11 +20,13 @@ import com.github.insanusmokrassar.TelegramBotAPI.utils.extensions.executeAsync
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel
+import kotlinx.serialization.Serializable
 import java.lang.ref.WeakReference
 
 typealias PostIdListPostMessagesTelegramMessages = Pair<Int, Map<PostMessage, Message>>
 private typealias ChatIdMessageIdPair = Pair<ChatId, MessageIdentifier>
 
+@Serializable
 class PostPublisher : Publisher {
     val postPublishedChannel = BroadcastChannel<PostIdListPostMessagesTelegramMessages>(
         Channel.CONFLATED

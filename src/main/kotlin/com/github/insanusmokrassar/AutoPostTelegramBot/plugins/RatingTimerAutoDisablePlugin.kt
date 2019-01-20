@@ -8,9 +8,11 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.scheduler.Schedul
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscribe
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscribeChecking
 import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
+import kotlinx.serialization.Serializable
 
 import java.lang.ref.WeakReference
 
+@Serializable
 class RatingTimerAutoDisablePlugin : Plugin {
     override suspend fun onInit(executor: RequestsExecutor, baseConfig: FinalConfig, pluginManager: PluginManager) {
         val ratingPlugin: RatingPlugin = pluginManager.plugins.firstOrNull {
