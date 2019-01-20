@@ -14,6 +14,7 @@ import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
 import kotlinx.coroutines.*
 import kotlinx.serialization.Optional
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
 import java.lang.ref.WeakReference
@@ -23,22 +24,23 @@ private val zeroDateTime: DateTime by lazy {
 }
 
 @Serializable
-data class GarbageCollectorConfig(
+class GarbageCollector(
     @Optional
     val minimalRate: Int = -3,
     @Optional
     private val skipTime: String? = null,
     @Optional
     private val manualCheckTime: String? = null
-) {
+) : Plugin {
+    @Transient
     val skipDateTime: List<Pair<Long, Long>> by lazy {
         skipTime ?.parseDateTimes() ?.let {
-            parsed ->
+                parsed ->
             if (parsed.size > 1) {
                 parsed.asPairs()
             } else {
                 parsed.firstOrNull() ?.let {
-                    firstParsed ->
+                        firstParsed ->
                     listOf(
                         CalculatedDateTime(
                             "",
@@ -55,16 +57,11 @@ data class GarbageCollectorConfig(
         } ?: emptyList()
     }
 
+    @Transient
     val manualCheckDateTimes: List<CalculatedDateTime>? by lazy {
         manualCheckTime ?.parseDateTimes()
     }
-}
 
-@Serializable
-class GarbageCollector(
-    @Optional
-    private val config: GarbageCollectorConfig = GarbageCollectorConfig()
-) : Plugin {
     override suspend fun onInit(
         executor: RequestsExecutor,
         baseConfig: FinalConfig,
@@ -92,7 +89,7 @@ class GarbageCollector(
             } ?: false
         }
 
-        config.manualCheckDateTimes ?.let {
+        manualCheckDateTimes ?.let {
             GlobalScope.launch {
                 while (isActive) {
                     it.executeNearFuture {
@@ -125,12 +122,12 @@ class GarbageCollector(
         baseConfig: FinalConfig,
         now: DateTime = DateTime.now()
     ) {
-        for (period in config.skipDateTime) {
+        for (period in skipDateTime) {
             if (creatingDate.plus(period.second).isAfter(now) && creatingDate.plus(period.first).isBefore(now)) {
                 return
             }
         }
-        if (dataPair.second < config.minimalRate || PostsMessagesTable.getMessagesOfPost(dataPair.first).isEmpty()) {
+        if (dataPair.second < minimalRate || PostsMessagesTable.getMessagesOfPost(dataPair.first).isEmpty()) {
             deletePost(
                 executor,
                 baseConfig.sourceChatId,

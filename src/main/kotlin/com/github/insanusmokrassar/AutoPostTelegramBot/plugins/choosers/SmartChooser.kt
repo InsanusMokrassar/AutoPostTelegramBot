@@ -152,20 +152,16 @@ data class SmartChooserConfigItem (
 }
 
 @Serializable
-data class SmartChooserConfig(
-    val times: List<SmartChooserConfigItem> = emptyList()
-)
-
-@Serializable
 class SmartChooser(
-    private val config: SmartChooserConfig
+    @Optional
+    val times: List<SmartChooserConfigItem> = emptyList()
 ) : RateChooser() {
     init {
-        commonLogger.info("Smart chooser inited: ${config.times.joinToString(separator = "\n") { it.toString() }}")
+        commonLogger.info("Smart chooser inited: ${times.joinToString(separator = "\n") { it.toString() }}")
     }
 
     override fun triggerChoose(): Collection<Int> {
-        val actualItem = config.times.firstOrNull { it.isActual() }
+        val actualItem = times.firstOrNull { it.isActual() }
         return actualItem ?.let {
             postsLikesTable ?.getRateRange(
                 it.minRate,
