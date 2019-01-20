@@ -21,6 +21,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 import java.lang.ref.WeakReference
 
 typealias PostIdListPostMessagesTelegramMessages = Pair<Int, Map<PostMessage, Message>>
@@ -28,16 +29,22 @@ private typealias ChatIdMessageIdPair = Pair<ChatId, MessageIdentifier>
 
 @Serializable
 class PostPublisher : Publisher {
+    @Transient
     val postPublishedChannel = BroadcastChannel<PostIdListPostMessagesTelegramMessages>(
         Channel.CONFLATED
     )
 
+    @Transient
     private var botWR: WeakReference<RequestsExecutor>? = null
 
+    @Transient
     private var sourceChatId: ChatId? = null
+    @Transient
     private var targetChatId: ChatId? = null
+    @Transient
     private var logsChatId: ChatId? = null
 
+    @Transient
     private var publishPostCommand: PublishPost? = null
 
     override suspend fun onInit(
