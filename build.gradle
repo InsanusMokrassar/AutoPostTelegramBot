@@ -15,11 +15,14 @@ buildscript {
     }
 }
 
-apply plugin: 'java-library'
+apply plugin: 'java'
+apply plugin: 'application'
 apply plugin: 'kotlin'
 apply plugin: 'kotlinx-serialization'
 
 apply from: "publish.gradle"
+
+mainClassName="com.github.insanusmokrassar.AutoPostTelegramBot.LaunchKt"
 
 repositories {
     mavenLocal()
