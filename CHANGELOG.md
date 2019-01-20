@@ -216,3 +216,7 @@ Fix of `CalculatedDateTime#asPastFor` - now it will decrease time even if source
 * Add `Iterable<CalculatedDateTime>#nearDateTime`
 * `TimerTriggerStrategy` config now receive time as parameter
 * Now `DatabaseConfig` is independent class which can connect to Database
+
+# 1.0.0
+
+* Rewrite to use new version of library for telegram bot API

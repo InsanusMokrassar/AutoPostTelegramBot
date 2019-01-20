@@ -29,9 +29,9 @@ val realCallbackQueryListener
 val realMediaGroupsListener
     get() = allMediaGroupsListener
 
-val allMessagesListener = BroadcastChannel<Update<Message>>(Channel.UNLIMITED)
-val allCallbackQueryListener = BroadcastChannel<Update<CallbackQuery>>(Channel.UNLIMITED)
-val allMediaGroupsListener = BroadcastChannel<List<Update<Message>>>(Channel.UNLIMITED)
+val allMessagesListener = BroadcastChannel<Update<Message>>(Channel.CONFLATED)
+val allCallbackQueryListener = BroadcastChannel<Update<CallbackQuery>>(Channel.CONFLATED)
+val allMediaGroupsListener = BroadcastChannel<List<Update<Message>>>(Channel.CONFLATED)
 
 val messagesListener = BroadcastChannel<Update<Message>>(Channel.CONFLATED)
 val callbackQueryListener = BroadcastChannel<Update<CallbackQuery>>(Channel.CONFLATED)
