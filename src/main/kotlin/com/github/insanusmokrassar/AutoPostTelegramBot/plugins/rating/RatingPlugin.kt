@@ -11,6 +11,7 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.database.P
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.receivers.*
 import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -18,17 +19,26 @@ import java.lang.ref.WeakReference
 
 @Serializable
 class RatingPlugin : Plugin {
+    @Transient
     private var likeReceiver: LikeReceiver? = null
+    @Transient
     private var dislikeReceiver: DislikeReceiver? = null
+    @Transient
     private var disableReceiver: DisableReceiver? = null
+    @Transient
     private var enableReceiver: EnableReceiver? = null
 
+    @Transient
     private var registeredRefresher: RegisteredRefresher? = null
 
+    @Transient
     private var availableRates: AvailableRates? = null
+    @Transient
     private var mostRated: MostRated? = null
 
+    @Transient
     val postsLikesTable = PostsLikesTable()
+    @Transient
     val postsLikesMessagesTable = PostsLikesMessagesTable(postsLikesTable).also {
         postsLikesTable.postsLikesMessagesTable = it
     }
