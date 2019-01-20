@@ -47,7 +47,7 @@ fun <T> ReceiveChannel<T>.subscribeChecking(
 ) {
     val channel = this
     scope.launch {
-        while (isActive && !channel.isClosedForReceive) {
+        for (data in channel) {
             try {
                 val received = channel.receive()
 
@@ -66,7 +66,6 @@ fun <T> ReceiveChannel<T>.subscribeChecking(
                 break
             }
         }
-        channel.cancel()
     }
 }
 

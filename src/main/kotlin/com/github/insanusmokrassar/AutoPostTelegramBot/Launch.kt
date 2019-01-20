@@ -5,6 +5,8 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.Post
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.Config
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.FinalConfig
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.DefaultPluginManager
+import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.commonLogger
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscribe
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.load
 import com.github.insanusmokrassar.TelegramBotAPI.requests.chat.get.GetChat
 import com.github.insanusmokrassar.TelegramBotAPI.types.CallbackQuery.CallbackQuery
@@ -51,8 +53,8 @@ fun main(args: Array<String>) {
     }
 
     runBlocking {
-        bot.execute(GetChat(config.sourceChatId)).extractChat()
-        bot.execute(GetChat(config.targetChatId)).extractChat()
+        commonLogger.info("Source chat: ${bot.execute(GetChat(config.sourceChatId)).extractChat()}")
+        commonLogger.info("Target chat: ${bot.execute(GetChat(config.targetChatId)).extractChat()}")
 
         val pluginManager = DefaultPluginManager(
             config.pluginsConfigs
@@ -64,79 +66,69 @@ fun main(args: Array<String>) {
         )
 
         coroutineScope {
-            allMessagesListener.openSubscription().also {
-                launch {
-                    for (message in it) {
-                        if (message.data.chat.id == config.sourceChatId) {
-                            messagesListener.send(message)
+            allMessagesListener.subscribe(
+                scope = this
+            ) {
+                if (it.data.chat.id == config.sourceChatId) {
+                    messagesListener.send(it)
+                }
+            }
+
+            var mediaGroudId: MediaGroupIdentifier? = null
+            val mediaGroup: MutableList<Update<Message>> = mutableListOf()
+            suspend fun pushData() {
+                allMediaGroupsListener.send(
+                    ArrayList(mediaGroup)
+                )
+                mediaGroup.clear()
+                mediaGroudId = null
+            }
+            allMessagesListener.subscribe(
+                scope = this
+            ) {
+                val data = it.data
+                when (data) {
+                    is MediaGroupMessage -> {
+                        if (data.mediaGroupId != mediaGroudId) {
+                            pushData()
+                            mediaGroudId = data.mediaGroupId
                         }
+                        mediaGroup.add(it)
+                    }
+                    else -> if (mediaGroup.isNotEmpty()) {
+                        pushData()
                     }
                 }
             }
 
-            allMessagesListener.openSubscription().also {
-                launch {
-                    var mediaGroudId: MediaGroupIdentifier? = null
-                    val mediaGroup: MutableList<Update<Message>> = mutableListOf()
-                    suspend fun pushData() {
-                        allMediaGroupsListener.send(
-                            ArrayList(mediaGroup)
-                        )
-                        mediaGroup.clear()
-                        mediaGroudId = null
+            allCallbackQueryListener.subscribe(
+                scope = this
+            ) {
+                (it.data as? MessageDataCallbackQuery) ?.also { query ->
+                    if (query.message.chat.id == config.sourceChatId) {
+                        callbackQueryListener.send(it)
                     }
-                    for (message in it) {
-                        val data = message.data
-                        when (data) {
-                            is MediaGroupMessage -> {
-                                if (data.mediaGroupId != mediaGroudId) {
-                                    pushData()
-                                    mediaGroudId = data.mediaGroupId
-                                }
-                                mediaGroup.add(message)
-                            }
-                            else -> if (mediaGroup.isNotEmpty()) {
-                                pushData()
-                            }
-                        }
-                    }
+                }
+            }
+            allMediaGroupsListener.subscribe { mediaGroup ->
+                val mediaGroupChatId = mediaGroup.firstOrNull() ?.data ?.chat ?.id ?: return@subscribe
+                if (mediaGroupChatId == config.sourceChatId) {
+                    mediaGroupsListener.send(mediaGroup)
                 }
             }
 
-            allCallbackQueryListener.openSubscription().also {
-                launch {
-                    for (queryUpdate in it) {
-                        (queryUpdate.data as? MessageDataCallbackQuery) ?.also {
-                            if (it.message.chat.id == config.sourceChatId) {
-                                callbackQueryListener.send(queryUpdate)
-                            }
-                        }
-                    }
-                }
-            }
-            allMediaGroupsListener.openSubscription().also {
-                launch {
-                    for (mediaGroup in it) {
-                        val mediaGroupChatId = mediaGroup.firstOrNull() ?.data ?.chat ?.id ?: continue
-                        if (mediaGroupChatId == config.sourceChatId) {
-                            mediaGroupsListener.send(mediaGroup)
-                        }
-                    }
-                }
-            }
+            bot.startGettingOfUpdates(
+                messageCallback = {
+                    allMessagesListener.send(this)
+                },
+                channelPostCallback = {
+                    allMessagesListener.send(this)
+                },
+                callbackQueryCallback = {
+                    allCallbackQueryListener.send(this)
+                },
+                scope = this
+            )
         }
-
     }
-
-    bot.startGettingOfUpdates(
-        messageCallback = {
-            allMessagesListener.send(this)
-        },
-        channelPostCallback = {
-            allMessagesListener.send(this)
-        },
-        callbackQueryCallback = {
-            allCallbackQueryListener.send(this)
-        }
-    )
 }
