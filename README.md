@@ -276,14 +276,14 @@
     \- предоставляет возможность осуществлять автоматическую публикацию раз в строго определённое время. Для
     работы требует подключенные `Chooser` и `Publisher` плагины. В момент триггера спросит у `Chooser`
     посты для публикации и передаст их `Publisher`. Как параметр принимает `time` принимает стандартный формат времени. Подключение:
-        ```json
+    ```json
         [
           "com.github.insanusmokrassar.AutoPostTelegramBot.plugins.triggers.TimerTriggerStrategy",
           {
             "time": "00:30-00:30 01:00"
           }
         ]
-        ```
+    ```
 * [SchedulerPlugin](src/main/kotlin/com/github/insanusmokrassar/AutoPostTelegramBot/plugins/scheduler/SchedulerPlugin.kt)
     \- позволяет ставить посты на публикацию в определенное время (в том числе на конкретную дату). Добавляет
     команды:
@@ -295,14 +295,14 @@
     * `/disableSchedulePublish` - исключает из публикации по таймеру пост
     
     Подключение:
-        ```json
+    ```json
         [
           "com.github.insanusmokrassar.AutoPostTelegramBot.plugins.scheduler.SchedulerPlugin"
         ]
-        ```
+    ```
 * [GarbageCollector](src/main/kotlin/com/github/insanusmokrassar/AutoPostTelegramBot/plugins/GarbageCollector.kt) - как 
     следует из названия, собирает мусор. Если точнее, удаляет записи с рейтингом ниже установленного минимума. Подключение:
-        ```json
+    ```json
         [
           "com.github.insanusmokrassar.AutoPostTelegramBot.plugins.GarbageCollector",
           {
@@ -311,7 +311,7 @@
             "manualCheckTime": "00:00-00:00 03:00"
           }
         ]
-        ```
+    ```
     Отсутствие `manualCheckTime` в настройках отключит проверку по времени и будет реагировать
     только на события изменений в плагине `RatingPlugin`. `skipTime` позволит включить режим неприкосновенности
     на время с момента поста - `GarbageCollector` будет игнорировать пост пока пост попадает в промежутки времени этого
@@ -321,14 +321,14 @@
 инициализирует `LogHandler` через вызов
 [initHandler](src/main/kotlin/com/github/insanusmokrassar/AutoPostTelegramBot/utils/BotLogger.kt#97) в момент
 инициализации плагина. Подключение:
-        ```json
+    ```json
         [
           "com.github.insanusmokrassar.AutoPostTelegramBot.plugins.BotLogger",
           {
             "config": // опциональное поле, заполняемое как commonBot в корне конфига
           }
         ]
-        ```
+    ```
 
 ## Секции конфигурации
 
