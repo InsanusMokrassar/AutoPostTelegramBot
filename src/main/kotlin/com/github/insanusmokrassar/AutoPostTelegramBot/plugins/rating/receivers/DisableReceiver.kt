@@ -16,6 +16,7 @@ import com.github.insanusmokrassar.TelegramBotAPI.types.ParseMode.MarkdownParseM
 import com.github.insanusmokrassar.TelegramBotAPI.types.UserId
 import com.github.insanusmokrassar.TelegramBotAPI.types.message.abstracts.*
 import com.github.insanusmokrassar.TelegramBotAPI.types.message.content.TextContent
+import com.github.insanusmokrassar.TelegramBotAPI.types.update.CallbackQueryUpdate
 import com.github.insanusmokrassar.TelegramBotAPI.types.update.abstracts.Update
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
@@ -108,7 +109,7 @@ class DisableReceiver(
         }
     }
 
-    override suspend fun invoke(update: Update<CallbackQuery>) {
+    override suspend fun invoke(update: CallbackQueryUpdate) {
         val query = update.data as? DataCallbackQuery ?: return
         extractDisableInline(query.data)?.let {
             val userId = query.user.id

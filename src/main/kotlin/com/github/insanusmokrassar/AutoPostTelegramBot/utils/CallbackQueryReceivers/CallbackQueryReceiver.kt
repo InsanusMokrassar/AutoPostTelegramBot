@@ -5,6 +5,7 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.utils.NewDefaultCoroutine
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscribe
 import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
 import com.github.insanusmokrassar.TelegramBotAPI.types.CallbackQuery.CallbackQuery
+import com.github.insanusmokrassar.TelegramBotAPI.types.update.CallbackQueryUpdate
 import com.github.insanusmokrassar.TelegramBotAPI.types.update.abstracts.Update
 import java.lang.ref.WeakReference
 
@@ -22,5 +23,5 @@ abstract class CallbackQueryReceiver(
         )
     }
 
-    abstract suspend fun invoke(update: Update<CallbackQuery>)
+    abstract suspend fun invoke(update: CallbackQueryUpdate)
 }

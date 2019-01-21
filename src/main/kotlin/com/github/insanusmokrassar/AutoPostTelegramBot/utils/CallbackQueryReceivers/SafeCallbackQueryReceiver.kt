@@ -3,7 +3,7 @@ package com.github.insanusmokrassar.AutoPostTelegramBot.utils.CallbackQueryRecei
 import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
 import com.github.insanusmokrassar.TelegramBotAPI.types.CallbackQuery.*
 import com.github.insanusmokrassar.TelegramBotAPI.types.ChatIdentifier
-import com.github.insanusmokrassar.TelegramBotAPI.types.update.abstracts.Update
+import com.github.insanusmokrassar.TelegramBotAPI.types.update.CallbackQueryUpdate
 
 abstract class SafeCallbackQueryReceiver(
     executor: RequestsExecutor,
@@ -11,7 +11,7 @@ abstract class SafeCallbackQueryReceiver(
 ) : CallbackQueryReceiver(
     executor
 ) {
-    override suspend fun invoke(update: Update<CallbackQuery>) {
+    override suspend fun invoke(update: CallbackQueryUpdate) {
         val query = update.data as? MessageDataCallbackQuery ?: return
         if (query.message.chat.id == checkChatId) {
             invoke(query)

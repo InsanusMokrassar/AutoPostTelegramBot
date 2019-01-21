@@ -17,6 +17,7 @@ import com.github.insanusmokrassar.TelegramBotAPI.types.ChatId
 import com.github.insanusmokrassar.TelegramBotAPI.types.ParseMode.MarkdownParseMode
 import com.github.insanusmokrassar.TelegramBotAPI.types.message.abstracts.CommonMessage
 import com.github.insanusmokrassar.TelegramBotAPI.types.message.content.TextContent
+import com.github.insanusmokrassar.TelegramBotAPI.types.update.CallbackQueryUpdate
 import com.github.insanusmokrassar.TelegramBotAPI.types.update.abstracts.Update
 import com.github.insanusmokrassar.TelegramBotAPI.utils.extensions.executeAsync
 import kotlinx.serialization.Serializable
@@ -101,7 +102,7 @@ class EnableReceiver(
         }
     }
 
-    override suspend fun invoke(update: Update<CallbackQuery>) {
+    override suspend fun invoke(update: CallbackQueryUpdate) {
         val query = update.data as? DataCallbackQuery ?: return
         extractDisableInline(query.data)?.let {
             awaitApprove[query.user.id] = it

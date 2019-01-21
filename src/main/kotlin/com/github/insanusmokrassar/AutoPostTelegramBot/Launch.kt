@@ -13,6 +13,8 @@ import com.github.insanusmokrassar.TelegramBotAPI.types.CallbackQuery.CallbackQu
 import com.github.insanusmokrassar.TelegramBotAPI.types.CallbackQuery.MessageDataCallbackQuery
 import com.github.insanusmokrassar.TelegramBotAPI.types.MediaGroupIdentifier
 import com.github.insanusmokrassar.TelegramBotAPI.types.message.abstracts.*
+import com.github.insanusmokrassar.TelegramBotAPI.types.update.CallbackQueryUpdate
+import com.github.insanusmokrassar.TelegramBotAPI.types.update.abstracts.BaseMessageUpdate
 import com.github.insanusmokrassar.TelegramBotAPI.types.update.abstracts.Update
 import com.github.insanusmokrassar.TelegramBotAPI.utils.extensions.startGettingOfUpdates
 import kotlinx.coroutines.*
@@ -31,13 +33,13 @@ val realCallbackQueryListener
 val realMediaGroupsListener
     get() = allMediaGroupsListener
 
-val allMessagesListener = BroadcastChannel<Update<Message>>(Channel.CONFLATED)
-val allCallbackQueryListener = BroadcastChannel<Update<CallbackQuery>>(Channel.CONFLATED)
-val allMediaGroupsListener = BroadcastChannel<List<Update<Message>>>(Channel.CONFLATED)
+val allMessagesListener = BroadcastChannel<BaseMessageUpdate>(Channel.CONFLATED)
+val allCallbackQueryListener = BroadcastChannel<CallbackQueryUpdate>(Channel.CONFLATED)
+val allMediaGroupsListener = BroadcastChannel<List<BaseMessageUpdate>>(Channel.CONFLATED)
 
-val messagesListener = BroadcastChannel<Update<Message>>(Channel.CONFLATED)
-val callbackQueryListener = BroadcastChannel<Update<CallbackQuery>>(Channel.CONFLATED)
-val mediaGroupsListener = BroadcastChannel<List<Update<Message>>>(Channel.CONFLATED)
+val messagesListener = BroadcastChannel<BaseMessageUpdate>(Channel.CONFLATED)
+val callbackQueryListener = BroadcastChannel<CallbackQueryUpdate>(Channel.CONFLATED)
+val mediaGroupsListener = BroadcastChannel<List<BaseMessageUpdate>>(Channel.CONFLATED)
 
 fun main(args: Array<String>) {
     val config: FinalConfig = load(args[0], Config.serializer()).finalConfig
@@ -74,36 +76,6 @@ fun main(args: Array<String>) {
                 }
             }
 
-            var mediaGroudId: MediaGroupIdentifier? = null
-            val mediaGroup: MutableList<Update<Message>> = mutableListOf()
-            suspend fun pushData() {
-                allMediaGroupsListener.send(
-                    ArrayList(mediaGroup)
-                )
-                mediaGroup.clear()
-                mediaGroudId = null
-            }
-            allMessagesListener.subscribe(
-                scope = this
-            ) {
-                val data = it.data
-                when (data) {
-                    is MediaGroupMessage -> {
-                        when (mediaGroudId) {
-                            null,
-                            data.mediaGroupId -> mediaGroup.add(it)
-                            else -> {
-                                pushData()
-                                mediaGroup.add(it)
-                            }
-                        }
-                    }
-                    else -> if (mediaGroup.isNotEmpty()) {
-                        pushData()
-                    }
-                }
-            }
-
             allCallbackQueryListener.subscribe(
                 scope = this
             ) {
@@ -124,13 +96,16 @@ fun main(args: Array<String>) {
 
             bot.startGettingOfUpdates(
                 messageCallback = {
-                    allMessagesListener.send(this)
+                    allMessagesListener.send(it)
+                },
+                mediaGroupCallback = {
+                    allMediaGroupsListener.send(it)
                 },
                 channelPostCallback = {
-                    allMessagesListener.send(this)
+                    allMessagesListener.send(it)
                 },
                 callbackQueryCallback = {
-                    allCallbackQueryListener.send(this)
+                    allCallbackQueryListener.send(it)
                 },
                 scope = this
             )
