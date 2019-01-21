@@ -94,8 +94,8 @@ class PostPublisher : Publisher {
                     try {
                         executor.execute(
                             ForwardMessage(
-                                logsChatId,
                                 sourceChatId,
+                                logsChatId,
                                 message.messageId,
                                 disableNotification = true
                             )
@@ -124,8 +124,8 @@ class PostPublisher : Publisher {
                     try {
                         executor.execute(
                             ForwardMessage(
-                                logsChatId,
                                 message.chat.id,
+                                logsChatId,
                                 message.messageId
                             )
                         )
