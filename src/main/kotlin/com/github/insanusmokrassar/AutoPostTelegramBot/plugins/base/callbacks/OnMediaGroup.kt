@@ -37,22 +37,21 @@ class OnMediaGroup(
     ) {
         val first = messages.first()
         if (first.chat.id == sourceChatId) {
-            when(first) {
-                is FromUserMessage -> {
-                    val id = first.user.id
-                    usersTransactions[id] ?.also {
-                        messages.forEach {
-                                message ->
-                            it.addMessageId(PostMessage(message))
-                        }
-                    } ?:also {
-                        PostTransaction().use {
-                                transaction ->
-                            messages.forEach {
-                                    message ->
-                                transaction.addMessageId(PostMessage(message))
-                            }
-                        }
+            val id = when(first) {
+                is FromUserMessage -> first.user.id
+                else -> first.chat.id
+            }
+            usersTransactions[id] ?.also {
+                messages.forEach {
+                        message ->
+                    it.addMessageId(PostMessage(message))
+                }
+            } ?:also {
+                PostTransaction().use {
+                        transaction ->
+                    messages.forEach {
+                            message ->
+                        transaction.addMessageId(PostMessage(message))
                     }
                 }
             }
