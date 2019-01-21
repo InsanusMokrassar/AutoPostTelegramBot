@@ -1,24 +1,30 @@
 # Auto Post Telegram Bot
 
-[![Download](https://api.bintray.com/packages/insanusmokrassar/StandardRepository/AutoPostTelegramBot/images/download.svg)](https://bintray.com/insanusmokrassar/StandardRepository/AutoPostTelegramBot/_latestVersion) [![Build Status](https://jenkins.insanusmokrassar.com/job/AutoPostTelegramBot_master/badge/icon)](https://jenkins.insanusmokrassar.com/job/AutoPostTelegramBot_master/)
+[![Download](https://api.bintray.com/packages/insanusmokrassar/StandardRepository/AutoPostTelegramBot/images/download.svg)](https://bintray.com/insanusmokrassar/StandardRepository/AutoPostTelegramBot/_latestVersion) [![Build Status](https://jenkins.insanusmokrassar.space/job/AutoPostTelegramBot_master/badge/icon)](https://jenkins.insanusmokrassar.space/job/AutoPostTelegramBot_master/)
 
 [![Get automatic notifications about new "AutoPostTelegramBot" versions](https://www.bintray.com/docs/images/bintray_badge_color.png)](https://bintray.com/insanusmokrassar/StandardRepository/AutoPostTelegramBot?source=watch)
 
 ## Как начать использовать?
 
-1. Скачайте `.jar`
-    ([Maven](http://mvnrepository.com/artifact/com.github.insanusmokrassar/AutoPostTelegramBot)) или соберите проект.
-    Чтобы собрать проект:
-    1. Убедитесь, что у вас установлена `Java` (>= 1.7) и `Maven`
-    1. Склонируйте проект с [Github](https://github.com/InsanusMokrassar/AutoPostTelegramBot)
-    2. В каталоге с проектом:
-        1. Собираем проект с помощью команды для Maven `mvn clean package`
-        2. Копируем файл из пути `$PROJECT_DIR/target/AutoPostTelegramBot-$version-jar-with-dependencies.jar` туда, где
-        должен лежать бот
-3. Настройте проект через написание конфига (шаблон конфигурации есть в корне 
-[проекта на Github](https://github.com/InsanusMokrassar/AutoPostTelegramBot))
-4. Запустите командой `java -jar ./AutoPostTelegramBot-$version-jar-with-dependencies.jar
-%ПУТЬ ДО КОНФИГУРАЦИОННОГО ФАЙЛА%`
+Если необходимо самостоятельно собрать проект, можно воспользоваться простой инструкцией:
+
+1. Скачать проект с [Github](https://github.com/InsanusMokrassar/AutoPostTelegramBot/edit/master/README.md)
+2. Сделать `./gradlew` исполняемым (`chmod 455 ./gradlew` для `*nix`)
+3. Выполнить `./gradlew build`
+
+В зависимости от дистрибутива и целей, инструкция запуска будет несколько отличаться:
+
+* В случае самостоятельной сборки (а также в случае скачивания архива с [jenkins](https://jenkins.insanusmokrassar.space/job/AutoPostTelegramBot_master/) страницы)
+    1. Разархивировать в директорию, где будет находиться бот
+    2. Найти исполнительный файл в папке `$WORK_DIRECTORY/AutoPostTelegramBot-$version/bin/` (для `Windows` файл имеет расширение `.bat`)
+    3. Запустите из консоли соответствующий файл, передав первым аргументом путь до JSON конфига
+* В случае использования проекта как библиотеки желательно указать как главный класс `com.github.insanusmokrassar.AutoPostTelegramBot.LaunchKt`
+* В случае запуска в Intellij Idea рекомендуется
+    * Использовать шаблон `Jar Application`
+    * Как аргумент устанавливать путь до JSON конфига
+    * Путь до `Jar` будет выглядеть как `$PROJECT_DIR/build/libs/$FILENAME.jar`
+    * Перед сборкой как запускать задачу gradle `./gradlew clean build`
+
 5. Profit
 
 ## Возможности
@@ -52,8 +58,11 @@
 
 #### Плагины
 
-* Любой плагин наследуется от класса
+Любой плагин наследуется от класса
 [Plugin](src/main/kotlin/com/github/insanusmokrassar/AutoPostTelegramBot/base/plugins/Plugin.kt)
+
+На данный момент большая часть базовых плагинов включена в пакет распространения, но в планах их
+вынести в отдельные проекты. Кроме того, вы можете не включать в конфигурацию ни один из плагинов.
 
 #### Остальное
 
@@ -113,9 +122,10 @@
 * [BasePlugin](src/main/kotlin/com/github/insanusmokrassar/AutoPostTelegramBot/plugins/base/BasePlugin.kt)
     \- предоставляет доступ к основному функционалу и в большинстве случаев обязателен к подключению:
     ```json
-    {
-      "classname": "com.github.insanusmokrassar.AutoPostTelegramBot.plugins.base.BasePlugin"
-    }
+    [
+      "com.github.insanusmokrassar.AutoPostTelegramBot.plugins.base.BasePlugin",
+      {}
+    ]
     ```
     Включает следующий функционал:
     * `/startPost` используется в паре с `/fixPost`, сообщения между ними будут прикреплены к одному посту.
@@ -139,9 +149,10 @@
     без необходимости непосредственной пересылки (`forward`), проблемой которой является упоминание источника
     пересылки. Подключение:
     ```json
-        {
-          "classname": "com.github.insanusmokrassar.AutoPostTelegramBot.plugins.forwarders.ForwardersPlugin"
-        }
+    [
+      "com.github.insanusmokrassar.AutoPostTelegramBot.plugins.forwarders.ForwardersPlugin",
+      {}
+    ]
     ```
     Поддержка форматов:
         * Изображения
@@ -159,9 +170,10 @@
     рекомендуемый для имплементации в случае, если вы хотите создать свою реализацию публикатора.
     Подключение плагина:
     ```json
-      {
-        "classname": "com.github.insanusmokrassar.AutoPostTelegramBot.plugins.publishers.PostPublisher"
-      }
+    {
+        "com.github.insanusmokrassar.AutoPostTelegramBot.plugins.publishers.PostPublisher",
+        {}
+    }
     ```
     Предоставляет:
     * `/publishPost` - команда, используемая для немедленной публикации пост(а)(ов). Может использоваться в
@@ -176,9 +188,10 @@
     \- плагин для подключения рейтингов. Позволяет команде голосовать за/против определенные посты и на основании
     голосов выбирать посты для публикации. Подключение:
     ```json
-    {
-      "classname": "com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.RatingPlugin"
-    }
+    [
+      "com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.RatingPlugin",
+      {}
+    ]
     ```
     Подключение предоставляет:
     * Возможность командой оценивать посты
@@ -198,25 +211,25 @@
         \- наиболее гибкий из представленных по-умолчанию `Chooser` реализаций. Публикует в разное время
         разные посты в зависимости от настроек. Подключение:
         ```json
-            {
-              "classname": "com.github.insanusmokrassar.AutoPostTelegramBot.plugins.choosers.SmartChooser",
-              "params": {
+        [
+          "com.github.insanusmokrassar.AutoPostTelegramBot.plugins.choosers.SmartChooser",
+          {
+            "times": [
+              {
+                "minRate": -2,
+                "maxRate": 1,
+                "sort": "ascend|descend|random",
+                "time": "16:00-17:00",
                 "times": [
-                  {
-                    "minRate": -2,
-                    "maxRate": 1,
-                    "sort": "ascend|descend|random",
-                    "time": "16:00-17:00",
-                    "times": [
-                        "16:00-17:00",
-                        "20:00-21:00"
-                    ],
-                    "timeOffset": "+03:00",
-                    "minAge": 86400000
-                  }
-                ]
+                    "16:00-17:00",
+                    "20:00-21:00"
+                ],
+                "timeOffset": "+03:00",
+                "minAge": 86400000
               }
-            }
+            ]
+          }
+        ]
         ```
         имеет следующую структуру для параметра `params`:
         * `times` - список временнЫх настроек для выборщика, каждый объект
@@ -238,36 +251,39 @@
     * [MostRated](src/main/kotlin/com/github/insanusmokrassar/AutoPostTelegramBot/plugins/choosers/MostRatedChooser.kt)
         \- выбирает всегда самые старые из самых популярных постов. Подключение:
         ```json
-        {
-          "classname": "com.github.insanusmokrassar.AutoPostTelegramBot.plugins.choosers.MostRatedChooser"
-        }
+        [
+          "com.github.insanusmokrassar.AutoPostTelegramBot.plugins.choosers.MostRatedChooser",
+          {}
+        ]
         ```
     * [MostRatedRandomly](src/main/kotlin/com/github/insanusmokrassar/AutoPostTelegramBot/plugins/choosers/MostRatedRandomChooser.kt)
         \- выбирает случайные из самых популярных постов. Подключение:
         ```json
-        {
-          "classname": "com.github.insanusmokrassar.AutoPostTelegramBot.plugins.choosers.MostRatedRandomChooser"
-        }
+        [
+          "com.github.insanusmokrassar.AutoPostTelegramBot.plugins.choosers.MostRatedRandomChooser",
+          {}
+        ]
         ```
     * [None](src/main/kotlin/com/github/insanusmokrassar/AutoPostTelegramBot/plugins/choosers/NoneChooser.kt)
         \- всегда возвращает пустой список постов. Подключение:
         ```json
-        {
-          "classname": "com.github.insanusmokrassar.AutoPostTelegramBot.plugins.choosers.NoneChooser"
-        }
+        [
+          "com.github.insanusmokrassar.AutoPostTelegramBot.plugins.choosers.NoneChooser",
+          {}
+        ]
         ```
 * [TimerTrigger](src/main/kotlin/com/github/insanusmokrassar/AutoPostTelegramBot/plugins/triggers/TimerTriggerStrategy.kt)
     \- предоставляет возможность осуществлять автоматическую публикацию раз в строго определённое время. Для
     работы требует подключенные `Chooser` и `Publisher` плагины. В момент триггера спросит у `Chooser`
     посты для публикации и передаст их `Publisher`. Как параметр принимает `time` принимает стандартный формат времени. Подключение:
-    ```json
-        {
-          "classname": "com.github.insanusmokrassar.AutoPostTelegramBot.plugins.triggers.TimerTriggerStrategy",
-          "params": {
+        ```json
+        [
+          "com.github.insanusmokrassar.AutoPostTelegramBot.plugins.triggers.TimerTriggerStrategy",
+          {
             "time": "00:30-00:30 01:00"
           }
-        }
-    ```
+        ]
+        ```
 * [SchedulerPlugin](src/main/kotlin/com/github/insanusmokrassar/AutoPostTelegramBot/plugins/scheduler/SchedulerPlugin.kt)
     \- позволяет ставить посты на публикацию в определенное время (в том числе на конкретную дату). Добавляет
     команды:
@@ -279,23 +295,23 @@
     * `/disableSchedulePublish` - исключает из публикации по таймеру пост
     
     Подключение:
-    ```json
-        {
-          "classname": "com.github.insanusmokrassar.AutoPostTelegramBot.plugins.scheduler.SchedulerPlugin"
-        }
-    ```
+        ```json
+        [
+          "com.github.insanusmokrassar.AutoPostTelegramBot.plugins.scheduler.SchedulerPlugin"
+        ]
+        ```
 * [GarbageCollector](src/main/kotlin/com/github/insanusmokrassar/AutoPostTelegramBot/plugins/GarbageCollector.kt) - как 
     следует из названия, собирает мусор. Если точнее, удаляет записи с рейтингом ниже установленного минимума. Подключение:
-    ```json
-        {
-          "classname": "com.github.insanusmokrassar.AutoPostTelegramBot.plugins.GarbageCollector",
-          "params": {
+        ```json
+        [
+          "com.github.insanusmokrassar.AutoPostTelegramBot.plugins.GarbageCollector",
+          {
             "minimalRate": -2,
             "skipTime": "23:59",
             "manualCheckTime": "00:00-00:00 03:00"
           }
-        }
-    ```
+        ]
+        ```
     Отсутствие `manualCheckTime` в настройках отключит проверку по времени и будет реагировать
     только на события изменений в плагине `RatingPlugin`. `skipTime` позволит включить режим неприкосновенности
     на время с момента поста - `GarbageCollector` будет игнорировать пост пока пост попадает в промежутки времени этого
@@ -305,14 +321,14 @@
 инициализирует `LogHandler` через вызов
 [initHandler](src/main/kotlin/com/github/insanusmokrassar/AutoPostTelegramBot/utils/BotLogger.kt#97) в момент
 инициализации плагина. Подключение:
-    ```json
-        {
-          "classname": "com.github.insanusmokrassar.AutoPostTelegramBot.plugins.BotLogger",
-          "params": {
-            // опциональное поле, заполняемое как commonBot в корне конфига
+        ```json
+        [
+          "com.github.insanusmokrassar.AutoPostTelegramBot.plugins.BotLogger",
+          {
+            "config": // опциональное поле, заполняемое как commonBot в корне конфига
           }
-        }
-    ```
+        ]
+        ```
 
 ## Секции конфигурации
 
@@ -335,13 +351,7 @@
         * `connectTimeout` - задержка для подключения, по-умолчанию: `0` (нет ограничения)
         * `writeTimeout` - задержка для отправки данных, по-умолчанию: `0` (нет ограничения)
         * `readTimeout` - задержка для чтения данных, по-умолчанию: `0` (нет ограничения)
-        * `debug` - настройка для вывода отладочной информации по запросам бота
-    * `regen` - настройка восстановления возможности отправки сообщений ботом.
-    Настройка опциональна и даёт возможность ограничивать число запросов.
-        * `max` - максимальное число запросов в моменты всплеска
-        * `delay` - задержка между регенерацией `max` числа запросок
-        * `regen` - число запросов, регенерируемое за раз
-    контроля действий бота
+        * `debug` - настройка для вывода отладочной информации по запросам бота контроля действий бота
 * `databaseConfig` - объект настройки базы данных. Включает следующие поля:
     * `username` - имя пользователя для доступа к базе данных
     * `password` - пароль для доступа к базе данных
