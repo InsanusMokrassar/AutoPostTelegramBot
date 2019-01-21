@@ -12,12 +12,14 @@ import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
 import com.github.insanusmokrassar.TelegramBotAPI.requests.DeleteMessage
 import com.github.insanusmokrassar.TelegramBotAPI.requests.ForwardMessage
 import com.github.insanusmokrassar.TelegramBotAPI.requests.send.SendMessage
-import com.github.insanusmokrassar.TelegramBotAPI.types.ChatId
-import com.github.insanusmokrassar.TelegramBotAPI.types.MessageIdentifier
-import com.github.insanusmokrassar.TelegramBotAPI.types.message.abstracts.ContentMessage
-import com.github.insanusmokrassar.TelegramBotAPI.types.message.abstracts.Message
+import com.github.insanusmokrassar.TelegramBotAPI.requests.send.media.SendMediaGroup
+import com.github.insanusmokrassar.TelegramBotAPI.types.*
+import com.github.insanusmokrassar.TelegramBotAPI.types.files.biggest
+import com.github.insanusmokrassar.TelegramBotAPI.types.message.abstracts.*
+import com.github.insanusmokrassar.TelegramBotAPI.types.message.content.abstracts.MediaGroupContent
+import com.github.insanusmokrassar.TelegramBotAPI.types.message.content.media.PhotoContent
+import com.github.insanusmokrassar.TelegramBotAPI.types.message.content.media.VideoContent
 import com.github.insanusmokrassar.TelegramBotAPI.utils.extensions.executeAsync
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.serialization.Serializable
@@ -89,8 +91,7 @@ class PostPublisher : Publisher {
                     PostsTable.removePost(postId)
                     return
                 }
-                it.forEach {
-                    message ->
+                it.forEach { message ->
                     try {
                         executor.execute(
                             ForwardMessage(
@@ -111,16 +112,40 @@ class PostPublisher : Publisher {
                 }
             }
 
-            messageToPost.mapNotNull {
-                (it.message as? ContentMessage<*>) ?.content ?.createResend(
-                    targetChatId
-                ) ?.let { request ->
-                    it to request
+            val responses = mutableListOf<Pair<PostMessage, Message>>()
+
+            var mediaGroup: MutableList<PostMessage>? = null
+
+            messageToPost.forEach { postMessage -> //TODO:: REFACTOR
+                mediaGroup ?.let { currentMediaGroup ->
+                    if (postMessage.mediaGroupId != currentMediaGroup.first().mediaGroupId) {
+                        mediaGroup = null
+                        responses += sendMediaGroup(executor, targetChatId, currentMediaGroup)
+                        null
+                    } else {
+                        currentMediaGroup.add(postMessage)
+                    }
+                } ?: also {
+                    if (postMessage.mediaGroupId != null) {
+                        mediaGroup = mutableListOf<PostMessage>().apply {
+                            add(postMessage)
+                        }
+                    } else {
+                        (postMessage.message as? ContentMessage<*>)?.content?.createResend(
+                            targetChatId
+                        ) ?.let { request ->
+                            responses.add(postMessage to executor.execute(request).asMessage)
+                        }
+                    }
                 }
-            }.map {
-                it.first to executor.execute(it.second).asMessage
-            }.also {
-                it.forEach { (postMessage, message) ->
+            }
+
+            mediaGroup ?.also {
+                responses += sendMediaGroup(executor, targetChatId, it)
+            }
+
+            responses.also {
+                it.forEach { (_, message) ->
                     try {
                         executor.execute(
                             ForwardMessage(
@@ -164,6 +189,39 @@ class PostPublisher : Publisher {
                         it.second
                     )
                 )
+            }
+        }
+    }
+
+    private suspend fun sendMediaGroup(
+        executor: RequestsExecutor,
+        targetChatId: ChatIdentifier,
+        mediaGroup: List<PostMessage>
+    ): List<Pair<PostMessage, Message>> {
+        val media = mediaGroup.mapNotNull {
+            ((it.message as? ContentMessage<*>) ?.content as? MediaGroupContent) ?.toMediaGroupMemberInputMedia() ?.let { media ->
+                it to media
+            }
+        }.toMap()
+        return executor.execute(
+            SendMediaGroup(
+                targetChatId,
+                media.values.toList()
+            )
+        ).mapNotNull {
+            it.asMessage as? MediaGroupMessage
+        }.mapNotNull {
+            val content = it.content
+            when (content) {
+                is PhotoContent -> media.keys.firstOrNull { postMessage ->
+                    media[postMessage] ?.file == content.media.biggest() ?.fileId
+                }
+                is VideoContent -> media.keys.firstOrNull { postMessage ->
+                    media[postMessage] ?.file == content.media.fileId
+                }
+                else -> null
+            } ?.let { postMessage ->
+                postMessage to it
             }
         }
     }
