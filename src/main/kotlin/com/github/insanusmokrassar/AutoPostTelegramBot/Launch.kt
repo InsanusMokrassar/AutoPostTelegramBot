@@ -110,7 +110,9 @@ fun main(args: Array<String>) {
                     }
                 }
             }
-            allMediaGroupsListener.subscribe { mediaGroup ->
+            allMediaGroupsListener.subscribe(
+                scope = this
+            ) { mediaGroup ->
                 val mediaGroupChatId = mediaGroup.firstOrNull() ?.data ?.chat ?.id ?: return@subscribe
                 if (mediaGroupChatId == config.sourceChatId) {
                     mediaGroupsListener.send(mediaGroup)

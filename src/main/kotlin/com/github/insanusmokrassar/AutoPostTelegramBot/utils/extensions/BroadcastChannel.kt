@@ -49,11 +49,9 @@ fun <T> ReceiveChannel<T>.subscribeChecking(
     scope.launch {
         for (data in channel) {
             try {
-                val received = channel.receive()
-
                 launch {
                     try {
-                        if (!by(received)) {
+                        if (!by(data)) {
                             channel.cancel()
                         }
                     } catch (e: Throwable) {
