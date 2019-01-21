@@ -89,11 +89,14 @@ fun main(args: Array<String>) {
                 val data = it.data
                 when (data) {
                     is MediaGroupMessage -> {
-                        if (data.mediaGroupId != mediaGroudId) {
-                            pushData()
-                            mediaGroudId = data.mediaGroupId
+                        when (mediaGroudId) {
+                            null,
+                            data.mediaGroupId -> mediaGroup.add(it)
+                            else -> {
+                                pushData()
+                                mediaGroup.add(it)
+                            }
                         }
-                        mediaGroup.add(it)
                     }
                     else -> if (mediaGroup.isNotEmpty()) {
                         pushData()
