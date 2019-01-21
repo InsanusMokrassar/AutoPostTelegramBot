@@ -115,13 +115,13 @@ internal fun refreshRegisteredMessage(
     postRating: Int = postsLikesTable.getPostRating(postId),
     username: String? = null
 ) {
-    val likeButton = CallbackDataInlineKeyboardButton(
+    val dislikeButton = CallbackDataInlineKeyboardButton(
         makeDislikeText(
             postsLikesTable.postDislikes(postId)
         ),
         makeDislikeInline(postId)
     )
-    val dislikeButton = CallbackDataInlineKeyboardButton(
+    val likeButton = CallbackDataInlineKeyboardButton(
         makeLikeText(
             postsLikesTable.postLikes(postId)
         ),
@@ -130,12 +130,11 @@ internal fun refreshRegisteredMessage(
 
     val buttons = matrix<InlineKeyboardButton> {
         row {
-            add(likeButton)
             add(dislikeButton)
+            add(likeButton)
         }
     }.let { base ->
-        username ?.let {
-                chatUsername ->
+        username ?.let { chatUsername ->
             PostsMessagesTable.getMessagesOfPost(
                 postId
             ).map {
@@ -143,8 +142,7 @@ internal fun refreshRegisteredMessage(
                     chatUsername,
                     it.messageId
                 )
-            }.mapIndexed {
-                    index, s ->
+            }.mapIndexed { index, s ->
                 URLInlineKeyboardButton(
                     (index + 1).toString(),
                     s
