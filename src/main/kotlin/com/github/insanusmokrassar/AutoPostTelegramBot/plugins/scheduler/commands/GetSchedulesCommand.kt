@@ -92,8 +92,8 @@ class GetSchedulesCommand(
                             (postId, time) ->
                         executor.execute(
                             ForwardMessage(
-                                chatId,
                                 sourceChatId,
+                                chatId,
                                 PostsMessagesTable.getMessagesOfPost(postId).firstOrNull() ?.messageId ?: return@forEach
                             )
                         )

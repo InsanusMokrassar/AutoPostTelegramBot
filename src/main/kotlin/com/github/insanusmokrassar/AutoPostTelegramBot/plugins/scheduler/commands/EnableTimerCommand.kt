@@ -81,8 +81,8 @@ class EnableTimerCommand(
                     EnableTimerCommandScope.launch {
                         val messageId = executor.execute(
                             ForwardMessage(
-                                logsChatId,
                                 chatId,
+                                logsChatId,
                                 PostsMessagesTable.getMessagesOfPost(
                                     postId
                                 ).firstOrNull() ?.messageId ?: replyToMessage.messageId
