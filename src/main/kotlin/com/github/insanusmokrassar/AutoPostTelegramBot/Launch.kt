@@ -69,7 +69,7 @@ fun main(args: Array<String>) {
             allMessagesListener.subscribe(
                 scope = this
             ) {
-                if (it.data.chat.id == config.sourceChatId) {
+                if (it.data.chat.id == config.sourceChatId && it.data !is MediaGroupMessage) {
                     messagesListener.send(it)
                 }
             }
