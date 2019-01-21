@@ -4,50 +4,51 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.Post
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.commonLogger
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.scheduler.PostsSchedulesTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.commands.Command
-import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.executeAsync
-import com.pengrad.telegrambot.TelegramBot
-import com.pengrad.telegrambot.model.Message
-import com.pengrad.telegrambot.model.request.ParseMode
-import com.pengrad.telegrambot.request.SendMessage
+import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
+import com.github.insanusmokrassar.TelegramBotAPI.requests.send.SendMessage
+import com.github.insanusmokrassar.TelegramBotAPI.types.ChatId
+import com.github.insanusmokrassar.TelegramBotAPI.types.ParseMode.MarkdownParseMode
+import com.github.insanusmokrassar.TelegramBotAPI.types.UpdateIdentifier
+import com.github.insanusmokrassar.TelegramBotAPI.types.message.abstracts.CommonMessage
+import com.github.insanusmokrassar.TelegramBotAPI.utils.extensions.executeAsync
 import java.lang.ref.WeakReference
 
 private const val disableSchedulePublishCommand = "/disableSchedulePublish"
 
 private fun sendHelpForUsage(
-    bot: TelegramBot,
-    chatId: Long
+    executor: RequestsExecutor,
+    chatId: ChatId
 ) {
-    bot.executeAsync(
+    executor.executeAsync(
         SendMessage(
             chatId,
             "Usage: `$disableSchedulePublishCommand`.\n" +
-                "Reply post registered message and write command"
-        ).parseMode(
-            ParseMode.Markdown
+                "Reply post registered message and write command",
+            parseMode = MarkdownParseMode
         )
     )
 }
 
 class DisableTimerCommand(
     private val postsSchedulesTable: PostsSchedulesTable,
-    private val botWR: WeakReference<TelegramBot>
-    ) : Command() {
+    private val botWR: WeakReference<RequestsExecutor>
+) : Command() {
     override val commandRegex: Regex = Regex("^$disableSchedulePublishCommand$")
 
-    override fun onCommand(updateId: Int, message: Message) {
+    override suspend fun onCommand(updateId: UpdateIdentifier, message: CommonMessage<*>) {
         val bot = botWR.get() ?: return
-        val replyToMessage = message.replyToMessage() ?:let {
+        val replyToMessage = message.replyTo ?:let {
             sendHelpForUsage(
                 bot,
-                message.chat().id()
+                message.chat.id
             )
             return
         }
 
 
         try {
-            val postId = PostsTable.findPost(replyToMessage.messageId())
-            val chatId = message.chat().id()
+            val postId = PostsTable.findPost(replyToMessage.messageId)
+            val chatId = message.chat.id
 
             postsSchedulesTable.unregisterPost(postId)
 

@@ -2,14 +2,17 @@ package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.base
 
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.PluginName
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.NewDefaultCoroutineScope
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscribe
-import kotlinx.coroutines.experimental.channels.BroadcastChannel
-import kotlinx.coroutines.experimental.channels.Channel
-import kotlinx.coroutines.experimental.launch
+import kotlinx.coroutines.channels.BroadcastChannel
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.launch
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 
 typealias PostIdToPluginName = Pair<Int, PluginName>
+
+private val PostsUsedTableScope = NewDefaultCoroutineScope()
 
 class PostsUsedTable internal constructor() : Table() {
     val registeredLinkChannel = BroadcastChannel<PostIdToPluginName>(Channel.CONFLATED)
@@ -29,9 +32,8 @@ class PostsUsedTable internal constructor() : Table() {
             transaction {
                 val wasRegistered = getLinks(it)
                 if (deleteWhere { postId.eq(it) } > 0) {
-                    launch {
-                        wasRegistered.minus(getLinks(it)).forEach {
-                            pluginName ->
+                    PostsUsedTableScope.launch {
+                        wasRegistered.minus(getLinks(it)).forEach { pluginName ->
                             unregisteredLinkChannel.send(it to pluginName)
                         }
                     }
@@ -60,7 +62,7 @@ class PostsUsedTable internal constructor() : Table() {
             }
         }.apply {
             if (this) {
-                launch {
+                PostsUsedTableScope.launch {
                     registeredLinkChannel.send(postId to pluginName)
                 }
             }
@@ -78,7 +80,7 @@ class PostsUsedTable internal constructor() : Table() {
             }
         }.apply {
             if (this) {
-                launch {
+                PostsUsedTableScope.launch {
                     unregisteredLinkChannel.send(postId to pluginName)
                 }
             }

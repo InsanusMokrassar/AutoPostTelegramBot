@@ -3,11 +3,15 @@ package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.database
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostIdMessageId
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.PluginName
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.base.PostsUsedTable
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.NewDefaultCoroutineScope
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscribe
-import kotlinx.coroutines.experimental.channels.*
-import kotlinx.coroutines.experimental.launch
+import com.github.insanusmokrassar.TelegramBotAPI.types.MessageIdentifier
+import kotlinx.coroutines.channels.*
+import kotlinx.coroutines.launch
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
+
+private val PostsLikesMessagesTableScope = NewDefaultCoroutineScope()
 
 class PostsLikesMessagesTable(
     private val postsLikesTable: PostsLikesTable
@@ -16,7 +20,7 @@ class PostsLikesMessagesTable(
     val ratingMessageUnregisteredChannel = BroadcastChannel<Int>(Channel.CONFLATED)
 
     private val postId = integer("postId").primaryKey()
-    private val messageId = integer("messageId")
+    private val messageId = long("messageId")
 
     private lateinit var lastEnableSubscription: ReceiveChannel<PostIdMessageId>
     private lateinit var lastDisableSubscription: ReceiveChannel<Int>
@@ -46,7 +50,7 @@ class PostsLikesMessagesTable(
             }
         }
 
-    fun messageIdByPostId(postId: Int): Int? {
+    fun messageIdByPostId(postId: Int): MessageIdentifier? {
         return transaction {
             select {
                 this@PostsLikesMessagesTable.postId.eq(postId)
@@ -54,7 +58,7 @@ class PostsLikesMessagesTable(
         }
     }
 
-    fun postIdByMessageId(messageId: Int): Int? {
+    fun postIdByMessageId(messageId: MessageIdentifier): Int? {
         return transaction {
             select {
                 this@PostsLikesMessagesTable.messageId.eq(messageId)
@@ -64,15 +68,20 @@ class PostsLikesMessagesTable(
         }
     }
 
-    fun enableLikes(postId: Int, messageId: Int): Boolean {
+    fun enableLikes(postId: Int, messageId: MessageIdentifier): Boolean {
         return transaction {
             if (messageIdByPostId(postId) == null) {
                 insert {
                     it[this@PostsLikesMessagesTable.postId] = postId
                     it[this@PostsLikesMessagesTable.messageId] = messageId
                 }
-                launch {
-                    ratingMessageRegisteredChannel.send(postId to messageId)
+                PostsLikesMessagesTableScope.launch {
+                    ratingMessageRegisteredChannel.send(
+                        PostIdMessageId(
+                            postId,
+                            messageId
+                        )
+                    )
                 }
                 true
             } else {
@@ -87,7 +96,7 @@ class PostsLikesMessagesTable(
                 this@PostsLikesMessagesTable.postId.eq(postId)
             } > 0).also {
                 if (it) {
-                    launch {
+                    PostsLikesMessagesTableScope.launch {
                         ratingMessageUnregisteredChannel.send(postId)
                     }
                 }

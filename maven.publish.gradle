@@ -1,0 +1,83 @@
+apply plugin: 'maven-publish'
+apply plugin: 'signing'
+
+def pomConfig = {
+    licenses {
+        license {
+            name "The Apache Software License, Version 2.0"
+            url "http://www.apache.org/licenses/LICENSE-2.0.txt"
+            distribution "repo"
+        }
+    }
+    developers {
+        developer {
+            name "Ovsiannikov Aleksei"
+            email "ovsyannikov.alexey95@gmail.com"
+        }
+    }
+
+    scm {
+        url "https://github.com/InsanusMokrassar/${project.name}"
+    }
+}
+
+task sourcesJar(type: Jar) {
+    from sourceSets.main.allSource
+    classifier = 'sources'
+}
+
+task javadocJar(type: Jar) {
+    from javadoc
+    classifier = 'javadoc'
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            from components.java
+            groupId "${project.group}"
+            artifactId "${project.name}"
+            version "${project.version}"
+
+            artifact sourcesJar
+            artifact javadocJar
+            
+            pom.withXml {
+                asNode().children().last() + {
+                    resolveStrategy = Closure.DELEGATE_FIRST
+                    name 'Auto post Telegram Bot'
+                    description 'It is base library for creating smart bot for simple management of channels posts'
+                    url "https://insanusmokrassar.github.io/${project.name}"
+
+                    scm {
+                        connection "scm:git:git://github.com/insanusmokrassar/${project.name}.git"
+                        developerConnection "scm:git:[fetch=]https://github.com/insanusmokrassar/${project.name}.git[push=]ssh:git@github.com:insanusmokrassar/${project.name}.git"
+                        url "https://github.com/insanusmokrassar/${project.name}"
+
+                    }
+
+                    developers {
+                        developer {
+                            id "InsanusMokrassar"
+                            name "Ovsyannikov Alexey"
+                            email "ovsyannikov.alexey95@gmail.com"
+                        }
+                    }
+
+                    licenses {
+                        license {
+                            name 'The Apache Software License, Version 2.0'
+                            url "https://github.com/InsanusMokrassar/${project.name}/blob/master/LICENSE"
+                            distribution 'repo'
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+signing {
+    useGpgCmd()
+    sign publishing.publications.maven
+}

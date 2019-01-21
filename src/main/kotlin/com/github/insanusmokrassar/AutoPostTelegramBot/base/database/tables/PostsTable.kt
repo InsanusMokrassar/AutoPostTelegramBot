@@ -2,14 +2,19 @@ package com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables
 
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.exceptions.CreationException
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.exceptions.NoRowFoundException
-import kotlinx.coroutines.experimental.channels.BroadcastChannel
-import kotlinx.coroutines.experimental.channels.Channel
-import kotlinx.coroutines.experimental.launch
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.NewDefaultCoroutineScope
+import com.github.insanusmokrassar.TelegramBotAPI.types.MessageIdentifier
+import kotlinx.coroutines.channels.BroadcastChannel
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.launch
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.joda.time.DateTime
 
-typealias PostIdMessageId = Pair<Int, Int>
+typealias PostIdMessageId = Pair<Int, MessageIdentifier>
+
+
+val PostsTableScope = NewDefaultCoroutineScope()
 
 object PostsTable : Table() {
     val postAllocatedChannel = BroadcastChannel<Int>(Channel.CONFLATED)
@@ -17,7 +22,7 @@ object PostsTable : Table() {
     val postMessageRegisteredChannel = BroadcastChannel<PostIdMessageId>(Channel.CONFLATED)
 
     private val id = integer("id").primaryKey().autoIncrement()
-    private val postRegisteredMessageId = integer("postRegistered").nullable()
+    private val postRegisteredMessageId = long("postRegistered").nullable()
     private val postDateTime = datetime("postDateTime").default(DateTime.now())
 
     @Throws(CreationException::class)
@@ -26,14 +31,14 @@ object PostsTable : Table() {
             insert {
                 it[postDateTime] = DateTime.now()
             }[id] ?.also {
-                launch {
+                PostsTableScope.launch {
                     postAllocatedChannel.send(it)
                 }
             }
         } ?: throw CreationException("Can't allocate new post")
     }
 
-    fun postRegistered(postId: Int, messageId: Int): Boolean {
+    fun postRegistered(postId: Int, messageId: MessageIdentifier): Boolean {
         return transaction {
             postRegisteredMessage(postId) ?.let {
                 false
@@ -44,14 +49,14 @@ object PostsTable : Table() {
             }
         }.also {
             if (it) {
-                launch {
+                PostsTableScope.launch {
                     postMessageRegisteredChannel.send(postId to messageId)
                 }
             }
         }
     }
 
-    fun postRegisteredMessage(postId: Int): Int? {
+    fun postRegisteredMessage(postId: Int): MessageIdentifier? {
         return transaction {
             select { id.eq(postId) }.firstOrNull() ?.get(postRegisteredMessageId)
         }
@@ -61,7 +66,7 @@ object PostsTable : Table() {
         transaction {
             PostsMessagesTable.removePostMessages(postId)
             deleteWhere { id.eq(postId) }
-            launch {
+            PostsTableScope.launch {
                 postRemovedChannel.send(postId)
             }
         }
@@ -74,7 +79,7 @@ object PostsTable : Table() {
     }
 
     @Throws(NoRowFoundException::class)
-    fun findPost(messageId: Int): Int {
+    fun findPost(messageId: MessageIdentifier): Int {
         return transaction {
             select {
                 postRegisteredMessageId.eq(messageId)

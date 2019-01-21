@@ -9,23 +9,36 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.commands.M
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.database.PostsLikesMessagesTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.database.PostsLikesTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.receivers.*
-import com.pengrad.telegrambot.TelegramBot
+import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
+
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.lang.ref.WeakReference
 
+@Serializable
 class RatingPlugin : Plugin {
+    @Transient
     private var likeReceiver: LikeReceiver? = null
+    @Transient
     private var dislikeReceiver: DislikeReceiver? = null
+    @Transient
     private var disableReceiver: DisableReceiver? = null
+    @Transient
     private var enableReceiver: EnableReceiver? = null
 
+    @Transient
     private var registeredRefresher: RegisteredRefresher? = null
 
+    @Transient
     private var availableRates: AvailableRates? = null
+    @Transient
     private var mostRated: MostRated? = null
 
+    @Transient
     val postsLikesTable = PostsLikesTable()
+    @Transient
     val postsLikesMessagesTable = PostsLikesMessagesTable(postsLikesTable).also {
         postsLikesTable.postsLikesMessagesTable = it
     }
@@ -36,28 +49,28 @@ class RatingPlugin : Plugin {
         }
     }
 
-    override fun onInit(
-        bot: TelegramBot,
+    override suspend fun onInit(
+        executor: RequestsExecutor,
         baseConfig: FinalConfig,
         pluginManager: PluginManager
     ) {
-        val botWR = WeakReference(bot)
+        val botWR = WeakReference(executor)
 
         (pluginManager.plugins.firstOrNull { it is BasePlugin } as? BasePlugin)?.also {
             postsLikesMessagesTable.postsUsedTablePluginName = it.postsUsedTable to name
         }
 
         likeReceiver ?: let {
-            likeReceiver = LikeReceiver(bot, baseConfig.sourceChatId, postsLikesTable, postsLikesMessagesTable)
+            likeReceiver = LikeReceiver(executor, baseConfig.sourceChatId, postsLikesTable, postsLikesMessagesTable)
         }
         dislikeReceiver ?: let {
-            dislikeReceiver = DislikeReceiver(bot, baseConfig.sourceChatId, postsLikesTable, postsLikesMessagesTable)
+            dislikeReceiver = DislikeReceiver(executor, baseConfig.sourceChatId, postsLikesTable, postsLikesMessagesTable)
         }
         disableReceiver ?: let {
-            disableReceiver = DisableReceiver(bot, baseConfig.sourceChatId, postsLikesMessagesTable)
+            disableReceiver = DisableReceiver(executor, baseConfig.sourceChatId, postsLikesMessagesTable)
         }
         enableReceiver ?: let {
-            enableReceiver = EnableReceiver(bot, baseConfig.sourceChatId, postsLikesTable, postsLikesMessagesTable)
+            enableReceiver = EnableReceiver(executor, baseConfig.sourceChatId, postsLikesTable, postsLikesMessagesTable)
         }
 
         mostRated ?:let {
@@ -69,7 +82,7 @@ class RatingPlugin : Plugin {
 
         registeredRefresher = RegisteredRefresher(
             baseConfig.sourceChatId,
-            bot,
+            executor,
             postsLikesTable,
             postsLikesMessagesTable
         )

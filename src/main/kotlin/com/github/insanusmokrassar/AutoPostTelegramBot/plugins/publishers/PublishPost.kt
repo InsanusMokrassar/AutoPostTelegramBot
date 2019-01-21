@@ -3,22 +3,26 @@ package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.publishers
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.exceptions.NoRowFoundException
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.choosers.Chooser
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.NewDefaultCoroutineScope
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.commands.Command
-import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.executeAsync
-import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.executeBlocking
-import com.pengrad.telegrambot.TelegramBot
-import com.pengrad.telegrambot.model.Message
-import com.pengrad.telegrambot.model.request.ParseMode
-import com.pengrad.telegrambot.request.DeleteMessage
-import com.pengrad.telegrambot.request.SendMessage
-import kotlinx.coroutines.experimental.launch
+import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
+import com.github.insanusmokrassar.TelegramBotAPI.requests.DeleteMessage
+import com.github.insanusmokrassar.TelegramBotAPI.requests.send.SendMessage
+import com.github.insanusmokrassar.TelegramBotAPI.types.ChatIdentifier
+import com.github.insanusmokrassar.TelegramBotAPI.types.ParseMode.MarkdownParseMode
+import com.github.insanusmokrassar.TelegramBotAPI.types.UpdateIdentifier
+import com.github.insanusmokrassar.TelegramBotAPI.types.message.abstracts.CommonMessage
+import com.github.insanusmokrassar.TelegramBotAPI.types.message.content.TextContent
+import kotlinx.coroutines.launch
 import java.lang.ref.WeakReference
+
+private val PublishPostScope = NewDefaultCoroutineScope()
 
 class PublishPost(
     chooser: Chooser?,
     publisher: Publisher,
-    private val botWR: WeakReference<TelegramBot>,
-    private val logsChatId: Long = 0
+    private val botWR: WeakReference<RequestsExecutor>,
+    private val logsChatId: ChatIdentifier
 ) : Command() {
     override val commandRegex: Regex = Regex("^/publishPost( \\d+)?$")
 
@@ -33,82 +37,77 @@ class PublishPost(
         }
     }
 
-    override fun onCommand(updateId: Int, message: Message) {
+    override suspend fun onCommand(updateId: UpdateIdentifier, message: CommonMessage<*>) {
         val publisher = publisherWR.get() ?: return
 
         val choosen = mutableListOf<Int>()
 
-        message.replyToMessage() ?.also {
+        message.replyTo ?.also {
             try {
                 choosen.add(
-                    PostsTable.findPost(it.messageId())
+                    PostsTable.findPost(it.messageId)
                 )
             } catch (e: NoRowFoundException) {
-                botWR.get() ?.executeAsync(
+                botWR.get() ?.execute(
                     SendMessage(
-                        message.chat().id(),
-                        "Message is not related to any post"
-                    ).replyToMessageId(
-                        it.messageId()
+                        message.chat.id,
+                        "Message is not related to any post",
+                        replyToMessageId = it.messageId
                     )
                 )
             }
-        } ?:also {
-            try {
-                val chooser = chooserWR.get() ?: return
-                val splitted = message.text().split(" ")
-                val count = if (splitted.size > 1) {
-                    splitted[1].toInt()
+        } ?: try {
+            val chooser = chooserWR.get() ?: return
+            val count = (message.content as? TextContent) ?.text ?.split(" ") ?.let {
+                if (it.size > 1) {
+                    it[1].toIntOrNull()
                 } else {
-                    1
+                    null
                 }
+            } ?: 1
 
-                while (choosen.size < count) {
-                    val toAdd = chooser.triggerChoose().filter {
-                        !choosen.contains(it)
-                    }.let {
-                        val futureSize = choosen.size + it.size
-                        val toAdd = if (futureSize > count) {
-                            futureSize - count
-                        } else {
-                            it.size
-                        }
-                        it.toList().subList(0, toAdd)
+            while (choosen.size < count) {
+                val toAdd = chooser.triggerChoose().filter {
+                    !choosen.contains(it)
+                }.let {
+                    val futureSize = choosen.size + it.size
+                    val toAdd = if (futureSize > count) {
+                        futureSize - count
+                    } else {
+                        it.size
                     }
-                    if (toAdd.isEmpty()) {
-                        break
-                    }
-                    choosen.addAll(
-                        toAdd
-                    )
+                    it.toList().subList(0, toAdd)
                 }
-            } catch (e: NumberFormatException) {
-                println("Can't extract number of posts")
-                return
+                if (toAdd.isEmpty()) {
+                    break
+                }
+                choosen.addAll(
+                    toAdd
+                )
             }
+        } catch (e: NumberFormatException) {
+            println("Can't extract number of posts")
+            return
         }
 
-        botWR.get() ?.let {
-            bot ->
-
-            launch {
-                bot.executeBlocking(
+        botWR.get() ?.let { executor ->
+            PublishPostScope.launch {
+                executor.execute(
                     SendMessage(
                         logsChatId,
-                        "Was chosen to publish: ${choosen.size}. (Repeats of choosing was excluded)"
-                    ).parseMode(
-                        ParseMode.Markdown
+                        "Was chosen to publish: ${choosen.size}. (Repeats of choosing was excluded)",
+                        parseMode = MarkdownParseMode
                     )
-                ).message() ?.let {
+                ).asMessage.let {
                     choosen.forEach {
                         publisher.publishPost(
                             it
                         )
                     }
-                    bot.executeAsync(
+                    executor.execute(
                         DeleteMessage(
-                            message.chat().id(),
-                            message.messageId()
+                            message.chat.id,
+                            message.messageId
                         )
                     )
                 }

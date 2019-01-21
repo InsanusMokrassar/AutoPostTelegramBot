@@ -5,30 +5,38 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.commonLogger
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.scheduler.PostsSchedulesTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.*
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.commands.Command
-import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.*
-import com.pengrad.telegrambot.TelegramBot
-import com.pengrad.telegrambot.model.Message
-import com.pengrad.telegrambot.request.ForwardMessage
-import com.pengrad.telegrambot.request.SendMessage
-import kotlinx.coroutines.experimental.delay
-import kotlinx.coroutines.experimental.launch
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.asPairs
+import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
+import com.github.insanusmokrassar.TelegramBotAPI.requests.ForwardMessage
+import com.github.insanusmokrassar.TelegramBotAPI.requests.send.SendMessage
+import com.github.insanusmokrassar.TelegramBotAPI.types.ChatIdentifier
+import com.github.insanusmokrassar.TelegramBotAPI.types.UpdateIdentifier
+import com.github.insanusmokrassar.TelegramBotAPI.types.message.abstracts.CommonMessage
+import com.github.insanusmokrassar.TelegramBotAPI.types.message.abstracts.FromUserMessage
+import com.github.insanusmokrassar.TelegramBotAPI.types.message.content.TextContent
+import com.github.insanusmokrassar.TelegramBotAPI.utils.extensions.executeAsync
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.lang.ref.WeakReference
+
+private val GetSchedulesCommandScope = NewDefaultCoroutineScope(1)
 
 class GetSchedulesCommand(
     private val postsSchedulesTable: PostsSchedulesTable,
-    private val botWR: WeakReference<TelegramBot>,
-    private val sourceChatId: Long
+    private val executorWR: WeakReference<RequestsExecutor>,
+    private val sourceChatId: ChatIdentifier
 ) : Command() {
     override val commandRegex: Regex = Regex("^/getPublishSchedule(( ${periodRegex.pattern})|( \\d+))?$")
 
-    override fun onCommand(updateId: Int, message: Message) {
-        val bot = botWR.get() ?: return
+    override suspend fun onCommand(updateId: UpdateIdentifier, message: CommonMessage<*>) {
+        val executor = executorWR.get() ?: return
 
-        val chatId = message.from() ?.id() ?: message.chat().id()
+        val chatId = (message as? FromUserMessage) ?.user?.id ?: message.chat.id
+        val content = message.content as? TextContent ?: return
 
-        launch {
+        GetSchedulesCommandScope.launch {
             try {
-                bot.executeBlocking(
+                executor.execute(
                     SendMessage(
                         chatId,
                         "Let me prepare data"
@@ -43,18 +51,17 @@ class GetSchedulesCommand(
                 return@launch
             }
 
-            val arg: String? = message.text().indexOf(" ").let {
+            val arg: String? = content.text.indexOf(" ").let {
                 if (it > -1) {
-                    message.text().substring(it + 1)
+                    content.text.substring(it + 1)
                 } else {
                     null
                 }
             }
 
-            val posts = arg ?.let {
-                _ ->
+            val posts = arg ?.let { _ ->
                 arg.toIntOrNull() ?.let {
-                    count ->
+                        count ->
                     postsSchedulesTable.registeredPostsTimes().sortedBy {
                         it.second
                     }.let {
@@ -65,7 +72,7 @@ class GetSchedulesCommand(
                         }
                     }
                 } ?: arg.parseDateTimes().asPairs().flatMap {
-                    (from, to) ->
+                        (from, to) ->
                     val asFutureFrom = from.asFuture
                     val asFutureTo = to.asFutureFor(asFutureFrom)
                     postsSchedulesTable.registeredPostsTimes(asFutureFrom to asFutureTo)
@@ -74,7 +81,7 @@ class GetSchedulesCommand(
 
             posts.let {
                 if (it.isEmpty()) {
-                    bot.executeAsync(
+                    executor.executeAsync(
                         SendMessage(
                             chatId,
                             "Nothing to show, schedule queue is empty"
@@ -82,15 +89,15 @@ class GetSchedulesCommand(
                     )
                 } else {
                     it.forEach {
-                        (postId, time) ->
-                        bot.executeBlocking(
+                            (postId, time) ->
+                        executor.execute(
                             ForwardMessage(
-                                chatId,
                                 sourceChatId,
+                                chatId,
                                 PostsMessagesTable.getMessagesOfPost(postId).firstOrNull() ?.messageId ?: return@forEach
                             )
                         )
-                        bot.executeBlocking(
+                        executor.execute(
                             SendMessage(
                                 chatId,
                                 "Post time: $time"

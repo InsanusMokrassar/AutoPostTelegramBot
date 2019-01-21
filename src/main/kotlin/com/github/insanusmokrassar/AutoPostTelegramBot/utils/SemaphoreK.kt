@@ -1,12 +1,11 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.utils
 
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.commonLogger
-import kotlinx.coroutines.experimental.channels.*
-import kotlinx.coroutines.experimental.isActive
-import kotlinx.coroutines.experimental.launch
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 import java.util.*
-import kotlin.coroutines.experimental.Continuation
-import kotlin.coroutines.experimental.suspendCoroutine
+import kotlin.coroutines.*
 
 class SemaphoreK(
     private val maxAvailable: Int = 1,
@@ -17,7 +16,8 @@ class SemaphoreK(
         class BlockAction(val count: Int = 1, val continuation: Continuation<Unit>) : SemaphoreAction()
     }
 
-    private val semaphoreActor: SendChannel<SemaphoreAction>
+    private val scope = NewDefaultCoroutineScope()
+    private val semaphoreChannel = Channel<SemaphoreAction>(Channel.UNLIMITED)
     private var free = if (initial > maxAvailable) {
         maxAvailable
     } else {
@@ -51,10 +51,8 @@ class SemaphoreK(
     }
 
     init {
-        semaphoreActor = actor(
-            capacity = Channel.UNLIMITED
-        ) {
-            for (msg in channel) {
+        scope.launch {
+            for (msg in semaphoreChannel) {
                 when (msg) {
                     is SemaphoreAction.IncAction -> {
                         free += msg.count
@@ -78,8 +76,8 @@ class SemaphoreK(
         }
 
         suspendCoroutine<Unit> {
-            launch {
-                semaphoreActor.send(
+            scope.launch {
+                semaphoreChannel.send(
                     SemaphoreAction.BlockAction(count, it)
                 )
             }
@@ -87,8 +85,8 @@ class SemaphoreK(
     }
 
     fun free(count: Int = 1) {
-        launch {
-            semaphoreActor.send(
+        scope.launch {
+            semaphoreChannel.send(
                 SemaphoreAction.IncAction(count)
             )
         }

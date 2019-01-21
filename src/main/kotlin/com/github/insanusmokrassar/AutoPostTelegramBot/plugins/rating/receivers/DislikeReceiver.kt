@@ -2,55 +2,63 @@ package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.receivers
 
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.database.PostsLikesMessagesTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.database.PostsLikesTable
-import com.github.insanusmokrassar.AutoPostTelegramBot.utils.CallbackQueryReceiver
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.CallbackQueryReceivers.SafeCallbackQueryReceiver
-import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.queryAnswer
-import com.github.insanusmokrassar.IObjectK.exceptions.ReadException
-import com.github.insanusmokrassar.IObjectKRealisations.toIObject
-import com.pengrad.telegrambot.TelegramBot
-import com.pengrad.telegrambot.model.CallbackQuery
+import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
+import com.github.insanusmokrassar.TelegramBotAPI.requests.answers.createAnswer
+import com.github.insanusmokrassar.TelegramBotAPI.types.CallbackQuery.MessageDataCallbackQuery
+import com.github.insanusmokrassar.TelegramBotAPI.types.ChatId
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerializationException
+import kotlinx.serialization.json.JSON
 
 const val dislike = "\uD83D\uDC4E"
 
 internal fun makeDislikeText(dislikes: Int) = "$dislike $dislikes"
 
-private const val dislikeIdentifier = "dislike"
+@Serializable
+private data class DislikeData(
+    val dislike: Int
+)
 
-fun makeDislikeInline(postId: Int): String = "$dislikeIdentifier: $postId"
+fun makeDislikeInline(postId: Int): String = JSON.stringify(
+    DislikeData.serializer(),
+    DislikeData(postId)
+)
 fun extractDislikeInline(from: String): Int? = try {
-    from.toIObject().get<String>(dislikeIdentifier).toInt()
-} catch (e: ReadException) {
+    JSON.parse(DislikeData.serializer(), from).dislike
+} catch (e: SerializationException) {
     null
 }
 
 class DislikeReceiver(
-    bot: TelegramBot,
-    sourceChatId: Long,
+    executor: RequestsExecutor,
+    sourceChatId: ChatId,
     private val postsLikesTable: PostsLikesTable,
     private val postsLikesMessagesTable: PostsLikesMessagesTable
-) : SafeCallbackQueryReceiver(bot, sourceChatId) {
-    override fun invoke(
-        query: CallbackQuery,
-        bot: TelegramBot
-    ) {
+) : SafeCallbackQueryReceiver(
+    executor,
+    sourceChatId
+) {
+    override suspend fun invoke(query: MessageDataCallbackQuery) {
         extractDislikeInline(
-            query.data()
+            query.data
         )?.let {
-            postId ->
+                postId ->
 
-            postsLikesMessagesTable.messageIdByPostId(postId) ?: query.message().messageId().also {
-                messageId ->
+            postsLikesMessagesTable.messageIdByPostId(postId) ?: query.message.messageId.also {
+                    messageId ->
                 postsLikesMessagesTable.enableLikes(postId, messageId)
             }
 
             postsLikesTable.userDislikePost(
-                query.from().id().toLong(),
+                query.user.id,
                 postId
             )
 
-            bot.queryAnswer(
-                query.id(),
-                "Voted -"
+            executorWR.get() ?.execute(
+                query.createAnswer(
+                    "Voted -"
+                )
             )
         }
     }

@@ -1,36 +1,38 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.utils
 
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.commonLogger
-import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.executeBlocking
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.splitForMessageWithAdditionalStep
-import com.pengrad.telegrambot.TelegramBot
-import com.pengrad.telegrambot.request.SendMessage
-import kotlinx.coroutines.experimental.channels.Channel
-import kotlinx.coroutines.experimental.channels.actor
-import kotlinx.coroutines.experimental.launch
+import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
+import com.github.insanusmokrassar.TelegramBotAPI.requests.send.SendMessage
+import com.github.insanusmokrassar.TelegramBotAPI.types.ChatIdentifier
+import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.Channel
 import java.lang.ref.WeakReference
 import java.util.logging.*
 
 private class LoggerHandler(
     loggerToHandle: Logger,
-    bot: TelegramBot,
-    private val logsChatId: Long
+    executor: RequestsExecutor,
+    private val logsChatId: ChatIdentifier
 ) : Handler() {
-    private val botWR = WeakReference(bot)
+    private val botWR = WeakReference(executor)
 
-    private val recordsActor = actor<LogRecord>(
-        capacity = Channel.UNLIMITED
-    ) {
-        for (msg in channel) {
-            val bot = botWR.get() ?: break
-            formatter.format(msg).splitForMessageWithAdditionalStep(6).forEach {
-                record ->
-                bot.executeBlocking(
-                    SendMessage(
-                        logsChatId,
-                        record
-                    )
-                )
+    private val logsChannel = Channel<LogRecord>(Channel.UNLIMITED)
+    private val recordsSendingJob = GlobalScope.launch {
+        coroutineScope {
+            launch {
+                for (msg in logsChannel) {
+                    val bot = botWR.get() ?: break
+                    formatter.format(msg).splitForMessageWithAdditionalStep(6).forEach {
+                            record ->
+                        bot.execute(
+                            SendMessage(
+                                logsChatId,
+                                record
+                            )
+                        )
+                    }
+                }
             }
         }
     }
@@ -42,8 +44,9 @@ private class LoggerHandler(
     }
 
     override fun publish(record: LogRecord?) {
-        launch {
-            recordsActor.send(record ?: return@launch)
+        record ?: return
+        GlobalScope.launch {
+            logsChannel.send(record)
         }
     }
 
@@ -51,13 +54,14 @@ private class LoggerHandler(
 
     override fun close() {
         botWR.clear()
-        recordsActor.close()
+        logsChannel.cancel()
+        recordsSendingJob.cancel()
     }
 }
 
 @Synchronized
-fun initHandler(bot: TelegramBot, logsChatId: Long) {
+fun initHandler(executor: RequestsExecutor, logsChatId: ChatIdentifier) {
     commonLogger.handlers.firstOrNull { it is LoggerHandler } ?: run {
-        LoggerHandler(commonLogger, bot, logsChatId)
+        LoggerHandler(commonLogger, executor, logsChatId)
     }
 }

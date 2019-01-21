@@ -1,25 +1,30 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.base.models
 
+import io.ktor.client.engine.okhttp.OkHttpConfig
+import kotlinx.serialization.*
 import okhttp3.Credentials
-import okhttp3.OkHttpClient
-import okhttp3.logging.HttpLoggingInterceptor
 import java.net.InetSocketAddress
 import java.net.Proxy
 import java.util.concurrent.TimeUnit
 
+@Serializable
 data class HttpClientConfig(
+    @Optional
     val proxy: ProxySettings? = null,
+    @Optional
     val connectTimeout: Long = 0,
+    @Optional
     val writeTimeout: Long = 0,
+    @Optional
     val readTimeout: Long = 0,
+    @Optional
     val debug: Boolean = false
 ) {
-    private val builder: OkHttpClient.Builder by lazy {
-        OkHttpClient.Builder().also {
-            builder ->
+    @Transient
+    val builder: OkHttpConfig.() -> Unit = {
+        config {
             proxy ?.let {
-                _ ->
-                builder.proxy(
+                proxy(
                     Proxy(
                         Proxy.Type.SOCKS,
                         InetSocketAddress(
@@ -28,10 +33,8 @@ data class HttpClientConfig(
                         )
                     )
                 )
-                proxy.password ?.let {
-                    password ->
-                    builder.proxyAuthenticator {
-                        _, response ->
+                proxy.password ?.let { password ->
+                    proxyAuthenticator { _, response ->
                         response.request().newBuilder().apply {
                             addHeader(
                                 "Proxy-Authorization",
@@ -41,18 +44,9 @@ data class HttpClientConfig(
                     }
                 }
             }
-            builder.connectTimeout(connectTimeout, TimeUnit.MILLISECONDS)
-            builder.writeTimeout(writeTimeout, TimeUnit.MILLISECONDS)
-            builder.readTimeout(readTimeout, TimeUnit.MILLISECONDS)
-            if (debug) {
-                builder.addInterceptor(
-                    HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY)
-                )
-            }
+            connectTimeout(connectTimeout, TimeUnit.MILLISECONDS)
+            writeTimeout(writeTimeout, TimeUnit.MILLISECONDS)
+            readTimeout(readTimeout, TimeUnit.MILLISECONDS)
         }
-    }
-
-    fun createClient(): OkHttpClient {
-        return builder.build()
     }
 }

@@ -10,10 +10,9 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.database.P
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.CalculatedDateTime
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.*
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.parseDateTimes
-import com.github.insanusmokrassar.IObjectK.interfaces.IObject
-import com.github.insanusmokrassar.IObjectKRealisations.toObject
-import com.pengrad.telegrambot.TelegramBot
-import kotlinx.coroutines.experimental.launch
+import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
+import kotlinx.coroutines.*
+import kotlinx.serialization.*
 import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
 import java.lang.ref.WeakReference
@@ -22,19 +21,24 @@ private val zeroDateTime: DateTime by lazy {
     DateTime(0, DateTimeZone.UTC)
 }
 
-private data class GarbageCollectorConfig(
+@Serializable
+class GarbageCollector(
+    @Optional
     val minimalRate: Int = -3,
+    @Optional
     private val skipTime: String? = null,
+    @Optional
     private val manualCheckTime: String? = null
-) {
+) : Plugin {
+    @Transient
     val skipDateTime: List<Pair<Long, Long>> by lazy {
         skipTime ?.parseDateTimes() ?.let {
-            parsed ->
+                parsed ->
             if (parsed.size > 1) {
                 parsed.asPairs()
             } else {
                 parsed.firstOrNull() ?.let {
-                    firstParsed ->
+                        firstParsed ->
                     listOf(
                         CalculatedDateTime(
                             "",
@@ -51,22 +55,17 @@ private data class GarbageCollectorConfig(
         } ?: emptyList()
     }
 
+    @Transient
     val manualCheckDateTimes: List<CalculatedDateTime>? by lazy {
         manualCheckTime ?.parseDateTimes()
     }
-}
 
-class GarbageCollector(
-    params: IObject<Any>?
-) : Plugin {
-    private val config = params ?.toObject(GarbageCollectorConfig::class.java) ?: GarbageCollectorConfig()
-
-    override fun onInit(
-        bot: TelegramBot,
+    override suspend fun onInit(
+        executor: RequestsExecutor,
         baseConfig: FinalConfig,
         pluginManager: PluginManager
     ) {
-        val botWR = WeakReference(bot)
+        val botWR = WeakReference(executor)
 
         val ratingPlugin = (pluginManager.plugins.firstOrNull {
             it is RatingPlugin
@@ -88,8 +87,8 @@ class GarbageCollector(
             } ?: false
         }
 
-        config.manualCheckDateTimes ?.let {
-            launch {
+        manualCheckDateTimes ?.let {
+            GlobalScope.launch {
                 while (isActive) {
                     it.executeNearFuture {
                         val botSR = botWR.get() ?: return@executeNearFuture null
@@ -104,31 +103,31 @@ class GarbageCollector(
         }
     }
 
-    private fun check(
+    private suspend fun check(
         dataPair: PostIdRatingPair,
-        bot: TelegramBot,
+        executor: RequestsExecutor,
         baseConfig: FinalConfig,
         now: DateTime = DateTime.now()
     ) = PostsTable.getPostCreationDateTime(dataPair.first) ?.also {
         creatingDate ->
-        check(dataPair, creatingDate, bot, baseConfig, now)
+        check(dataPair, creatingDate, executor, baseConfig, now)
     }
 
-    private fun check(
+    private suspend fun check(
         dataPair: PostIdRatingPair,
         creatingDate: DateTime,
-        bot: TelegramBot,
+        executor: RequestsExecutor,
         baseConfig: FinalConfig,
         now: DateTime = DateTime.now()
     ) {
-        for (period in config.skipDateTime) {
+        for (period in skipDateTime) {
             if (creatingDate.plus(period.second).isAfter(now) && creatingDate.plus(period.first).isBefore(now)) {
                 return
             }
         }
-        if (dataPair.second < config.minimalRate || PostsMessagesTable.getMessagesOfPost(dataPair.first).isEmpty()) {
+        if (dataPair.second < minimalRate || PostsMessagesTable.getMessagesOfPost(dataPair.first).isEmpty()) {
             deletePost(
-                bot,
+                executor,
                 baseConfig.sourceChatId,
                 baseConfig.logsChatId,
                 dataPair.first

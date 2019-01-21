@@ -2,11 +2,14 @@ package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.scheduler
 
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.commonLogger
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.publishers.Publisher
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.NewDefaultCoroutineScope
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscribe
-import kotlinx.coroutines.experimental.*
+import kotlinx.coroutines.*
 import org.joda.time.DateTime
 
 private typealias PostTimeToJob = Pair<PostIdPostTime, Job>
+
+private val SchedulerScope = NewDefaultCoroutineScope(8)
 
 class Scheduler(
     private val schedulesTable: PostsSchedulesTable,
@@ -53,7 +56,7 @@ class Scheduler(
     }
 
     private fun createScheduledJob(by: PostIdPostTime): Job {
-        return launch {
+        return SchedulerScope.launch {
             delay(by.second.minus(DateTime.now().millis).millis)
             if (isActive) {
                 currentPlannedPostTimeAndJob = null

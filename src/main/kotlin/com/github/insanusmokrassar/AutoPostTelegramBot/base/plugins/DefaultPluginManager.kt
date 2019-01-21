@@ -1,37 +1,27 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins
 
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.FinalConfig
-import com.pengrad.telegrambot.TelegramBot
-import kotlinx.coroutines.experimental.launch
-import kotlinx.coroutines.experimental.runBlocking
+import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
+import kotlinx.coroutines.*
 
 class DefaultPluginManager(
     pluginsCollection: Collection<Plugin>
 ) : PluginManager {
     override val plugins: List<Plugin> = pluginsCollection.toList()
-    constructor(pluginsConfigs: List<PluginConfig>) : this(
-        pluginsConfigs.mapNotNull {
-            it.newInstance() ?.also {
-                commonLogger.info("Plugin ${it.name} instantiated")
-            }
-        }
-    )
 
-    override fun onInit(bot: TelegramBot, baseConfig: FinalConfig) {
-        runBlocking {
+    override suspend fun onInit(executor: RequestsExecutor, baseConfig: FinalConfig) {
+        coroutineScope {
             plugins.map {
                 launch {
                     it.onInit(
-                        bot,
+                        executor,
                         baseConfig,
                         this@DefaultPluginManager
                     )
                     commonLogger.info("Plugin ${it.name} was init")
                 }
-            }.forEach {
-                it.join()
             }
-            commonLogger.info("Plugins was initiated")
-        }
+        }.joinAll()
+        commonLogger.info("Plugins was initiated")
     }
 }

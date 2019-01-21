@@ -5,7 +5,8 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.PluginManage
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.RatingPlugin
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.database.PostsLikesMessagesTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.database.PostsLikesTable
-import com.pengrad.telegrambot.TelegramBot
+import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
+
 
 abstract class RateCommand : CommandPlugin() {
     protected var postsLikesTable: PostsLikesTable? = null
@@ -13,8 +14,8 @@ abstract class RateCommand : CommandPlugin() {
     protected var postsLikesMessagesTable: PostsLikesMessagesTable? = null
         private set
 
-    override fun onInit(bot: TelegramBot, baseConfig: FinalConfig, pluginManager: PluginManager) {
-        super.onInit(bot, baseConfig, pluginManager)
+    override suspend fun onInit(executor: RequestsExecutor, baseConfig: FinalConfig, pluginManager: PluginManager) {
+        super.onInit(executor, baseConfig, pluginManager)
 
         (pluginManager.plugins.firstOrNull { it is RatingPlugin } as? RatingPlugin) ?.also {
             postsLikesTable = it.postsLikesTable

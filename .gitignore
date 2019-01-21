@@ -2,7 +2,11 @@
 out/*
 *.iml
 target
+build/*
+.gradle/
 
 config.json
 
 settings.xml
+
+build/

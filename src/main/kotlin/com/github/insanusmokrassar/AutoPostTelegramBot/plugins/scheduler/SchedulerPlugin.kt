@@ -6,18 +6,27 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.PluginManage
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.base.BasePlugin
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.publishers.Publisher
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.scheduler.commands.*
-import com.pengrad.telegrambot.TelegramBot
+import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
+
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.lang.ref.WeakReference
 
+@Serializable
 class SchedulerPlugin : Plugin {
+    @Transient
     val timerSchedulesTable = PostsSchedulesTable()
 
+    @Transient
     private lateinit var enableTimerCommand: EnableTimerCommand
+    @Transient
     private lateinit var getSchedulesCommand: GetSchedulesCommand
+    @Transient
     private lateinit var disableTimerCommand: DisableTimerCommand
 
+    @Transient
     private lateinit var scheduler: Scheduler
 
     init {
@@ -26,7 +35,7 @@ class SchedulerPlugin : Plugin {
         }
     }
 
-    override fun onInit(bot: TelegramBot, baseConfig: FinalConfig, pluginManager: PluginManager) {
+    override suspend fun onInit(executor: RequestsExecutor, baseConfig: FinalConfig, pluginManager: PluginManager) {
         (pluginManager.plugins.firstOrNull { it is BasePlugin } as? BasePlugin)?.also {
             timerSchedulesTable.postsUsedTablePluginName = it.postsUsedTable to name
         }
@@ -35,21 +44,21 @@ class SchedulerPlugin : Plugin {
             timerSchedulesTable,
             pluginManager.plugins.firstOrNull { it is Publisher } as? Publisher ?: return
         )
-        val botWR = WeakReference(bot)
+        val executorWR = WeakReference(executor)
 
         enableTimerCommand = EnableTimerCommand(
             timerSchedulesTable,
-            botWR,
+            executorWR,
             baseConfig.logsChatId
         )
         getSchedulesCommand = GetSchedulesCommand(
             timerSchedulesTable,
-            botWR,
+            executorWR,
             baseConfig.sourceChatId
         )
         disableTimerCommand = DisableTimerCommand(
             timerSchedulesTable,
-            botWR
+            executorWR
         )
     }
 }

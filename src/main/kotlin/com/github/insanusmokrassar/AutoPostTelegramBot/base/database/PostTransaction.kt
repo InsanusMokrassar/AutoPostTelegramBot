@@ -4,15 +4,18 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.exceptions.
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsMessagesTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.PostMessage
-import kotlinx.coroutines.experimental.channels.BroadcastChannel
-import kotlinx.coroutines.experimental.channels.Channel
-import kotlinx.coroutines.experimental.launch
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.NewDefaultCoroutineScope
+import kotlinx.coroutines.channels.BroadcastChannel
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.launch
 import java.io.Closeable
 
 val transactionStartedChannel = BroadcastChannel<Unit>(Channel.CONFLATED)
 val transactionMessageAddedChannel = BroadcastChannel<Array<out PostMessage>>(Channel.CONFLATED)
 val transactionMessageRemovedChannel = BroadcastChannel<PostMessage>(Channel.CONFLATED)
 val transactionCompletedChannel = BroadcastChannel<Int>(Channel.CONFLATED)
+
+val PostTransactionsScope = NewDefaultCoroutineScope()
 
 class PostTransaction : Closeable {
     private val messages = ArrayList<PostMessage>()
@@ -21,7 +24,7 @@ class PostTransaction : Closeable {
         private set
 
     init {
-        launch {
+        PostTransactionsScope.launch {
             transactionStartedChannel.send(Unit)
         }
     }
@@ -32,7 +35,7 @@ class PostTransaction : Closeable {
         }
         messages.addAll(message)
 
-        launch {
+        PostTransactionsScope.launch {
             transactionMessageAddedChannel.send(message)
         }
     }
@@ -43,7 +46,7 @@ class PostTransaction : Closeable {
         }
         messages.remove(message)
 
-        launch {
+        PostTransactionsScope.launch {
             transactionMessageRemovedChannel.send(message)
         }
     }
@@ -70,7 +73,7 @@ class PostTransaction : Closeable {
             *messagesIds
         )
 
-        launch {
+        PostTransactionsScope.launch {
             transactionCompletedChannel.send(postId)
         }
     }

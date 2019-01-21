@@ -3,14 +3,17 @@ package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.scheduler
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.PluginName
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.base.PostsUsedTable
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.NewDefaultCoroutineScope
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscribe
-import kotlinx.coroutines.experimental.channels.*
-import kotlinx.coroutines.experimental.launch
+import kotlinx.coroutines.channels.*
+import kotlinx.coroutines.launch
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.joda.time.DateTime
 
 typealias PostIdPostTime = Pair<Int, DateTime>
+
+private val PostsSchedulesTableScope = NewDefaultCoroutineScope(4)
 
 class PostsSchedulesTable : Table() {
     private val postId = integer("postId").primaryKey()
@@ -72,7 +75,7 @@ class PostsSchedulesTable : Table() {
                 ) {
                     it[this@PostsSchedulesTable.postTime] = postTime
                 }
-                launch {
+                PostsSchedulesTableScope.launch {
                     postTimeChangedChannel.send(postId to postTime)
                 }
             } ?:also {
@@ -80,7 +83,7 @@ class PostsSchedulesTable : Table() {
                     it[this@PostsSchedulesTable.postId] = postId
                     it[this@PostsSchedulesTable.postTime] = postTime
                 }
-                launch {
+                PostsSchedulesTableScope.launch {
                     postTimeRegisteredChannel.send(postId to postTime)
                 }
             }
@@ -94,7 +97,7 @@ class PostsSchedulesTable : Table() {
             } > 0
         }.also {
             if (it) {
-                launch {
+                PostsSchedulesTableScope.launch {
                     postTimeRemovedChannel.send(postId)
                 }
             }

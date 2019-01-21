@@ -2,20 +2,20 @@ package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.commands
 
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.database.PostsLikesMessagesTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.commands.Command
-import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.executeAsync
-import com.pengrad.telegrambot.TelegramBot
-import com.pengrad.telegrambot.model.Message
-import com.pengrad.telegrambot.model.request.ParseMode
-import com.pengrad.telegrambot.request.SendMessage
+import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
+import com.github.insanusmokrassar.TelegramBotAPI.requests.send.SendMessage
+import com.github.insanusmokrassar.TelegramBotAPI.types.ParseMode.MarkdownParseMode
+import com.github.insanusmokrassar.TelegramBotAPI.types.UpdateIdentifier
+import com.github.insanusmokrassar.TelegramBotAPI.types.message.abstracts.CommonMessage
 import java.lang.ref.WeakReference
 
 class AvailableRates(
-    private val botWR: WeakReference<TelegramBot>,
+    private val botWR: WeakReference<RequestsExecutor>,
     private val postsLikesMessagesTable: PostsLikesMessagesTable
 ) : Command() {
     override val commandRegex: Regex = Regex("^/availableRatings$")
 
-    override fun onCommand(updateId: Int, message: Message) {
+    override suspend fun onCommand(updateId: UpdateIdentifier, message: CommonMessage<*>) {
         val bot = botWR.get() ?: return
         var maxRatingLength = 0
         var maxCountLength = 0
@@ -25,9 +25,9 @@ class AvailableRates(
         postsLikesMessagesTable.getEnabledPostsIdAndRatings().map { (_, rating) -> rating }.also {
             commonCount = it.size
             maxRatingLength = it.maxBy {
-                rating ->
+                    rating ->
                 ratingCountMap[rating] ?.let {
-                    num ->
+                        num ->
                     ratingCountMap[rating] = num + 1
                 } ?:let {
                     ratingCountMap[rating] = 1
@@ -57,12 +57,11 @@ class AvailableRates(
                 it.second
             )
         }.let {
-            bot.executeAsync(
+            bot.execute(
                 SendMessage(
-                    message.chat().id(),
-                    it
-                ).parseMode(
-                    ParseMode.Markdown
+                    message.chat.id,
+                    it,
+                    parseMode = MarkdownParseMode
                 )
             )
         }

@@ -2,19 +2,23 @@ package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.database
 
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.commonLogger
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.NewDefaultCoroutineScope
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscribe
-import kotlinx.coroutines.experimental.channels.BroadcastChannel
-import kotlinx.coroutines.experimental.channels.Channel
-import kotlinx.coroutines.experimental.launch
+import com.github.insanusmokrassar.TelegramBotAPI.types.ChatId
+import kotlinx.coroutines.channels.BroadcastChannel
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.launch
 import org.h2.jdbc.JdbcSQLException
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.transactions.transaction
 
 typealias PostIdRatingPair = Pair<Int, Int>
-typealias PostIdUserId = Pair<Int, Long>
+typealias PostIdUserId = Pair<Int, ChatId>
 
 private const val resultColumnName = "result"
+
+private val PostsLikesTableScope = NewDefaultCoroutineScope()
 
 class PostsLikesTable : Table() {
     val likesChannel = BroadcastChannel<PostIdUserId>(Channel.CONFLATED)
@@ -42,19 +46,29 @@ class PostsLikesTable : Table() {
         }
     }
 
-    fun userLikePost(userId: Long, postId: Int) {
+    fun userLikePost(userId: ChatId, postId: Int) {
         userLike(userId, postId, true)
 
-        launch {
-            likesChannel.send(postId to userId)
+        PostsLikesTableScope.launch {
+            likesChannel.send(
+                PostIdUserId(
+                    postId,
+                    userId
+                )
+            )
         }
     }
 
-    fun userDislikePost(userId: Long, postId: Int) {
+    fun userDislikePost(userId: ChatId, postId: Int) {
         userLike(userId, postId, false)
 
-        launch {
-            dislikesChannel.send(postId to userId)
+        PostsLikesTableScope.launch {
+            dislikesChannel.send(
+                PostIdUserId(
+                    postId,
+                    userId
+                )
+            )
         }
     }
 
@@ -126,9 +140,9 @@ class PostsLikesTable : Table() {
         }.count()
     }
 
-    private fun createChooser(postId: Int, userId: Long? = null, like: Boolean? = null): Op<Boolean> {
+    private fun createChooser(postId: Int, userId: ChatId? = null, like: Boolean? = null): Op<Boolean> {
         return this@PostsLikesTable.postId.eq(postId).let {
-            userId ?.let {
+            userId ?.chatId ?.let {
                 userId ->
                 it.and(this@PostsLikesTable.userId.eq(userId))
             } ?: it
@@ -140,7 +154,7 @@ class PostsLikesTable : Table() {
         }
     }
 
-    private fun userLike(userId: Long, postId: Int, like: Boolean) {
+    private fun userLike(userId: ChatId, postId: Int, like: Boolean) {
         val chooser = createChooser(postId, userId)
         transaction {
             val record = select {
@@ -161,7 +175,7 @@ class PostsLikesTable : Table() {
             } ?:let {
                 addUser(userId, postId, like)
             }
-            launch {
+            PostsLikesTableScope.launch {
                 ratingsChannel.send(
                     PostIdRatingPair(postId, getPostRating(postId))
                 )
@@ -169,11 +183,11 @@ class PostsLikesTable : Table() {
         }
     }
 
-    private fun addUser(userId: Long, postId: Int, like: Boolean) {
+    private fun addUser(userId: ChatId, postId: Int, like: Boolean) {
         transaction {
             insert {
                 it[this@PostsLikesTable.postId] = postId
-                it[this@PostsLikesTable.userId] = userId
+                it[this@PostsLikesTable.userId] = userId.chatId
                 it[this@PostsLikesTable.like] = like
             }
         }

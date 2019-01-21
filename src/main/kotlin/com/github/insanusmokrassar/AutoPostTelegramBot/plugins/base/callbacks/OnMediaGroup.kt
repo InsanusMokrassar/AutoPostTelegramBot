@@ -6,13 +6,15 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.Plugin
 import com.github.insanusmokrassar.AutoPostTelegramBot.mediaGroupsListener
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.base.commands.usersTransactions
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscribe
-import com.pengrad.telegrambot.model.Message
+import com.github.insanusmokrassar.TelegramBotAPI.types.ChatIdentifier
+import com.github.insanusmokrassar.TelegramBotAPI.types.message.abstracts.FromUserMessage
+import com.github.insanusmokrassar.TelegramBotAPI.types.message.abstracts.MediaGroupMessage
 import java.util.logging.Logger
 
 private val logger = Logger.getLogger(Plugin::class.java.simpleName)
 
 class OnMediaGroup(
-    sourceChatId: Long
+    sourceChatId: ChatIdentifier
 ) {
     init {
         mediaGroupsListener.subscribe(
@@ -25,35 +27,32 @@ class OnMediaGroup(
                 true
             }
         ) {
-            invoke(
-                it.second,
-                sourceChatId
-            )
+            val mediaGroup = it.mapNotNull { it.data as? MediaGroupMessage }
+            invoke(mediaGroup, sourceChatId)
         }
     }
 
     private fun invoke(
-        messages: List<Message>,
-        sourceChatId: Long
+        messages: List<MediaGroupMessage>,
+        sourceChatId: ChatIdentifier
     ) {
         val first = messages.first()
-        if (first.chat().id() == sourceChatId) {
-            val userId: Long? = first.from() ?.id() ?.toLong() ?: first.chat() ?.id()
-
-            userId ?.let {
-                id ->
-                usersTransactions[id] ?.also {
-                    messages.forEach {
+        if (first.chat.id == sourceChatId) {
+            val id = when(first) {
+                is FromUserMessage -> first.user.id
+                else -> first.chat.id
+            }
+            usersTransactions[id] ?.also {
+                messages.forEach {
                         message ->
-                        it.addMessageId(PostMessage(message))
-                    }
-                } ?:also {
-                    PostTransaction().use {
+                    it.addMessageId(PostMessage(message))
+                }
+            } ?:also {
+                PostTransaction().use {
                         transaction ->
-                        messages.forEach {
+                    messages.forEach {
                             message ->
-                            transaction.addMessageId(PostMessage(message))
-                        }
+                        transaction.addMessageId(PostMessage(message))
                     }
                 }
             }
