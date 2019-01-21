@@ -5,10 +5,8 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.database.P
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.CallbackQueryReceivers.SafeCallbackQueryReceiver
 import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
 import com.github.insanusmokrassar.TelegramBotAPI.requests.answers.createAnswer
-import com.github.insanusmokrassar.TelegramBotAPI.types.CallbackQuery.CallbackQuery
 import com.github.insanusmokrassar.TelegramBotAPI.types.CallbackQuery.MessageDataCallbackQuery
 import com.github.insanusmokrassar.TelegramBotAPI.types.ChatId
-import com.github.insanusmokrassar.TelegramBotAPI.types.update.abstracts.Update
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.JSON

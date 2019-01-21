@@ -5,7 +5,7 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.commonLogger
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.scheduler.PostsSchedulesTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.*
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.commands.Command
-import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.*
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.asPairs
 import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
 import com.github.insanusmokrassar.TelegramBotAPI.requests.ForwardMessage
 import com.github.insanusmokrassar.TelegramBotAPI.requests.send.SendMessage

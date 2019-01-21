@@ -4,12 +4,10 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.allMessagesListener
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.database.PostsLikesMessagesTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.disableLikesForPost
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.CallbackQueryReceivers.CallbackQueryReceiver
-import com.github.insanusmokrassar.AutoPostTelegramBot.utils.NewDefaultCoroutineScope
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscribe
 import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
 import com.github.insanusmokrassar.TelegramBotAPI.requests.answers.createAnswer
 import com.github.insanusmokrassar.TelegramBotAPI.requests.send.SendMessage
-import com.github.insanusmokrassar.TelegramBotAPI.types.CallbackQuery.CallbackQuery
 import com.github.insanusmokrassar.TelegramBotAPI.types.CallbackQuery.DataCallbackQuery
 import com.github.insanusmokrassar.TelegramBotAPI.types.ChatIdentifier
 import com.github.insanusmokrassar.TelegramBotAPI.types.ParseMode.MarkdownParseMode
@@ -17,12 +15,9 @@ import com.github.insanusmokrassar.TelegramBotAPI.types.UserId
 import com.github.insanusmokrassar.TelegramBotAPI.types.message.abstracts.*
 import com.github.insanusmokrassar.TelegramBotAPI.types.message.content.TextContent
 import com.github.insanusmokrassar.TelegramBotAPI.types.update.CallbackQueryUpdate
-import com.github.insanusmokrassar.TelegramBotAPI.types.update.abstracts.Update
-import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.JSON
-import java.lang.ref.WeakReference
 
 @Serializable
 private data class DisableData(

@@ -7,7 +7,8 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.mediaGroupsListener
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.base.commands.usersTransactions
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscribe
 import com.github.insanusmokrassar.TelegramBotAPI.types.ChatIdentifier
-import com.github.insanusmokrassar.TelegramBotAPI.types.message.abstracts.*
+import com.github.insanusmokrassar.TelegramBotAPI.types.message.abstracts.FromUserMessage
+import com.github.insanusmokrassar.TelegramBotAPI.types.message.abstracts.MediaGroupMessage
 import java.util.logging.Logger
 
 private val logger = Logger.getLogger(Plugin::class.java.simpleName)

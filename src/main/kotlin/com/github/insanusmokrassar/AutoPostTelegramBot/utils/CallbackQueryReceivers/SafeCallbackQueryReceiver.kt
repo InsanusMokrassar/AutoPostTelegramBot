@@ -1,7 +1,7 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.utils.CallbackQueryReceivers
 
 import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
-import com.github.insanusmokrassar.TelegramBotAPI.types.CallbackQuery.*
+import com.github.insanusmokrassar.TelegramBotAPI.types.CallbackQuery.MessageDataCallbackQuery
 import com.github.insanusmokrassar.TelegramBotAPI.types.ChatIdentifier
 import com.github.insanusmokrassar.TelegramBotAPI.types.update.CallbackQueryUpdate
 

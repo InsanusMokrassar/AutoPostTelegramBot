@@ -10,7 +10,8 @@ import com.github.insanusmokrassar.TelegramBotAPI.requests.ForwardMessage
 import com.github.insanusmokrassar.TelegramBotAPI.requests.send.SendMessage
 import com.github.insanusmokrassar.TelegramBotAPI.types.*
 import com.github.insanusmokrassar.TelegramBotAPI.types.ParseMode.MarkdownParseMode
-import com.github.insanusmokrassar.TelegramBotAPI.types.message.abstracts.*
+import com.github.insanusmokrassar.TelegramBotAPI.types.message.abstracts.AbleToReplyMessage
+import com.github.insanusmokrassar.TelegramBotAPI.types.message.abstracts.CommonMessage
 import kotlinx.io.IOException
 import java.lang.ref.WeakReference
 

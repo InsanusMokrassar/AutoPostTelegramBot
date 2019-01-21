@@ -3,10 +3,9 @@ package com.github.insanusmokrassar.AutoPostTelegramBot.base.models
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.Plugin
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.ListSerializer
 import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
-import com.github.insanusmokrassar.TelegramBotAPI.types.*
-import kotlinx.serialization.Optional
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.Transient
+import com.github.insanusmokrassar.TelegramBotAPI.types.ChatId
+import com.github.insanusmokrassar.TelegramBotAPI.types.toChatId
+import kotlinx.serialization.*
 import org.h2.Driver
 
 @Serializable

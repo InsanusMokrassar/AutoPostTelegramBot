@@ -11,14 +11,12 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscrib
 import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
 import com.github.insanusmokrassar.TelegramBotAPI.requests.answers.createAnswer
 import com.github.insanusmokrassar.TelegramBotAPI.requests.send.SendMessage
-import com.github.insanusmokrassar.TelegramBotAPI.types.CallbackQuery.CallbackQuery
 import com.github.insanusmokrassar.TelegramBotAPI.types.CallbackQuery.DataCallbackQuery
 import com.github.insanusmokrassar.TelegramBotAPI.types.ChatId
 import com.github.insanusmokrassar.TelegramBotAPI.types.ParseMode.MarkdownParseMode
 import com.github.insanusmokrassar.TelegramBotAPI.types.message.abstracts.CommonMessage
 import com.github.insanusmokrassar.TelegramBotAPI.types.message.content.TextContent
 import com.github.insanusmokrassar.TelegramBotAPI.types.update.CallbackQueryUpdate
-import com.github.insanusmokrassar.TelegramBotAPI.types.update.abstracts.Update
 import com.github.insanusmokrassar.TelegramBotAPI.utils.extensions.executeAsync
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException

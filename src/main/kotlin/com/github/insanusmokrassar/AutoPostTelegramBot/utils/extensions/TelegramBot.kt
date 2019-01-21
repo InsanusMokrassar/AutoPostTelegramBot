@@ -1,10 +1,6 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions
 
-import com.github.insanusmokrassar.AutoPostTelegramBot.utils.SemaphoreK
-import kotlinx.coroutines.delay
 import org.slf4j.LoggerFactory
-import java.io.IOException
-import java.lang.ref.WeakReference
 
 private val logger = LoggerFactory.getLogger("TelegramAsyncExecutions")
 
