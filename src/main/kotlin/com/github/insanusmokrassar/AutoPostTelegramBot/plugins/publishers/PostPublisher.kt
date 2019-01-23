@@ -20,6 +20,7 @@ import com.github.insanusmokrassar.TelegramBotAPI.types.message.content.abstract
 import com.github.insanusmokrassar.TelegramBotAPI.types.message.content.media.PhotoContent
 import com.github.insanusmokrassar.TelegramBotAPI.types.message.content.media.VideoContent
 import com.github.insanusmokrassar.TelegramBotAPI.utils.extensions.executeAsync
+import com.github.insanusmokrassar.TelegramBotAPI.utils.extensions.executeUnsafe
 import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.serialization.Serializable
@@ -116,28 +117,41 @@ class PostPublisher : Publisher {
 
             var mediaGroup: MutableList<PostMessage>? = null
 
-            messageToPost.forEach { postMessage -> //TODO:: REFACTOR
-                mediaGroup ?.let { currentMediaGroup ->
-                    if (postMessage.mediaGroupId != currentMediaGroup.first().mediaGroupId) {
-                        mediaGroup = null
-                        responses += sendMediaGroup(executor, targetChatId, currentMediaGroup)
-                        null
-                    } else {
-                        currentMediaGroup.add(postMessage)
-                    }
-                } ?: also {
-                    if (postMessage.mediaGroupId != null) {
-                        mediaGroup = mutableListOf<PostMessage>().apply {
-                            add(postMessage)
+            try {
+                messageToPost.forEach { postMessage ->
+                    //TODO:: REFACTOR
+                    mediaGroup?.let { currentMediaGroup ->
+                        if (postMessage.mediaGroupId != currentMediaGroup.first().mediaGroupId) {
+                            mediaGroup = null
+                            responses += sendMediaGroup(executor, targetChatId, currentMediaGroup)
+                            null
+                        } else {
+                            currentMediaGroup.add(postMessage)
                         }
-                    } else {
-                        (postMessage.message as? ContentMessage<*>)?.content?.createResend(
-                            targetChatId
-                        ) ?.let { request ->
-                            responses.add(postMessage to executor.execute(request).asMessage)
+                    } ?: also {
+                        if (postMessage.mediaGroupId != null) {
+                            mediaGroup = mutableListOf<PostMessage>().apply {
+                                add(postMessage)
+                            }
+                        } else {
+                            (postMessage.message as? ContentMessage<*>)?.content?.createResend(
+                                targetChatId
+                            )?.let { request ->
+                                responses.add(postMessage to executor.execute(request).asMessage)
+                            }
                         }
                     }
                 }
+            } catch (e: Exception) {
+                responses.forEach { (postMessage, response) ->
+                    executor.executeUnsafe(
+                        DeleteMessage(
+                            response.chat.id,
+                            response.messageId
+                        )
+                    )
+                }
+                throw e
             }
 
             mediaGroup ?.also {
