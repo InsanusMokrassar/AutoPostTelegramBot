@@ -225,3 +225,5 @@ Fix of `CalculatedDateTime#asPastFor` - now it will decrease time even if source
 ### 1.0.1
 
 * Fix of [#27](https://github.com/InsanusMokrassar/AutoPostTelegramBot/issues/27)
+
+### 1.0.2
