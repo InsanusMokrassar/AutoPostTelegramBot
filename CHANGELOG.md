@@ -229,3 +229,5 @@ Fix of `CalculatedDateTime#asPastFor` - now it will decrease time even if source
 ### 1.0.2
 
 * Update `TelegramBotAPI` version `0.8.4` -> `0.9.0`
+
+### 1.0.3
