@@ -8,6 +8,8 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.PluginManage
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.commonLogger
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.base.commands.deletePost
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.choosers.Chooser
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.sendToLogger
+import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestException
 import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
 import com.github.insanusmokrassar.TelegramBotAPI.requests.DeleteMessage
 import com.github.insanusmokrassar.TelegramBotAPI.requests.ForwardMessage
@@ -134,9 +136,9 @@ class PostPublisher : Publisher {
                                 add(postMessage)
                             }
                         } else {
-                            (postMessage.message as? ContentMessage<*>)?.content?.createResend(
+                            (postMessage.message as? ContentMessage<*>)?.content?.createResends(
                                 targetChatId
-                            )?.let { request ->
+                            )?.forEach { request ->
                                 responses.add(postMessage to executor.execute(request).asMessage)
                             }
                         }
@@ -189,12 +191,7 @@ class PostPublisher : Publisher {
                 postId
             )
         } catch (e: Throwable) {
-            e.printStackTrace()
-            commonLogger.throwing(
-                name,
-                "Trying to publish",
-                e
-            )
+            e.sendToLogger()
         } finally {
             messagesToDelete.forEach {
                 executor.executeAsync(
