@@ -231,3 +231,8 @@ Fix of `CalculatedDateTime#asPastFor` - now it will decrease time even if source
 * Update `TelegramBotAPI` version `0.8.4` -> `0.9.0`
 
 ### 1.0.3
+
+* Update version of TelegramBotAPI
+* Update output of errors in `PostPublisher` and `RegisteredRefresher`
+* `disableLikesForPost` now execute requests unsafely (for avoid cases of unavailable deleting messages)
+* `PostPublisher` now use `createResends` for messages

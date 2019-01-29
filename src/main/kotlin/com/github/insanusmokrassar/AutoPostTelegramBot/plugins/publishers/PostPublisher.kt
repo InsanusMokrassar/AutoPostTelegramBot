@@ -8,6 +8,7 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.PluginManage
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.commonLogger
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.base.commands.deletePost
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.choosers.Chooser
+import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestException
 import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
 import com.github.insanusmokrassar.TelegramBotAPI.requests.DeleteMessage
 import com.github.insanusmokrassar.TelegramBotAPI.requests.ForwardMessage
@@ -25,6 +26,7 @@ import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
+import kotlinx.serialization.json.JSON
 import java.lang.ref.WeakReference
 
 typealias PostIdListPostMessagesTelegramMessages = Pair<Int, Map<PostMessage, Message>>
@@ -134,9 +136,9 @@ class PostPublisher : Publisher {
                                 add(postMessage)
                             }
                         } else {
-                            (postMessage.message as? ContentMessage<*>)?.content?.createResend(
+                            (postMessage.message as? ContentMessage<*>)?.content?.createResends(
                                 targetChatId
-                            )?.let { request ->
+                            )?.forEach { request ->
                                 responses.add(postMessage to executor.execute(request).asMessage)
                             }
                         }
@@ -190,11 +192,21 @@ class PostPublisher : Publisher {
             )
         } catch (e: Throwable) {
             e.printStackTrace()
-            commonLogger.throwing(
-                name,
-                "Trying to publish",
-                e
-            )
+            when (e) {
+                is RequestException -> {
+                    commonLogger.throwing(
+                        this::class.java.simpleName,
+                        "Publishing",
+                        e
+                    )
+                    commonLogger.warning(e.response.toString())
+                }
+                else -> commonLogger.throwing(
+                    this::class.java.simpleName,
+                    "Publishing",
+                    e
+                )
+            }
         } finally {
             messagesToDelete.forEach {
                 executor.executeAsync(

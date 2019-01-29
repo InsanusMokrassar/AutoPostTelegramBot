@@ -7,9 +7,9 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.commonLogger
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.database.PostsLikesMessagesTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.database.PostsLikesTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.receivers.*
-import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscribeChecking
-import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.toTable
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.*
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.makeLinkToMessage
+import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestException
 import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
 import com.github.insanusmokrassar.TelegramBotAPI.requests.DeleteMessage
 import com.github.insanusmokrassar.TelegramBotAPI.requests.edit.text.EditChatMessageText
@@ -20,6 +20,7 @@ import com.github.insanusmokrassar.TelegramBotAPI.types.ParseMode.MarkdownParseM
 import com.github.insanusmokrassar.TelegramBotAPI.types.buttons.InlineKeyboardButtons.*
 import com.github.insanusmokrassar.TelegramBotAPI.types.buttons.InlineKeyboardMarkup
 import com.github.insanusmokrassar.TelegramBotAPI.utils.extensions.executeAsync
+import com.github.insanusmokrassar.TelegramBotAPI.utils.extensions.executeUnsafe
 import com.github.insanusmokrassar.TelegramBotAPI.utils.matrix
 import com.github.insanusmokrassar.TelegramBotAPI.utils.row
 import java.lang.ref.WeakReference
@@ -33,7 +34,7 @@ suspend fun disableLikesForPost(
     postsLikesMessagesTable.messageIdByPostId(postId) ?.let {
         messageId ->
 
-        executor.execute(
+        executor.executeUnsafe(
             DeleteMessage(
                 sourceChatId,
                 messageId
@@ -53,7 +54,7 @@ class RegisteredRefresher(
     private val botWR = WeakReference(executor)
 
     init {
-        postsLikesTable.ratingsChannel.subscribeChecking(
+        postsLikesTable.ratingsChannel.subscribe(
             {
                 commonLogger.throwing(
                     "RegisteredRefresher",
@@ -65,43 +66,50 @@ class RegisteredRefresher(
         ) {
             refreshRegisteredMessage(
                 sourceChatId,
-                botWR.get() ?: return@subscribeChecking false,
+                botWR.get() ?: return@subscribe,
                 it.first,
                 postsLikesTable,
                 postsLikesMessagesTable,
                 it.second
             )
-            true
         }
 
-        transactionCompletedChannel.subscribeChecking {
+        transactionCompletedChannel.subscribe {
             refreshRegisteredMessage(
                 sourceChatId,
-                botWR.get() ?: return@subscribeChecking false,
+                botWR.get() ?: return@subscribe,
                 it,
                 postsLikesTable,
                 postsLikesMessagesTable
             )
-            true
         }
 
-        PostsTable.postRemovedChannel.subscribeChecking(
+        PostsTable.postRemovedChannel.subscribe(
             {
-                commonLogger.throwing(
-                    "RegisteredRefresher",
-                    "remove registered post-message link",
-                    it
-                )
+                when (it) {
+                    is RequestException -> {
+                        commonLogger.throwing(
+                            RegisteredRefresher::class.java.simpleName,
+                            "remove registered post-message link",
+                            it
+                        )
+                        commonLogger.warning(it.response.toString())
+                    }
+                    else -> commonLogger.throwing(
+                        this::class.java.simpleName,
+                        "remove registered post-message link",
+                        it
+                    )
+                }
                 true
             }
         ) {
             disableLikesForPost(
                 it,
-                botWR.get() ?: return@subscribeChecking false,
+                botWR.get() ?: return@subscribe,
                 sourceChatId,
                 postsLikesMessagesTable
             )
-            true
         }
     }
 }
