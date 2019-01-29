@@ -8,6 +8,7 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.PluginManage
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.commonLogger
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.base.commands.deletePost
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.choosers.Chooser
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.sendToLogger
 import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestException
 import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
 import com.github.insanusmokrassar.TelegramBotAPI.requests.DeleteMessage
@@ -190,22 +191,7 @@ class PostPublisher : Publisher {
                 postId
             )
         } catch (e: Throwable) {
-            e.printStackTrace()
-            when (e) {
-                is RequestException -> {
-                    commonLogger.throwing(
-                        this::class.java.simpleName,
-                        "Publishing",
-                        e
-                    )
-                    commonLogger.warning(e.response.toString())
-                }
-                else -> commonLogger.throwing(
-                    this::class.java.simpleName,
-                    "Publishing",
-                    e
-                )
-            }
+            e.sendToLogger()
         } finally {
             messagesToDelete.forEach {
                 executor.executeAsync(
