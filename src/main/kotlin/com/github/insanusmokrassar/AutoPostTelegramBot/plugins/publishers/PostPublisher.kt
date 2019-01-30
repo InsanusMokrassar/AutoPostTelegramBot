@@ -191,7 +191,7 @@ class PostPublisher : Publisher {
                 postId
             )
         } catch (e: Throwable) {
-            e.sendToLogger()
+            sendToLogger(e, "Publish post")
         } finally {
             messagesToDelete.forEach {
                 executor.executeAsync(

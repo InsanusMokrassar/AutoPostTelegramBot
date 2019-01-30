@@ -86,7 +86,7 @@ class RegisteredRefresher(
 
         PostsTable.postRemovedChannel.subscribe(
             {
-                it.sendToLogger()
+                sendToLogger(it, "Try to handle post removing")
                 true
             }
         ) {

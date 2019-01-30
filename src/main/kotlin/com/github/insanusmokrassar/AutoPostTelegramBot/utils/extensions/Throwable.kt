@@ -11,21 +11,3 @@ fun Throwable.collectStackTrace(): String {
         printStackTrace(PrintStream(it))
     }.toString(Charsets.UTF_8.toString())
 }
-
-fun Throwable.sendToLogger() {
-    when (this) {
-        is RequestException -> {
-            commonLogger.throwing(
-                RegisteredRefresher::class.java.simpleName,
-                "remove registered post-message link",
-                this
-            )
-            commonLogger.warning(response.toString())
-        }
-        else -> commonLogger.throwing(
-            this::class.java.simpleName,
-            "remove registered post-message link",
-            this
-        )
-    }
-}

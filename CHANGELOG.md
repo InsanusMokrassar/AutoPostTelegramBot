@@ -238,3 +238,6 @@ Fix of `CalculatedDateTime#asPastFor` - now it will decrease time even if source
 * `PostPublisher` now use `createResends` for messages
 
 ### 1.0.4
+
+* `sendToLogger` now is extension for `Any` for correct sending of source class and method
+* `BotLogger` will try to send log messages with `Markdown` parse mod and, if not success, without
