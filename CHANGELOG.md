@@ -245,3 +245,4 @@ Fix of `CalculatedDateTime#asPastFor` - now it will decrease time even if source
 * Experimentally replace all `LaunchKt` broadcast channels by custom `UnlimitedBroadcastChannel`
 * Experimentally replace all BroadcastChannel factory invocations by creating of `UnlimitedBroadcastChannel`
 * Update `TelegramBotAPI` `0.9.1` -> `0.9.2`
+* `registerPostMessage` by default use 3 retries to register post message

@@ -16,7 +16,8 @@ import java.lang.ref.WeakReference
 private suspend fun registerPostMessage(
     executor: RequestsExecutor,
     sourceChatId: ChatIdentifier,
-    registeredPostId: Int
+    registeredPostId: Int,
+    retries: Int = 3
 ) {
     try {
         val response = executor.execute(
@@ -42,8 +43,11 @@ private suspend fun registerPostMessage(
     } catch (e: Exception) {
         executor.sendToLogger(
             e,
-            "Register message"
+            "Register message; Left retries: $retries"
         )
+        if (retries > 0) {
+            registerPostMessage(executor, sourceChatId, registeredPostId, retries - 1)
+        }
     }
 }
 
