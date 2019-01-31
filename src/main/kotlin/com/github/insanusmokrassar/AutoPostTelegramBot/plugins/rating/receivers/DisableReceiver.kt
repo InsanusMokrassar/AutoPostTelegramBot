@@ -53,7 +53,7 @@ class DisableReceiver(
 
             val bot = executorWR.get() ?: return@subscribe
             awaitApprove.firstOrNull { it.first == userId } ?.let { userIdPostId ->
-                val (userId, postId) = userIdPostId
+                val postId = userIdPostId.second
                 if (message is ContentMessage<*>) {
                     val content = message.content
                     when (content) {
@@ -85,7 +85,7 @@ class DisableReceiver(
                 val forwarded = message.forwarded
                 val from = forwarded ?.from
                 if (forwarded != null && from ?.id == sourceChatId) {
-                    val postId = postsLikesMessagesTable.postIdByMessageId(
+                    postsLikesMessagesTable.postIdByMessageId(
                         forwarded.messageId
                     ) ?.let { postId ->
                         bot.execute(

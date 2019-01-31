@@ -144,7 +144,7 @@ class PostPublisher : Publisher {
                     }
                 }
             } catch (e: Exception) {
-                responses.forEach { (postMessage, response) ->
+                responses.forEach { (_, response) ->
                     executor.executeUnsafe(
                         DeleteMessage(
                             response.chat.id,

@@ -48,7 +48,6 @@ class DisableTimerCommand(
 
         try {
             val postId = PostsTable.findPost(replyToMessage.messageId)
-            val chatId = message.chat.id
 
             postsSchedulesTable.unregisterPost(postId)
 
