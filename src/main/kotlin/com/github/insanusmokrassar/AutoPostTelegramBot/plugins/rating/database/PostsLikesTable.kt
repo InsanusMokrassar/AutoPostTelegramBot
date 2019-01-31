@@ -157,10 +157,9 @@ class PostsLikesTable : Table() {
     private fun userLike(userId: ChatId, postId: Int, like: Boolean) {
         val chooser = createChooser(postId, userId)
         transaction {
-            val record = select {
+            select {
                 chooser
-            }.firstOrNull()
-            record ?.let {
+            }.firstOrNull() ?.also {
                 if (it[this@PostsLikesTable.like] == like) {
                     deleteWhere { chooser }
                 } else {
@@ -168,18 +167,16 @@ class PostsLikesTable : Table() {
                         {
                             chooser
                         }
-                    ) {
-                        it[this@PostsLikesTable.like] = like
+                    ) { updateStatement ->
+                        updateStatement[this@PostsLikesTable.like] = like
                     }
                 }
-            } ?:let {
-                addUser(userId, postId, like)
-            }
-            PostsLikesTableScope.launch {
-                ratingsChannel.send(
-                    PostIdRatingPair(postId, getPostRating(postId))
-                )
-            }
+            } ?: addUser(userId, postId, like)
+        }
+        PostsLikesTableScope.launch {
+            ratingsChannel.send(
+                PostIdRatingPair(postId, getPostRating(postId))
+            )
         }
     }
 
