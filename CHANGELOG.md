@@ -243,3 +243,4 @@ Fix of `CalculatedDateTime#asPastFor` - now it will decrease time even if source
 * `BotLogger` will try to send log messages with `Markdown` parse mod and, if not success, without
 * `TimerTriggerStrategy` now will await near time to trigger publish
 * Experimentally replace all `LaunchKt` broadcast channels by custom `UnlimitedBroadcastChannel`
+* Experimentally replace all BroadcastChannel factory invocations by creating of `UnlimitedBroadcastChannel`

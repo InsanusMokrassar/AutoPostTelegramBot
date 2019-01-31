@@ -2,6 +2,7 @@ package com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables
 
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.PostMessage
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.NewDefaultCoroutineScope
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.UnlimitedBroadcastChannel
 import com.github.insanusmokrassar.TelegramBotAPI.types.MessageIdentifier
 import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel
@@ -14,12 +15,12 @@ typealias PostIdToMessagesIds = Pair<Int, Collection<MessageIdentifier>>
 val PostsMessagesTableScope = NewDefaultCoroutineScope()
 
 object PostsMessagesTable : Table() {
-    val newMessagesOfPost = BroadcastChannel<PostIdToMessagesIds>(Channel.CONFLATED)
+    val newMessagesOfPost = UnlimitedBroadcastChannel<PostIdToMessagesIds>()
 
     @Deprecated("This channel is not determine post id", ReplaceWith("removedMessageOfPost"))
-    val removeMessageOfPost = BroadcastChannel<MessageIdentifier>(Channel.CONFLATED)
-    val removedMessagesOfPost = BroadcastChannel<PostIdToMessagesIds>(Channel.CONFLATED)
-    val removedMessageOfPost = BroadcastChannel<PostIdMessageId>(Channel.CONFLATED)
+    val removeMessageOfPost = UnlimitedBroadcastChannel<MessageIdentifier>()
+    val removedMessagesOfPost = UnlimitedBroadcastChannel<PostIdToMessagesIds>()
+    val removedMessageOfPost = UnlimitedBroadcastChannel<PostIdMessageId>()
 
     private val messageId = long("messageId").primaryKey()
     private val mediaGroupId = text("mediaGroupId").nullable()
