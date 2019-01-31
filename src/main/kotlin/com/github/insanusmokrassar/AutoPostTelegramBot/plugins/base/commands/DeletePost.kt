@@ -4,6 +4,7 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.Post
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.commonLogger
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.commands.Command
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.sendToLogger
 import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
 import com.github.insanusmokrassar.TelegramBotAPI.requests.DeleteMessage
 import com.github.insanusmokrassar.TelegramBotAPI.requests.ForwardMessage
@@ -12,13 +13,13 @@ import com.github.insanusmokrassar.TelegramBotAPI.types.*
 import com.github.insanusmokrassar.TelegramBotAPI.types.ParseMode.MarkdownParseMode
 import com.github.insanusmokrassar.TelegramBotAPI.types.message.abstracts.AbleToReplyMessage
 import com.github.insanusmokrassar.TelegramBotAPI.types.message.abstracts.CommonMessage
+import com.github.insanusmokrassar.TelegramBotAPI.utils.extensions.executeUnsafe
 import kotlinx.io.IOException
 import java.lang.ref.WeakReference
 
 suspend fun deletePost(
     executor: RequestsExecutor,
     chatId: ChatIdentifier,
-    logsChatId: ChatIdentifier,
     postId: Int,
     vararg additionalMessagesIdsToDelete: MessageIdentifier
 ) {
@@ -39,22 +40,15 @@ suspend fun deletePost(
                 )
             )
         } catch (e: IOException) {
-            executor.execute(
-                ForwardMessage(
-                    chatId,
-                    logsChatId,
-                    currentMessageToDeleteId
-                )
-            )
-            commonLogger.warning(
-                "Can't delete message. Reason:\n```\n${e.message}\n```\n\nPlease, delete manually"
+            executor.sendToLogger(
+                e,
+                "Deleting of post"
             )
         }
     }
 }
 
 class DeletePost(
-    private val logsChatId: ChatIdentifier,
     private val botWR: WeakReference<RequestsExecutor>
 ) : Command() {
     override val commandRegex: Regex = Regex("^/deletePost$")
@@ -69,7 +63,6 @@ class DeletePost(
                 deletePost(
                     bot,
                     chatId,
-                    logsChatId,
                     postId,
                     messageId,
                     message.messageId

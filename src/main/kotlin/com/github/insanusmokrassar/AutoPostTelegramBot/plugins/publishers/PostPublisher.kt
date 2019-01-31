@@ -183,7 +183,6 @@ class PostPublisher : Publisher {
             deletePost(
                 executor,
                 sourceChatId,
-                logsChatId,
                 postId
             )
         } catch (e: Throwable) {

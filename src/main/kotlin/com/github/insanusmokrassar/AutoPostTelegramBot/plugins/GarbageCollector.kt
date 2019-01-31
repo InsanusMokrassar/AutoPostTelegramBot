@@ -129,7 +129,6 @@ class GarbageCollector(
             deletePost(
                 executor,
                 baseConfig.sourceChatId,
-                baseConfig.logsChatId,
                 dataPair.first
             )
         }

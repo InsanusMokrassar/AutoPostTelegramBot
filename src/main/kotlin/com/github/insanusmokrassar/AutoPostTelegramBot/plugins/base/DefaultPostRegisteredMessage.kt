@@ -4,6 +4,7 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.Post
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.transactionCompletedChannel
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.commonLogger
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.sendToLogger
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscribeChecking
 import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
 import com.github.insanusmokrassar.TelegramBotAPI.requests.DeleteMessage
@@ -39,10 +40,9 @@ private suspend fun registerPostMessage(
             )
         }
     } catch (e: Exception) {
-        commonLogger.throwing(
-            DefaultPostRegisteredMessage::class.java.simpleName,
-            "Register message",
-            e
+        executor.sendToLogger(
+            e,
+            "Register message"
         )
     }
 }
