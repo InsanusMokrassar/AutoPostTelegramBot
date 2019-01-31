@@ -6,6 +6,7 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.base.PostsUsedTab
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.NewDefaultCoroutineScope
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.UnlimitedBroadcastChannel
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscribe
+import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.launch
 import org.jetbrains.exposed.sql.*
@@ -20,9 +21,9 @@ class PostsSchedulesTable : Table() {
     private val postId = integer("postId").primaryKey()
     private val postTime = datetime("postTime")
 
-    val postTimeRegisteredChannel = UnlimitedBroadcastChannel<PostIdPostTime>()
-    val postTimeChangedChannel = UnlimitedBroadcastChannel<PostIdPostTime>()
-    val postTimeRemovedChannel = UnlimitedBroadcastChannel<Int>()
+    val postTimeRegisteredChannel: BroadcastChannel<PostIdPostTime> = UnlimitedBroadcastChannel()
+    val postTimeChangedChannel: BroadcastChannel<PostIdPostTime> = UnlimitedBroadcastChannel()
+    val postTimeRemovedChannel: BroadcastChannel<Int> = UnlimitedBroadcastChannel()
 
     init {
         PostsTable.postRemovedChannel.subscribe {

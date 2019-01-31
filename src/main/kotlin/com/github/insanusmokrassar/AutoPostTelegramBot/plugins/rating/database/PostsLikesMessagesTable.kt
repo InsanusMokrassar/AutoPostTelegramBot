@@ -7,6 +7,7 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.utils.NewDefaultCoroutine
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.UnlimitedBroadcastChannel
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscribe
 import com.github.insanusmokrassar.TelegramBotAPI.types.MessageIdentifier
+import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.launch
 import org.jetbrains.exposed.sql.*
@@ -17,8 +18,8 @@ private val PostsLikesMessagesTableScope = NewDefaultCoroutineScope()
 class PostsLikesMessagesTable(
     private val postsLikesTable: PostsLikesTable
 ) : Table() {
-    val ratingMessageRegisteredChannel = UnlimitedBroadcastChannel<PostIdMessageId>()
-    val ratingMessageUnregisteredChannel = UnlimitedBroadcastChannel<Int>()
+    val ratingMessageRegisteredChannel: BroadcastChannel<PostIdMessageId> = UnlimitedBroadcastChannel()
+    val ratingMessageUnregisteredChannel: BroadcastChannel<Int> = UnlimitedBroadcastChannel()
 
     private val postId = integer("postId").primaryKey()
     private val messageId = long("messageId")

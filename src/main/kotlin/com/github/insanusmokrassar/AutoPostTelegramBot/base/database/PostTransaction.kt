@@ -6,13 +6,14 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.Post
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.PostMessage
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.NewDefaultCoroutineScope
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.UnlimitedBroadcastChannel
+import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.launch
 import java.io.Closeable
 
-val transactionStartedChannel = UnlimitedBroadcastChannel<Unit>()
-val transactionMessageAddedChannel = UnlimitedBroadcastChannel<Array<out PostMessage>>()
-val transactionMessageRemovedChannel = UnlimitedBroadcastChannel<PostMessage>()
-val transactionCompletedChannel = UnlimitedBroadcastChannel<Int>()
+val transactionStartedChannel: BroadcastChannel<Unit> = UnlimitedBroadcastChannel()
+val transactionMessageAddedChannel: BroadcastChannel<Array<out PostMessage>> = UnlimitedBroadcastChannel()
+val transactionMessageRemovedChannel: BroadcastChannel<PostMessage> = UnlimitedBroadcastChannel()
+val transactionCompletedChannel: BroadcastChannel<Int> = UnlimitedBroadcastChannel()
 
 val PostTransactionsScope = NewDefaultCoroutineScope()
 

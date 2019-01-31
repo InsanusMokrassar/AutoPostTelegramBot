@@ -5,6 +5,7 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.PluginName
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.NewDefaultCoroutineScope
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.UnlimitedBroadcastChannel
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscribe
+import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.launch
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -14,8 +15,8 @@ typealias PostIdToPluginName = Pair<Int, PluginName>
 private val PostsUsedTableScope = NewDefaultCoroutineScope()
 
 class PostsUsedTable internal constructor() : Table() {
-    val registeredLinkChannel = UnlimitedBroadcastChannel<PostIdToPluginName>()
-    val unregisteredLinkChannel = UnlimitedBroadcastChannel<PostIdToPluginName>()
+    val registeredLinkChannel: BroadcastChannel<PostIdToPluginName> = UnlimitedBroadcastChannel()
+    val unregisteredLinkChannel: BroadcastChannel<PostIdToPluginName> = UnlimitedBroadcastChannel()
 
     private val id = integer("id").primaryKey().autoIncrement()
 

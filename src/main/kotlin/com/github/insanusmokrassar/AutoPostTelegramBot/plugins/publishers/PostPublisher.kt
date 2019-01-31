@@ -23,6 +23,7 @@ import com.github.insanusmokrassar.TelegramBotAPI.types.message.content.media.Ph
 import com.github.insanusmokrassar.TelegramBotAPI.types.message.content.media.VideoContent
 import com.github.insanusmokrassar.TelegramBotAPI.utils.extensions.executeAsync
 import com.github.insanusmokrassar.TelegramBotAPI.utils.extensions.executeUnsafe
+import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import java.lang.ref.WeakReference
@@ -33,7 +34,7 @@ private typealias ChatIdMessageIdPair = Pair<ChatId, MessageIdentifier>
 @Serializable
 class PostPublisher : Publisher {
     @Transient
-    val postPublishedChannel = UnlimitedBroadcastChannel<PostIdListPostMessagesTelegramMessages>()
+    val postPublishedChannel: BroadcastChannel<PostIdListPostMessagesTelegramMessages> = UnlimitedBroadcastChannel()
 
     @Transient
     private var botWR: WeakReference<RequestsExecutor>? = null

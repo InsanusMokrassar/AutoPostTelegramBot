@@ -5,6 +5,7 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.exceptions.
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.NewDefaultCoroutineScope
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.UnlimitedBroadcastChannel
 import com.github.insanusmokrassar.TelegramBotAPI.types.MessageIdentifier
+import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.launch
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -16,9 +17,9 @@ typealias PostIdMessageId = Pair<Int, MessageIdentifier>
 val PostsTableScope = NewDefaultCoroutineScope()
 
 object PostsTable : Table() {
-    val postAllocatedChannel = UnlimitedBroadcastChannel<Int>()
-    val postRemovedChannel = UnlimitedBroadcastChannel<Int>()
-    val postMessageRegisteredChannel = UnlimitedBroadcastChannel<PostIdMessageId>()
+    val postAllocatedChannel: BroadcastChannel<Int> = UnlimitedBroadcastChannel()
+    val postRemovedChannel: BroadcastChannel<Int> = UnlimitedBroadcastChannel()
+    val postMessageRegisteredChannel: BroadcastChannel<PostIdMessageId> = UnlimitedBroadcastChannel()
 
     private val id = integer("id").primaryKey().autoIncrement()
     private val postRegisteredMessageId = long("postRegistered").nullable()
