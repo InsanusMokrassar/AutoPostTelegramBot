@@ -8,8 +8,8 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.PluginManage
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.commonLogger
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.base.commands.deletePost
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.choosers.Chooser
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.UnlimitedBroadcastChannel
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.sendToLogger
-import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestException
 import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
 import com.github.insanusmokrassar.TelegramBotAPI.requests.DeleteMessage
 import com.github.insanusmokrassar.TelegramBotAPI.requests.ForwardMessage
@@ -24,7 +24,6 @@ import com.github.insanusmokrassar.TelegramBotAPI.types.message.content.media.Vi
 import com.github.insanusmokrassar.TelegramBotAPI.utils.extensions.executeAsync
 import com.github.insanusmokrassar.TelegramBotAPI.utils.extensions.executeUnsafe
 import kotlinx.coroutines.channels.BroadcastChannel
-import kotlinx.coroutines.channels.Channel
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import java.lang.ref.WeakReference
@@ -35,9 +34,7 @@ private typealias ChatIdMessageIdPair = Pair<ChatId, MessageIdentifier>
 @Serializable
 class PostPublisher : Publisher {
     @Transient
-    val postPublishedChannel = BroadcastChannel<PostIdListPostMessagesTelegramMessages>(
-        Channel.CONFLATED
-    )
+    val postPublishedChannel: BroadcastChannel<PostIdListPostMessagesTelegramMessages> = UnlimitedBroadcastChannel()
 
     @Transient
     private var botWR: WeakReference<RequestsExecutor>? = null
@@ -145,7 +142,7 @@ class PostPublisher : Publisher {
                     }
                 }
             } catch (e: Exception) {
-                responses.forEach { (postMessage, response) ->
+                responses.forEach { (_, response) ->
                     executor.executeUnsafe(
                         DeleteMessage(
                             response.chat.id,
@@ -187,11 +184,10 @@ class PostPublisher : Publisher {
             deletePost(
                 executor,
                 sourceChatId,
-                logsChatId,
                 postId
             )
         } catch (e: Throwable) {
-            e.sendToLogger()
+            sendToLogger(e, "Publish post")
         } finally {
             messagesToDelete.forEach {
                 executor.executeAsync(

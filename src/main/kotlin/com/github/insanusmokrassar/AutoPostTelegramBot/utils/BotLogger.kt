@@ -2,9 +2,11 @@ package com.github.insanusmokrassar.AutoPostTelegramBot.utils
 
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.commonLogger
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.splitForMessageWithAdditionalStep
+import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestException
 import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
 import com.github.insanusmokrassar.TelegramBotAPI.requests.send.SendMessage
 import com.github.insanusmokrassar.TelegramBotAPI.types.ChatIdentifier
+import com.github.insanusmokrassar.TelegramBotAPI.types.ParseMode.MarkdownParseMode
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import java.lang.ref.WeakReference
@@ -23,14 +25,23 @@ private class LoggerHandler(
             launch {
                 for (msg in logsChannel) {
                     val bot = botWR.get() ?: break
-                    formatter.format(msg).splitForMessageWithAdditionalStep(6).forEach {
-                            record ->
-                        bot.execute(
-                            SendMessage(
-                                logsChatId,
-                                record
+                    formatter.format(msg).splitForMessageWithAdditionalStep(6).forEach { record ->
+                        try {
+                            bot.execute(
+                                SendMessage(
+                                    logsChatId,
+                                    record,
+                                    MarkdownParseMode
+                                )
                             )
-                        )
+                        } catch (e: RequestException) {
+                            bot.execute(
+                                SendMessage(
+                                    logsChatId,
+                                    record
+                                )
+                            )
+                        }
                     }
                 }
             }

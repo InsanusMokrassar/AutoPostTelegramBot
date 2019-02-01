@@ -1,11 +1,13 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.triggers
 
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.FinalConfig
-import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.*
+import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.Plugin
+import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.PluginManager
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.choosers.Chooser
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.publishers.Publisher
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.*
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.nearDateTime
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.sendToLogger
 import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
 import kotlinx.coroutines.*
 import kotlinx.serialization.*
@@ -42,20 +44,16 @@ class TimerTriggerStrategy (
 
         TimerTriggerStrategyScope.launch {
             while (isActive) {
+                delay(nextTriggerTime ?.millis ?.minus(System.currentTimeMillis()) ?: break)
                 launch {
                     try {
                         chooser.triggerChoose().forEach {
                             publisher.publishPost(it)
                         }
                     } catch (e: Exception) {
-                        commonLogger.throwing(
-                            this@TimerTriggerStrategy::class.java.simpleName,
-                            "Trigger of publishing",
-                            e
-                        )
+                        this@TimerTriggerStrategy.sendToLogger(e, "Try to publish with triggering")
                     }
                 }
-                delay(nextTriggerTime ?.millis ?.minus(System.currentTimeMillis()) ?: break)
             }
         }
     }

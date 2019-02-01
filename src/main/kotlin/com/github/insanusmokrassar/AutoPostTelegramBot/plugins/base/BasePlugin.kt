@@ -36,7 +36,6 @@ class BasePlugin : Plugin {
         val botWR = WeakReference(executor)
 
         deletePost = DeletePost(
-            baseConfig.logsChatId,
             botWR
         )
         startPost = StartPost()

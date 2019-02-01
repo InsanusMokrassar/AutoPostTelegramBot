@@ -4,6 +4,7 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.Post
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.transactionCompletedChannel
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.commonLogger
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.sendToLogger
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscribeChecking
 import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
 import com.github.insanusmokrassar.TelegramBotAPI.requests.DeleteMessage
@@ -15,7 +16,8 @@ import java.lang.ref.WeakReference
 private suspend fun registerPostMessage(
     executor: RequestsExecutor,
     sourceChatId: ChatIdentifier,
-    registeredPostId: Int
+    registeredPostId: Int,
+    retries: Int = 3
 ) {
     try {
         val response = executor.execute(
@@ -39,11 +41,13 @@ private suspend fun registerPostMessage(
             )
         }
     } catch (e: Exception) {
-        commonLogger.throwing(
-            DefaultPostRegisteredMessage::class.java.simpleName,
-            "Register message",
-            e
+        executor.sendToLogger(
+            e,
+            "Register message; Left retries: $retries"
         )
+        if (retries > 0) {
+            registerPostMessage(executor, sourceChatId, registeredPostId, retries - 1)
+        }
     }
 }
 

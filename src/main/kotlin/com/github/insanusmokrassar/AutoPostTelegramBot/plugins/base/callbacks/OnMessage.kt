@@ -50,7 +50,7 @@ class OnMessage(
             }
 
             val userId: ChatIdentifier? = message.chat.id
-            userId ?.let { id ->
+            userId ?.let {
                 usersTransactions[userId] ?.also {
                     it.addMessageId(PostMessage(message))
                 } ?: also {

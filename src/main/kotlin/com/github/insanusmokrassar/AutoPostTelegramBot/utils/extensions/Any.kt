@@ -1,5 +1,7 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions
 
+import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.commonLogger
+import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestException
 import com.github.insanusmokrassar.TelegramBotAPI.types.buttons.Matrix
 import com.github.insanusmokrassar.TelegramBotAPI.utils.matrix
 import com.github.insanusmokrassar.TelegramBotAPI.utils.row
@@ -17,5 +19,23 @@ inline fun <reified T> List<T>.toTable(columns: Int): Matrix<T> {
                 }.forEach { add(it) }
             }
         }
+    }
+}
+
+fun Any.sendToLogger(e: Throwable, sourceMethod: String = "Unknown method") {
+    when (e) {
+        is RequestException -> {
+            commonLogger.throwing(
+                this::class.java.simpleName,
+                sourceMethod,
+                e
+            )
+            commonLogger.warning(e.response.toString())
+        }
+        else -> commonLogger.throwing(
+            this::class.java.simpleName,
+            sourceMethod,
+            e
+        )
     }
 }

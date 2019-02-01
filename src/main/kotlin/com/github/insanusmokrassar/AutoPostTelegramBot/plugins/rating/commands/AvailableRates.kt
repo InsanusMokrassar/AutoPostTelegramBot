@@ -19,7 +19,7 @@ class AvailableRates(
         val bot = botWR.get() ?: return
         var maxRatingLength = 0
         var maxCountLength = 0
-        var commonCount = 0
+        val commonCount: Int
 
         val ratingCountMap = mutableMapOf<Int, Int>()
         postsLikesMessagesTable.getEnabledPostsIdAndRatings().map { (_, rating) -> rating }.also {

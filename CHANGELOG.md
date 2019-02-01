@@ -236,3 +236,13 @@ Fix of `CalculatedDateTime#asPastFor` - now it will decrease time even if source
 * Update output of errors in `PostPublisher` and `RegisteredRefresher`
 * `disableLikesForPost` now execute requests unsafely (for avoid cases of unavailable deleting messages)
 * `PostPublisher` now use `createResends` for messages
+
+### 1.0.4
+
+* `sendToLogger` now is extension for `Any` for correct sending of source class and method
+* `BotLogger` will try to send log messages with `Markdown` parse mod and, if not success, without
+* `TimerTriggerStrategy` now will await near time to trigger publish
+* Experimentally replace all `LaunchKt` broadcast channels by custom `UnlimitedBroadcastChannel`
+* Experimentally replace all BroadcastChannel factory invocations by creating of `UnlimitedBroadcastChannel`
+* Update `TelegramBotAPI` `0.9.1` -> `0.9.2`
+* `registerPostMessage` by default use 3 retries to register post message
