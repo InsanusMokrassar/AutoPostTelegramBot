@@ -53,7 +53,7 @@ class BasePlugin : Plugin {
             executor,
             baseConfig.sourceChatId
         ).also {
-            renewRegisteredMessage = RenewRegisteredMessage(it)
+            renewRegisteredMessage = RenewRegisteredMessage(it).also { it.onInit(executor, baseConfig, pluginManager) }
         }
     }
 }
