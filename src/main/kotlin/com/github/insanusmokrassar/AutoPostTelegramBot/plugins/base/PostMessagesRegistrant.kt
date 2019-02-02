@@ -32,12 +32,13 @@ class PostMessagesRegistrant(
 
         val registerJobs = PostsTable.getAll().mapNotNull {
             if (PostsTable.postRegisteredMessage(it) == null) {
-                return@mapNotNull null
-            }
-            scope.launch {
-                registerPostMessage(
-                    it
-                )
+                scope.launch {
+                    registerPostMessage(
+                        it
+                    )
+                }
+            } else {
+                null
             }
         }
         scope.launch {
