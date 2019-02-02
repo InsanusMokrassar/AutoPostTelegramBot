@@ -250,3 +250,4 @@ Fix of `CalculatedDateTime#asPastFor` - now it will decrease time even if source
 ### 1.0.5
 
 * Add registering of messages for on the init of `DefaultPostRegisteredMessage`
+* Rename `PostMessagesRegistrant` and replace its registering function inside

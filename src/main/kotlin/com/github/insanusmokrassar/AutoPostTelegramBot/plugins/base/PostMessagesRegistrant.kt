@@ -3,7 +3,6 @@ package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.base
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsMessagesTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.transactionCompletedChannel
-import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.commonLogger
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.NewDefaultCoroutineScope
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.sendToLogger
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscribeChecking
@@ -15,55 +14,15 @@ import com.github.insanusmokrassar.TelegramBotAPI.types.ParseMode.MarkdownParseM
 import kotlinx.coroutines.*
 import java.lang.ref.WeakReference
 
-private suspend fun registerPostMessage(
+class PostMessagesRegistrant(
     executor: RequestsExecutor,
-    sourceChatId: ChatIdentifier,
-    registeredPostId: Int,
-    retries: Int = 3
+    private val sourceChatId: ChatIdentifier
 ) {
-    try {
-        val response = executor.execute(
-            SendMessage(
-                sourceChatId,
-                "Post registered",
-                parseMode = MarkdownParseMode,
-                replyToMessageId = PostsMessagesTable.getMessagesOfPost(
-                    registeredPostId
-                ).firstOrNull() ?.messageId ?: return
-            )
-        )
-        if (PostsTable.postRegisteredMessage(registeredPostId) == null) {
-            PostsTable.postRegistered(registeredPostId, response.messageId)
-        } else {
-            executor.execute(
-                DeleteMessage(
-                    response.asMessage.chat.id,
-                    response.messageId
-                )
-            )
-        }
-    } catch (e: Exception) {
-        executor.sendToLogger(
-            e,
-            "Register message; Left retries: $retries"
-        )
-        if (retries > 0) {
-            registerPostMessage(executor, sourceChatId, registeredPostId, retries - 1)
-        }
-    }
-}
-
-class DefaultPostRegisteredMessage(
-    executor: RequestsExecutor,
-    sourceChatId: ChatIdentifier
-) {
+    private val botWR = WeakReference(executor)
     init {
-        val botWR = WeakReference(executor)
 
         transactionCompletedChannel.subscribeChecking {
             registerPostMessage(
-                botWR.get() ?: return@subscribeChecking false,
-                sourceChatId,
                 it
             )
             true
@@ -77,8 +36,6 @@ class DefaultPostRegisteredMessage(
             }
             scope.launch {
                 registerPostMessage(
-                    executor,
-                    sourceChatId,
                     it
                 )
             }
@@ -86,6 +43,43 @@ class DefaultPostRegisteredMessage(
         scope.launch {
             registerJobs.joinAll()
             scope.coroutineContext.cancel()
+        }
+    }
+
+    suspend fun registerPostMessage(
+        registeredPostId: Int,
+        retries: Int = 3
+    ) {
+        val executor = botWR.get() ?: return
+        try {
+            val response = executor.execute(
+                SendMessage(
+                    sourceChatId,
+                    "Post registered",
+                    parseMode = MarkdownParseMode,
+                    replyToMessageId = PostsMessagesTable.getMessagesOfPost(
+                        registeredPostId
+                    ).firstOrNull() ?.messageId ?: return
+                )
+            )
+            if (PostsTable.postRegisteredMessage(registeredPostId) == null) {
+                PostsTable.postRegistered(registeredPostId, response.messageId)
+            } else {
+                executor.execute(
+                    DeleteMessage(
+                        response.asMessage.chat.id,
+                        response.messageId
+                    )
+                )
+            }
+        } catch (e: Exception) {
+            executor.sendToLogger(
+                e,
+                "Register message; Left retries: $retries"
+            )
+            if (retries > 0) {
+                registerPostMessage(registeredPostId, retries - 1)
+            }
         }
     }
 }
