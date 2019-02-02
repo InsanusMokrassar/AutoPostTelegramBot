@@ -62,18 +62,9 @@ class PostMessagesRegistrant(
                     ).firstOrNull() ?.messageId ?: return
                 )
             )
-            if (PostsTable.postRegisteredMessage(registeredPostId) == null) {
-                PostsTable.postRegistered(registeredPostId, response.messageId)
-            } else {
-                executor.execute(
-                    DeleteMessage(
-                        response.asMessage.chat.id,
-                        response.messageId
-                    )
-                )
-            }
+            PostsTable.postRegistered(registeredPostId, response.messageId)
         } catch (e: Exception) {
-            executor.sendToLogger(
+            sendToLogger(
                 e,
                 "Register message; Left retries: $retries"
             )

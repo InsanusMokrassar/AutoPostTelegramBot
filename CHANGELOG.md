@@ -252,3 +252,4 @@ Fix of `CalculatedDateTime#asPastFor` - now it will decrease time even if source
 * Add registering of messages for on the init of `DefaultPostRegisteredMessage`
 * Rename `PostMessagesRegistrant` and replace its registering function inside
 * Add `PostsMessagesTable#findPostByMessageId`
+* Add `/renewRegistered` (or `/renewRegisteredMessage`) command

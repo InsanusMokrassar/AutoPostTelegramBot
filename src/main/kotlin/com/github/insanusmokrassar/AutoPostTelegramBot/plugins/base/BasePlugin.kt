@@ -29,6 +29,8 @@ class BasePlugin : Plugin {
     @Transient
     private var postMessagesRegistrant: PostMessagesRegistrant? = null
 
+    private var renewRegisteredMessage: RenewRegisteredMessage? = null
+
     @Transient
     val postsUsedTable = PostsUsedTable()
 
@@ -49,6 +51,8 @@ class BasePlugin : Plugin {
         postMessagesRegistrant = PostMessagesRegistrant(
             executor,
             baseConfig.sourceChatId
-        )
+        ).also {
+            renewRegisteredMessage = RenewRegisteredMessage(it)
+        }
     }
 }
