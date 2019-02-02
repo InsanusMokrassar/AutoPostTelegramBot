@@ -248,3 +248,5 @@ Fix of `CalculatedDateTime#asPastFor` - now it will decrease time even if source
 * `registerPostMessage` by default use 3 retries to register post message
 
 ### 1.0.5
+
+* Add registering of messages for on the init of `DefaultPostRegisteredMessage`

@@ -4,6 +4,7 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.Post
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.transactionCompletedChannel
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.commonLogger
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.NewDefaultCoroutineScope
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.sendToLogger
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscribeChecking
 import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
@@ -11,6 +12,7 @@ import com.github.insanusmokrassar.TelegramBotAPI.requests.DeleteMessage
 import com.github.insanusmokrassar.TelegramBotAPI.requests.send.SendMessage
 import com.github.insanusmokrassar.TelegramBotAPI.types.ChatIdentifier
 import com.github.insanusmokrassar.TelegramBotAPI.types.ParseMode.MarkdownParseMode
+import kotlinx.coroutines.*
 import java.lang.ref.WeakReference
 
 private suspend fun registerPostMessage(
@@ -65,6 +67,25 @@ class DefaultPostRegisteredMessage(
                 it
             )
             true
+        }
+
+        val scope = NewDefaultCoroutineScope()
+
+        val registerJobs = PostsTable.getAll().mapNotNull {
+            if (PostsTable.postRegisteredMessage(it) == null) {
+                return@mapNotNull null
+            }
+            scope.launch {
+                registerPostMessage(
+                    executor,
+                    sourceChatId,
+                    it
+                )
+            }
+        }
+        scope.launch {
+            registerJobs.joinAll()
+            scope.coroutineContext.cancel()
         }
     }
 }
