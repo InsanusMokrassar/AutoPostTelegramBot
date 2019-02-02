@@ -10,6 +10,7 @@ import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
 import com.github.insanusmokrassar.TelegramBotAPI.requests.DeleteMessage
 import com.github.insanusmokrassar.TelegramBotAPI.requests.send.SendMessage
 import com.github.insanusmokrassar.TelegramBotAPI.types.ChatIdentifier
+import com.github.insanusmokrassar.TelegramBotAPI.types.MessageIdentifier
 import com.github.insanusmokrassar.TelegramBotAPI.types.ParseMode.MarkdownParseMode
 import kotlinx.coroutines.*
 import java.lang.ref.WeakReference
@@ -50,9 +51,9 @@ class PostMessagesRegistrant(
     suspend fun registerPostMessage(
         registeredPostId: Int,
         retries: Int = 3
-    ) {
-        val executor = botWR.get() ?: return
-        try {
+    ): MessageIdentifier? {
+        val executor = botWR.get() ?: return null
+        return try {
             val response = executor.execute(
                 SendMessage(
                     sourceChatId,
@@ -60,7 +61,7 @@ class PostMessagesRegistrant(
                     parseMode = MarkdownParseMode,
                     replyToMessageId = PostsMessagesTable.getMessagesOfPost(
                         registeredPostId
-                    ).firstOrNull() ?.messageId ?: return
+                    ).firstOrNull() ?.messageId ?: return null
                 )
             )
             PostsTable.postRegistered(registeredPostId, response.messageId)
@@ -71,6 +72,8 @@ class PostMessagesRegistrant(
             )
             if (retries > 0) {
                 registerPostMessage(registeredPostId, retries - 1)
+            } else {
+                null
             }
         }
     }
