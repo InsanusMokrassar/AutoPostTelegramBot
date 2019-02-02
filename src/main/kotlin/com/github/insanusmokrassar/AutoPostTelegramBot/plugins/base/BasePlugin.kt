@@ -29,6 +29,7 @@ class BasePlugin : Plugin {
     @Transient
     private var postMessagesRegistrant: PostMessagesRegistrant? = null
 
+    @Transient
     private var renewRegisteredMessage: RenewRegisteredMessage? = null
 
     @Transient
