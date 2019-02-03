@@ -27,7 +27,10 @@ class BasePlugin : Plugin {
     private var onMessage: OnMessage? = null
 
     @Transient
-    private var defaultPostRegisteredMessage: DefaultPostRegisteredMessage? = null
+    private var postMessagesRegistrant: PostMessagesRegistrant? = null
+
+    @Transient
+    private var renewRegisteredMessage: RenewRegisteredMessage? = null
 
     @Transient
     val postsUsedTable = PostsUsedTable()
@@ -46,9 +49,11 @@ class BasePlugin : Plugin {
         onMediaGroup = OnMediaGroup(baseConfig.sourceChatId)
         onMessage = OnMessage(baseConfig.sourceChatId)
 
-        defaultPostRegisteredMessage = DefaultPostRegisteredMessage(
+        postMessagesRegistrant = PostMessagesRegistrant(
             executor,
             baseConfig.sourceChatId
-        )
+        ).also {
+            renewRegisteredMessage = RenewRegisteredMessage(it).also { it.onInit(executor, baseConfig, pluginManager) }
+        }
     }
 }

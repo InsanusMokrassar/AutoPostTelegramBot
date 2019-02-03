@@ -4,6 +4,7 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.PostMessage
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.NewDefaultCoroutineScope
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.UnlimitedBroadcastChannel
 import com.github.insanusmokrassar.TelegramBotAPI.types.MessageIdentifier
+import com.github.insanusmokrassar.TelegramBotAPI.types.messageIdField
 import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.launch
 import org.jetbrains.exposed.sql.*
@@ -35,6 +36,14 @@ object PostsMessagesTable : Table() {
                     it[mediaGroupId]
                 )
             }
+        }
+    }
+
+    fun findPostByMessageId(messageId: MessageIdentifier): Int? {
+        return transaction {
+            select {
+                this@PostsMessagesTable.messageId.eq(messageId)
+            }.firstOrNull() ?.get(postId)
         }
     }
 

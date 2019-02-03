@@ -2,6 +2,7 @@ package com.github.insanusmokrassar.AutoPostTelegramBot.utils.commands
 
 import com.github.insanusmokrassar.AutoPostTelegramBot.messagesListener
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscribe
+import com.github.insanusmokrassar.TelegramBotAPI.types.MessageEntity.BotCommandMessageEntity
 import com.github.insanusmokrassar.TelegramBotAPI.types.UpdateIdentifier
 import com.github.insanusmokrassar.TelegramBotAPI.types.message.abstracts.CommonMessage
 import com.github.insanusmokrassar.TelegramBotAPI.types.message.content.TextContent
@@ -25,7 +26,11 @@ abstract class Command {
     suspend fun invoke(p1: BaseMessageUpdate) {
         (p1.data as? CommonMessage<*>) ?.let { message ->
             (message.content as? TextContent) ?.also {
-                if (commandRegex.matches(it.text)) {
+                it.entities.firstOrNull {
+                    it is BotCommandMessageEntity && (commandRegex.matches(it.command) || commandRegex.matches(it.sourceString))
+                } ?.also {
+                    onCommand(p1.updateId, message)
+                } ?: if (commandRegex.matches(it.text)) {
                     onCommand(p1.updateId, message)
                 }
             }

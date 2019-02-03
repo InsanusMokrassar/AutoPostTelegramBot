@@ -246,3 +246,10 @@ Fix of `CalculatedDateTime#asPastFor` - now it will decrease time even if source
 * Experimentally replace all BroadcastChannel factory invocations by creating of `UnlimitedBroadcastChannel`
 * Update `TelegramBotAPI` `0.9.1` -> `0.9.2`
 * `registerPostMessage` by default use 3 retries to register post message
+
+### 1.0.5
+
+* Add registering of messages for on the init of `DefaultPostRegisteredMessage`
+* Rename `PostMessagesRegistrant` and replace its registering function inside
+* Add `PostsMessagesTable#findPostByMessageId`
+* Add `/renewRegistered` (or `/renewRegisteredMessage`) command

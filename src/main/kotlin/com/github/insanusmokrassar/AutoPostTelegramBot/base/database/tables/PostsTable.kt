@@ -38,20 +38,19 @@ object PostsTable : Table() {
         } ?: throw CreationException("Can't allocate new post")
     }
 
-    fun postRegistered(postId: Int, messageId: MessageIdentifier): Boolean {
+    /**
+     * @return Old message identifier if available
+     */
+    fun postRegistered(postId: Int, messageId: MessageIdentifier): MessageIdentifier? {
         return transaction {
-            postRegisteredMessage(postId) ?.let {
-                false
-            } ?:let {
-                update({ id.eq(postId) }) {
-                    it[postRegisteredMessageId] = messageId
-                } > 0
+            val previousMessageId = postRegisteredMessage(postId)
+            update({ id.eq(postId) }) {
+                it[postRegisteredMessageId] = messageId
             }
+            previousMessageId
         }.also {
-            if (it) {
-                PostsTableScope.launch {
-                    postMessageRegisteredChannel.send(postId to messageId)
-                }
+            PostsTableScope.launch {
+                postMessageRegisteredChannel.send(postId to messageId)
             }
         }
     }

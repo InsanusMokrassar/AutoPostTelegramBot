@@ -144,6 +144,8 @@
     * `/deletePost` - используйте через `reply` сообщения с текстом `Post registered`, будет удален пост
     вместе с его сообщениями. Важно: `/startPost`/`/fixPost` таким образом не удаляются - их нужно чистить
     вручную.
+    * `/renewRegistered` или `/renewRegisteredMessage` - при реплае одного из сообщений поста удаляет старое сообщение
+    "Post registered" (если оно есть) и отправляет новое
 * [ForwardersPlugin](src/main/kotlin/com/github/insanusmokrassar/AutoPostTelegramBot/plugins/forwarders/ForwardersPlugin.kt)
     \- хранит набор `Forwarder` классов, способных корректно переносить контент из одного чата/канала в другой
     без необходимости непосредственной пересылки (`forward`), проблемой которой является упоминание источника
