@@ -255,3 +255,5 @@ Fix of `CalculatedDateTime#asPastFor` - now it will decrease time even if source
 * Add `/renewRegistered` (or `/renewRegisteredMessage`) command
 
 ### 1.0.6
+
+* Fix `Config` data

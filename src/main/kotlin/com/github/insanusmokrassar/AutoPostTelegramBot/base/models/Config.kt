@@ -10,7 +10,6 @@ import org.h2.Driver
 
 @Serializable
 class Config (
-    val botToken: String,
     val targetChatId: Long,
     val sourceChatId: Long,
     @Optional
@@ -24,6 +23,8 @@ class Config (
     ),
     @Optional
     val clientConfig: HttpClientConfig? = null,
+    @Optional
+    val botToken: String? = null,
     @Serializable(ListSerializer::class)
     @Optional
     val plugins: List<Plugin> = emptyList(),
@@ -32,10 +33,14 @@ class Config (
 ) {
     @Transient
     private val botConfig: BotConfig by lazy {
-        commonBot ?: BotConfig(
-            botToken,
-            clientConfig
-        )
+        commonBot ?: botToken ?.let { token ->
+            clientConfig ?.let { _ ->
+                BotConfig(
+                    token,
+                    clientConfig
+                )
+            }
+        } ?: throw IllegalStateException("You must set up \"commonBot\" or \"botToken\" field (remember that \"botToken\" is deprecated and will be replaced in future)")
     }
 
     @Transient
