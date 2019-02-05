@@ -1,7 +1,8 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions
 
 import kotlinx.coroutines.*
-import kotlinx.coroutines.channels.*
+import kotlinx.coroutines.channels.BroadcastChannel
+import kotlinx.coroutines.channels.ReceiveChannel
 import java.util.concurrent.TimeUnit
 
 fun <T> BroadcastChannel<T>.subscribeChecking(

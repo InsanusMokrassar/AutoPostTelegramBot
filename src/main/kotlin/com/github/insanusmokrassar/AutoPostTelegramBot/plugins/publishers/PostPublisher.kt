@@ -24,7 +24,6 @@ import com.github.insanusmokrassar.TelegramBotAPI.types.message.content.media.Vi
 import com.github.insanusmokrassar.TelegramBotAPI.utils.extensions.executeAsync
 import com.github.insanusmokrassar.TelegramBotAPI.utils.extensions.executeUnsafe
 import kotlinx.coroutines.channels.BroadcastChannel
-import kotlinx.coroutines.channels.Channel
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import java.lang.ref.WeakReference
