@@ -1,5 +1,7 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions
 
+import com.github.insanusmokrassar.AutoPostTelegramBot.extraSmallBroadcastCapacity
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.NewDefaultCoroutineScope
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.ReceiveChannel
@@ -10,7 +12,7 @@ fun <T> BroadcastChannel<T>.subscribeChecking(
         it.printStackTrace()
         true
     },
-    scope: CoroutineScope = GlobalScope,
+    scope: CoroutineScope = NewDefaultCoroutineScope(1),
     by: suspend (T) -> Boolean
 ): ReceiveChannel<T> {
     return openSubscription().apply {
@@ -27,7 +29,7 @@ fun <T> BroadcastChannel<T>.subscribe(
         it.printStackTrace()
         true
     },
-    scope: CoroutineScope = GlobalScope,
+    scope: CoroutineScope = NewDefaultCoroutineScope(1),
     by: suspend (T) -> Unit
 ): ReceiveChannel<T> {
     return openSubscription().apply {
@@ -43,26 +45,22 @@ fun <T> ReceiveChannel<T>.subscribeChecking(
         it.printStackTrace()
         true
     },
-    scope: CoroutineScope = GlobalScope,
+    scope: CoroutineScope = NewDefaultCoroutineScope(1),
     by: suspend (T) -> Boolean
 ) {
     val channel = this
     scope.launch {
         for (data in channel) {
-            try {
-                launch {
-                    try {
-                        if (!by(data)) {
-                            channel.cancel()
-                        }
-                    } catch (e: Throwable) {
-                        if (!throwableHandler(e)) {
-                            channel.cancel()
-                        }
+            launch {
+                try {
+                    if (!by(data)) {
+                        channel.cancel()
+                    }
+                } catch (e: Throwable) {
+                    if (!throwableHandler(e)) {
+                        channel.cancel()
                     }
                 }
-            } catch (e: CancellationException) {
-                break
             }
         }
     }
@@ -73,7 +71,7 @@ fun <T> ReceiveChannel<T>.subscribe(
         it.printStackTrace()
         true
     },
-    scope: CoroutineScope = GlobalScope,
+    scope: CoroutineScope = NewDefaultCoroutineScope(1),
     by: suspend (T) -> Unit
 ) {
     return subscribeChecking(throwableHandler, scope) {
@@ -86,12 +84,14 @@ fun <T> ReceiveChannel<T>.subscribe(
 fun <T> BroadcastChannel<T>.debounce(
     delay: Long,
     timeUnit: TimeUnit = TimeUnit.MILLISECONDS,
-    scope: CoroutineScope = GlobalScope
+    scope: CoroutineScope = NewDefaultCoroutineScope(1),
+    resultBroadcastChannelCapacity: Int = extraSmallBroadcastCapacity
 ): BroadcastChannel<T> {
     return openSubscription().debounce(
         delay,
         timeUnit,
-        scope
+        scope,
+        resultBroadcastChannelCapacity
     )
 }
 
@@ -99,10 +99,10 @@ fun <T> BroadcastChannel<T>.debounce(
 fun <T> ReceiveChannel<T>.debounce(
     delay: Long,
     timeUnit: TimeUnit = TimeUnit.MILLISECONDS,
-    scope: CoroutineScope = GlobalScope
+    scope: CoroutineScope = NewDefaultCoroutineScope(1),
+    resultBroadcastChannelCapacity: Int = extraSmallBroadcastCapacity
 ): BroadcastChannel<T> {
-    return BroadcastChannel<T>(1).also {
-        outBroadcast ->
+    return BroadcastChannel<T>(resultBroadcastChannelCapacity).also { outBroadcast ->
         var lastReceived: Job? = null
         subscribe(scope = scope) {
             lastReceived ?.cancel()
