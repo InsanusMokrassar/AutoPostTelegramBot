@@ -6,7 +6,6 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.Config
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.FinalConfig
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.DefaultPluginManager
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.commonLogger
-import com.github.insanusmokrassar.AutoPostTelegramBot.utils.UnlimitedBroadcastChannel
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscribe
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.load
 import com.github.insanusmokrassar.TelegramBotAPI.requests.chat.get.GetChat
@@ -16,6 +15,7 @@ import com.github.insanusmokrassar.TelegramBotAPI.types.update.CallbackQueryUpda
 import com.github.insanusmokrassar.TelegramBotAPI.types.update.abstracts.BaseMessageUpdate
 import com.github.insanusmokrassar.TelegramBotAPI.utils.extensions.startGettingOfUpdates
 import kotlinx.coroutines.channels.BroadcastChannel
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.exposed.sql.SchemaUtils
@@ -31,13 +31,13 @@ val realCallbackQueryListener
 val realMediaGroupsListener
     get() = allMediaGroupsListener
 
-val allMessagesListener: BroadcastChannel<BaseMessageUpdate> = UnlimitedBroadcastChannel()
-val allCallbackQueryListener: BroadcastChannel<CallbackQueryUpdate> = UnlimitedBroadcastChannel()
-val allMediaGroupsListener: BroadcastChannel<List<BaseMessageUpdate>> = UnlimitedBroadcastChannel()
+val allMessagesListener = BroadcastChannel<BaseMessageUpdate>(Channel.CONFLATED)
+val allCallbackQueryListener = BroadcastChannel<CallbackQueryUpdate>(Channel.CONFLATED)
+val allMediaGroupsListener = BroadcastChannel<List<BaseMessageUpdate>>(Channel.CONFLATED)
 
-val messagesListener: BroadcastChannel<BaseMessageUpdate> = UnlimitedBroadcastChannel()
-val callbackQueryListener: BroadcastChannel<CallbackQueryUpdate> = UnlimitedBroadcastChannel()
-val mediaGroupsListener: BroadcastChannel<List<BaseMessageUpdate>> = UnlimitedBroadcastChannel()
+val messagesListener = BroadcastChannel<BaseMessageUpdate>(Channel.CONFLATED)
+val callbackQueryListener = BroadcastChannel<CallbackQueryUpdate>(Channel.CONFLATED)
+val mediaGroupsListener = BroadcastChannel<List<BaseMessageUpdate>>(Channel.CONFLATED)
 
 fun main(args: Array<String>) {
     val config: FinalConfig = load(args[0], Config.serializer()).finalConfig
