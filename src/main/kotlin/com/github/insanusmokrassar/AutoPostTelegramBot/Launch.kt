@@ -6,7 +6,6 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.Config
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.FinalConfig
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.DefaultPluginManager
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.commonLogger
-import com.github.insanusmokrassar.AutoPostTelegramBot.utils.UnlimitedBroadcastChannel
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscribe
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.load
 import com.github.insanusmokrassar.TelegramBotAPI.requests.chat.get.GetChat
@@ -31,13 +30,21 @@ val realCallbackQueryListener
 val realMediaGroupsListener
     get() = allMediaGroupsListener
 
-val allMessagesListener: BroadcastChannel<BaseMessageUpdate> = UnlimitedBroadcastChannel()
-val allCallbackQueryListener: BroadcastChannel<CallbackQueryUpdate> = UnlimitedBroadcastChannel()
-val allMediaGroupsListener: BroadcastChannel<List<BaseMessageUpdate>> = UnlimitedBroadcastChannel()
+const val extraSmallBroadcastCapacity = 4
+const val smallBroadcastCapacity = 8
+const val mediumBroadcastCapacity = 16
+const val largeBroadcastCapacity = 32
+const val extraLargeBroadcastCapacity = 64
 
-val messagesListener: BroadcastChannel<BaseMessageUpdate> = UnlimitedBroadcastChannel()
-val callbackQueryListener: BroadcastChannel<CallbackQueryUpdate> = UnlimitedBroadcastChannel()
-val mediaGroupsListener: BroadcastChannel<List<BaseMessageUpdate>> = UnlimitedBroadcastChannel()
+const val commonListenersCapacity = mediumBroadcastCapacity
+
+val allMessagesListener = BroadcastChannel<BaseMessageUpdate>(commonListenersCapacity)
+val allCallbackQueryListener = BroadcastChannel<CallbackQueryUpdate>(commonListenersCapacity)
+val allMediaGroupsListener = BroadcastChannel<List<BaseMessageUpdate>>(commonListenersCapacity)
+
+val messagesListener = BroadcastChannel<BaseMessageUpdate>(commonListenersCapacity)
+val callbackQueryListener = BroadcastChannel<CallbackQueryUpdate>(commonListenersCapacity)
+val mediaGroupsListener = BroadcastChannel<List<BaseMessageUpdate>>(commonListenersCapacity)
 
 fun main(args: Array<String>) {
     val config: FinalConfig = load(args[0], Config.serializer()).finalConfig

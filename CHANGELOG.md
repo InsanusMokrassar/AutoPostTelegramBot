@@ -257,3 +257,9 @@ Fix of `CalculatedDateTime#asPastFor` - now it will decrease time even if source
 ### 1.0.6
 
 * Fix `Config` data
+
+### 1.0.7
+
+* Revert experimental using of `UnlimitedBroadcastChannel`
+* Experimentally replace all `Channel.CONFLATE` data by exact values
+* Update version of `TelegramBotAPI`: `0.9.2` -> `0.9.3`

@@ -6,9 +6,9 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.FinalConfig
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.PostMessage
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.PluginManager
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.commonLogger
+import com.github.insanusmokrassar.AutoPostTelegramBot.mediumBroadcastCapacity
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.base.commands.deletePost
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.choosers.Chooser
-import com.github.insanusmokrassar.AutoPostTelegramBot.utils.UnlimitedBroadcastChannel
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.sendToLogger
 import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
 import com.github.insanusmokrassar.TelegramBotAPI.requests.DeleteMessage
@@ -34,7 +34,9 @@ private typealias ChatIdMessageIdPair = Pair<ChatId, MessageIdentifier>
 @Serializable
 class PostPublisher : Publisher {
     @Transient
-    val postPublishedChannel: BroadcastChannel<PostIdListPostMessagesTelegramMessages> = UnlimitedBroadcastChannel()
+    val postPublishedChannel = BroadcastChannel<PostIdListPostMessagesTelegramMessages>(
+        mediumBroadcastCapacity
+    )
 
     @Transient
     private var botWR: WeakReference<RequestsExecutor>? = null

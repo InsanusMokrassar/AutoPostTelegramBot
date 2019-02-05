@@ -2,8 +2,9 @@ package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.database
 
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.commonLogger
+import com.github.insanusmokrassar.AutoPostTelegramBot.mediumBroadcastCapacity
+import com.github.insanusmokrassar.AutoPostTelegramBot.smallBroadcastCapacity
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.NewDefaultCoroutineScope
-import com.github.insanusmokrassar.AutoPostTelegramBot.utils.UnlimitedBroadcastChannel
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscribe
 import com.github.insanusmokrassar.TelegramBotAPI.types.ChatId
 import kotlinx.coroutines.channels.BroadcastChannel
@@ -21,9 +22,9 @@ private const val resultColumnName = "result"
 private val PostsLikesTableScope = NewDefaultCoroutineScope()
 
 class PostsLikesTable : Table() {
-    val likesChannel: BroadcastChannel<PostIdUserId> = UnlimitedBroadcastChannel()
-    val dislikesChannel: BroadcastChannel<PostIdUserId> = UnlimitedBroadcastChannel()
-    val ratingsChannel: BroadcastChannel<PostIdRatingPair> = UnlimitedBroadcastChannel()
+    val likesChannel = BroadcastChannel<PostIdUserId>(smallBroadcastCapacity)
+    val dislikesChannel = BroadcastChannel<PostIdUserId>(smallBroadcastCapacity)
+    val ratingsChannel = BroadcastChannel<PostIdRatingPair>(mediumBroadcastCapacity)
 
     private val userId = long("userId").primaryKey()
     private val postId = integer("postId").primaryKey()
