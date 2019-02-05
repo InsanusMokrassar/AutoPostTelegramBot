@@ -6,6 +6,7 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.FinalConfig
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.PostMessage
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.PluginManager
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.commonLogger
+import com.github.insanusmokrassar.AutoPostTelegramBot.mediumBroadcastCapacity
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.base.commands.deletePost
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.choosers.Chooser
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.sendToLogger
@@ -35,7 +36,7 @@ private typealias ChatIdMessageIdPair = Pair<ChatId, MessageIdentifier>
 class PostPublisher : Publisher {
     @Transient
     val postPublishedChannel = BroadcastChannel<PostIdListPostMessagesTelegramMessages>(
-        Channel.CONFLATED
+        mediumBroadcastCapacity
     )
 
     @Transient

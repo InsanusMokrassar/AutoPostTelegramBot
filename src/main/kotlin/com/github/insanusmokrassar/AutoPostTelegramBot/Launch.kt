@@ -31,13 +31,21 @@ val realCallbackQueryListener
 val realMediaGroupsListener
     get() = allMediaGroupsListener
 
-val allMessagesListener = BroadcastChannel<BaseMessageUpdate>(Channel.CONFLATED)
-val allCallbackQueryListener = BroadcastChannel<CallbackQueryUpdate>(Channel.CONFLATED)
-val allMediaGroupsListener = BroadcastChannel<List<BaseMessageUpdate>>(Channel.CONFLATED)
+const val extraSmallBroadcastCapacity = 4
+const val smallBroadcastCapacity = 8
+const val mediumBroadcastCapacity = 16
+const val largeBroadcastCapacity = 32
+const val extraLargeBroadcastCapacity = 64
 
-val messagesListener = BroadcastChannel<BaseMessageUpdate>(Channel.CONFLATED)
-val callbackQueryListener = BroadcastChannel<CallbackQueryUpdate>(Channel.CONFLATED)
-val mediaGroupsListener = BroadcastChannel<List<BaseMessageUpdate>>(Channel.CONFLATED)
+const val commonListenersCapacity = mediumBroadcastCapacity
+
+val allMessagesListener = BroadcastChannel<BaseMessageUpdate>(commonListenersCapacity)
+val allCallbackQueryListener = BroadcastChannel<CallbackQueryUpdate>(commonListenersCapacity)
+val allMediaGroupsListener = BroadcastChannel<List<BaseMessageUpdate>>(commonListenersCapacity)
+
+val messagesListener = BroadcastChannel<BaseMessageUpdate>(commonListenersCapacity)
+val callbackQueryListener = BroadcastChannel<CallbackQueryUpdate>(commonListenersCapacity)
+val mediaGroupsListener = BroadcastChannel<List<BaseMessageUpdate>>(commonListenersCapacity)
 
 fun main(args: Array<String>) {
     val config: FinalConfig = load(args[0], Config.serializer()).finalConfig

@@ -100,7 +100,7 @@ fun <T> ReceiveChannel<T>.debounce(
     timeUnit: TimeUnit = TimeUnit.MILLISECONDS,
     scope: CoroutineScope = GlobalScope
 ): BroadcastChannel<T> {
-    return BroadcastChannel<T>(Channel.CONFLATED).also {
+    return BroadcastChannel<T>(1).also {
         outBroadcast ->
         var lastReceived: Job? = null
         subscribe(scope = scope) {

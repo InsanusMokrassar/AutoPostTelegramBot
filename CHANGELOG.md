@@ -261,3 +261,4 @@ Fix of `CalculatedDateTime#asPastFor` - now it will decrease time even if source
 ### 1.0.7
 
 * Revert experimental using of `UnlimitedBroadcastChannel`
+* Experimentally replace all `Channel.CONFLATE` data by exact values

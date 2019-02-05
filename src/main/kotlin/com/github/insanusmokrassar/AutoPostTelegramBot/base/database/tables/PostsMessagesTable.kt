@@ -1,5 +1,6 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables
 
+import com.github.insanusmokrassar.AutoPostTelegramBot.*
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.PostMessage
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.NewDefaultCoroutineScope
 import com.github.insanusmokrassar.TelegramBotAPI.types.MessageIdentifier
@@ -15,12 +16,12 @@ typealias PostIdToMessagesIds = Pair<Int, Collection<MessageIdentifier>>
 val PostsMessagesTableScope = NewDefaultCoroutineScope()
 
 object PostsMessagesTable : Table() {
-    val newMessagesOfPost = BroadcastChannel<PostIdToMessagesIds>(Channel.CONFLATED)
+    val newMessagesOfPost = BroadcastChannel<PostIdToMessagesIds>(largeBroadcastCapacity)
 
     @Deprecated("This channel is not determine post id", ReplaceWith("removedMessageOfPost"))
-    val removeMessageOfPost = BroadcastChannel<MessageIdentifier>(Channel.CONFLATED)
-    val removedMessagesOfPost = BroadcastChannel<PostIdToMessagesIds>(Channel.CONFLATED)
-    val removedMessageOfPost = BroadcastChannel<PostIdMessageId>(Channel.CONFLATED)
+    val removeMessageOfPost = BroadcastChannel<MessageIdentifier>(extraSmallBroadcastCapacity)
+    val removedMessagesOfPost = BroadcastChannel<PostIdToMessagesIds>(extraSmallBroadcastCapacity)
+    val removedMessageOfPost = BroadcastChannel<PostIdMessageId>(extraSmallBroadcastCapacity)
 
     private val messageId = long("messageId").primaryKey()
     private val mediaGroupId = text("mediaGroupId").nullable()

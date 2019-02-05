@@ -2,7 +2,9 @@ package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.scheduler
 
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.PluginName
+import com.github.insanusmokrassar.AutoPostTelegramBot.extraSmallBroadcastCapacity
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.base.PostsUsedTable
+import com.github.insanusmokrassar.AutoPostTelegramBot.smallBroadcastCapacity
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.NewDefaultCoroutineScope
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscribe
 import kotlinx.coroutines.channels.*
@@ -19,9 +21,9 @@ class PostsSchedulesTable : Table() {
     private val postId = integer("postId").primaryKey()
     private val postTime = datetime("postTime")
 
-    val postTimeRegisteredChannel = BroadcastChannel<PostIdPostTime>(Channel.CONFLATED)
-    val postTimeChangedChannel = BroadcastChannel<PostIdPostTime>(Channel.CONFLATED)
-    val postTimeRemovedChannel = BroadcastChannel<Int>(Channel.CONFLATED)
+    val postTimeRegisteredChannel = BroadcastChannel<PostIdPostTime>(smallBroadcastCapacity)
+    val postTimeChangedChannel = BroadcastChannel<PostIdPostTime>(extraSmallBroadcastCapacity)
+    val postTimeRemovedChannel = BroadcastChannel<Int>(extraSmallBroadcastCapacity)
 
     init {
         PostsTable.postRemovedChannel.subscribe {
