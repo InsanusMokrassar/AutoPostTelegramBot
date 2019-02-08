@@ -29,7 +29,9 @@ class Config (
     @Optional
     val plugins: List<Plugin> = emptyList(),
     @Optional
-    val commonBot: BotConfig? = null
+    val commonBot: BotConfig? = null,
+    @Optional
+    val botName: String? = null
 ) {
     @Transient
     private val botConfig: BotConfig by lazy {
@@ -52,7 +54,8 @@ class Config (
             (logsChatId ?: sourceChatId).toChatId(),
             botConfig.createBot(),
             databaseConfig,
-            plugins
+            plugins,
+            botName
         )
 }
 
@@ -62,5 +65,6 @@ class FinalConfig (
     val logsChatId: ChatId,
     val bot: RequestsExecutor,
     val databaseConfig: DatabaseConfig,
-    val pluginsConfigs: List<Plugin> = emptyList()
+    val pluginsConfigs: List<Plugin> = emptyList(),
+    val botName: String?
 )

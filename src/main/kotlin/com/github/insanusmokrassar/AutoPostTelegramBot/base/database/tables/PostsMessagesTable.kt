@@ -4,6 +4,7 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.PostMessage
 import com.github.insanusmokrassar.AutoPostTelegramBot.extraSmallBroadcastCapacity
 import com.github.insanusmokrassar.AutoPostTelegramBot.largeBroadcastCapacity
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.NewDefaultCoroutineScope
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscribe
 import com.github.insanusmokrassar.TelegramBotAPI.types.MessageIdentifier
 import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.launch
@@ -12,9 +13,12 @@ import org.jetbrains.exposed.sql.transactions.transaction
 
 typealias PostIdToMessagesIds = Pair<Int, Collection<MessageIdentifier>>
 
-val PostsMessagesTableScope = NewDefaultCoroutineScope()
+class PostsMessagesTable(
+    tableName: String = "",
+    postsTable: PostsTable
+) : Table(tableName) {
+    private val postsMessagesTableScope = NewDefaultCoroutineScope()
 
-object PostsMessagesTable : Table() {
     val newMessagesOfPost = BroadcastChannel<PostIdToMessagesIds>(largeBroadcastCapacity)
 
     @Deprecated("This channel is not determine post id", ReplaceWith("removedMessageOfPost"))
@@ -26,10 +30,18 @@ object PostsMessagesTable : Table() {
     private val mediaGroupId = text("mediaGroupId").nullable()
     private val postId = integer("postId")
 
+    init {
+        postsTable.postRemovedChannel.subscribe(
+            scope = postsMessagesTableScope
+        ) {
+            removePostMessages(it)
+        }
+    }
+
     fun getMessagesOfPost(postId: Int): List<PostMessage> {
         return transaction {
             select {
-                PostsMessagesTable.postId.eq(postId)
+                this@PostsMessagesTable.postId.eq(postId)
             }.map {
                 PostMessage(
                     it[messageId].toLong(),
@@ -52,13 +64,13 @@ object PostsMessagesTable : Table() {
             messages.map {
                 message ->
                 insert {
-                    it[PostsMessagesTable.postId] = postId
+                    it[this@PostsMessagesTable.postId] = postId
                     it[messageId] = message.messageId
                     it[mediaGroupId] = message.mediaGroupId
                 }
                 message.messageId
             }.let {
-                PostsMessagesTableScope.launch {
+                postsMessagesTableScope.launch {
                     newMessagesOfPost.send(PostIdToMessagesIds(postId, it))
                 }
             }
@@ -68,8 +80,8 @@ object PostsMessagesTable : Table() {
     @Deprecated("This method will be deprecated in near releases", ReplaceWith("removePostMessage"))
     fun removeMessageOfPost(messageId: MessageIdentifier) {
         transaction {
-            if (deleteWhere { PostsMessagesTable.messageId.eq(messageId) } > 0) {
-                PostsMessagesTableScope.launch {
+            if (deleteWhere { this@PostsMessagesTable.messageId.eq(messageId) } > 0) {
+                postsMessagesTableScope.launch {
                     removeMessageOfPost.send(messageId)
                 }
             }
@@ -90,7 +102,7 @@ object PostsMessagesTable : Table() {
             }
         }.also {
             if (it.isNotEmpty()) {
-                PostsMessagesTableScope.launch {
+                postsMessagesTableScope.launch {
                     removedMessagesOfPost.send(postId to it)
                 }
             }
@@ -99,8 +111,8 @@ object PostsMessagesTable : Table() {
 
     fun removePostMessage(postId: Int, messageId: MessageIdentifier): Boolean {
         return transaction {
-            if (deleteWhere { PostsMessagesTable.messageId.eq(messageId) } > 0) {
-                PostsMessagesTableScope.launch {
+            if (deleteWhere { this@PostsMessagesTable.messageId.eq(messageId) } > 0) {
+                postsMessagesTableScope.launch {
                     removedMessageOfPost.send(postId to messageId)
                 }
                 true

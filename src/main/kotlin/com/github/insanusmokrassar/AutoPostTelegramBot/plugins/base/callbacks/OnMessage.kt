@@ -1,6 +1,6 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.base.callbacks
 
-import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.PostTransaction
+import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.transactions.PostTransaction
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.PostMessage
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.Plugin
 import com.github.insanusmokrassar.AutoPostTelegramBot.messagesListener

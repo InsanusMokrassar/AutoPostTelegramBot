@@ -2,7 +2,7 @@ package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating
 
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsMessagesTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsTable
-import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.transactionCompletedChannel
+import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.transactions.transactionCompletedChannel
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.commonLogger
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.database.PostsLikesMessagesTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.database.PostsLikesTable

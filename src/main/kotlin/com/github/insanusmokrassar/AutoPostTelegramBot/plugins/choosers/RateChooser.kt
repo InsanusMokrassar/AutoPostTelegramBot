@@ -1,5 +1,6 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.choosers
 
+import com.github.insanusmokrassar.AutoPostTelegramBot.AutoPostTelegramBot
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.FinalConfig
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.PluginManager
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.RatingPlugin
@@ -11,8 +12,8 @@ abstract class RateChooser : Chooser {
     protected var postsLikesTable: PostsLikesTable? = null
         private set
 
-    override suspend fun onInit(executor: RequestsExecutor, baseConfig: FinalConfig, pluginManager: PluginManager) {
-        super.onInit(executor, baseConfig, pluginManager)
-        postsLikesTable = (pluginManager.plugins.firstOrNull { it is RatingPlugin } as? RatingPlugin) ?.postsLikesTable
+    override suspend fun onInit(bot: AutoPostTelegramBot) {
+        super.onInit(bot)
+        postsLikesTable = (bot.pluginManager.plugins.firstOrNull { it is RatingPlugin } as? RatingPlugin) ?.postsLikesTable
     }
 }

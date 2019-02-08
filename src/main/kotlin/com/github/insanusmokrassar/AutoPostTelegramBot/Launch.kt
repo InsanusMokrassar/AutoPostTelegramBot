@@ -47,73 +47,13 @@ val callbackQueryListener = BroadcastChannel<CallbackQueryUpdate>(commonListener
 val mediaGroupsListener = BroadcastChannel<List<BaseMessageUpdate>>(commonListenersCapacity)
 
 fun main(args: Array<String>) {
-    val config: FinalConfig = load(args[0], Config.serializer()).finalConfig
-
-    val bot = config.bot
-
-    config.databaseConfig.apply {
-        connect()
-
-        transaction {
-            SchemaUtils.createMissingTablesAndColumns(PostsTable, PostsMessagesTable)
-        }
-    }
-
-    runBlocking {
-        commonLogger.info("Source chat: ${bot.execute(GetChat(config.sourceChatId)).extractChat()}")
-        commonLogger.info("Target chat: ${bot.execute(GetChat(config.targetChatId)).extractChat()}")
-
-        val pluginManager = DefaultPluginManager(
-            config.pluginsConfigs
-        )
-
-        pluginManager.onInit(
-            bot,
-            config
-        )
-
-        coroutineScope {
-            allMessagesListener.subscribe(
-                scope = this
-            ) {
-                if (it.data.chat.id == config.sourceChatId && it.data !is MediaGroupMessage) {
-                    messagesListener.send(it)
-                }
-            }
-
-            allCallbackQueryListener.subscribe(
-                scope = this
-            ) {
-                (it.data as? MessageDataCallbackQuery) ?.also { query ->
-                    if (query.message.chat.id == config.sourceChatId) {
-                        callbackQueryListener.send(it)
-                    }
-                }
-            }
-            allMediaGroupsListener.subscribe(
-                scope = this
-            ) { mediaGroup ->
-                val mediaGroupChatId = mediaGroup.firstOrNull() ?.data ?.chat ?.id ?: return@subscribe
-                if (mediaGroupChatId == config.sourceChatId) {
-                    mediaGroupsListener.send(mediaGroup)
-                }
-            }
-
-            bot.startGettingOfUpdates(
-                messageCallback = {
-                    allMessagesListener.send(it)
-                },
-                mediaGroupCallback = {
-                    allMediaGroupsListener.send(it)
-                },
-                channelPostCallback = {
-                    allMessagesListener.send(it)
-                },
-                callbackQueryCallback = {
-                    allCallbackQueryListener.send(it)
-                },
-                scope = this
-            )
-        }
-    }
+    val bot = AutoPostTelegramBot(
+        load(args[0], Config.serializer()).finalConfig,
+        allMessagesListener,
+        allCallbackQueryListener,
+        allMediaGroupsListener,
+        messagesListener,
+        callbackQueryListener,
+        mediaGroupsListener
+    )
 }

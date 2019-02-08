@@ -1,5 +1,6 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.plugins
 
+import com.github.insanusmokrassar.AutoPostTelegramBot.AutoPostTelegramBot
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.BotConfig
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.FinalConfig
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.Plugin
@@ -14,9 +15,9 @@ class BotLogger(
     @Optional
     private val config: BotConfig? = null
 ) : Plugin {
-    override suspend fun onInit(executor: RequestsExecutor, baseConfig: FinalConfig, pluginManager: PluginManager) {
-        val logExecutor = config ?.createBot() ?: executor
-        super.onInit(logExecutor, baseConfig, pluginManager)
-        initHandler(logExecutor, baseConfig.logsChatId)
+    override suspend fun onInit(bot: AutoPostTelegramBot) {
+        val logExecutor = config ?.createBot() ?: bot.executor
+        super.onInit(bot)
+        initHandler(logExecutor, bot.config.logsChatId)
     }
 }

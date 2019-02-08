@@ -1,6 +1,6 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.base.commands
 
-import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.PostTransaction
+import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.transactions.PostTransaction
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.commands.Command
 import com.github.insanusmokrassar.TelegramBotAPI.types.ChatIdentifier
 import com.github.insanusmokrassar.TelegramBotAPI.types.UpdateIdentifier
@@ -14,7 +14,8 @@ class StartPost : Command() {
         val userId: ChatIdentifier? = (message as? FromUserMessage) ?.user ?.id ?: message.chat.id
         userId ?.let {
             if (usersTransactions[it] == null) {
-                usersTransactions[it] = PostTransaction()
+                usersTransactions[it] =
+                    PostTransaction()
             }
         }
     }

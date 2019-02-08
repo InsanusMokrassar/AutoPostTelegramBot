@@ -13,10 +13,10 @@ import org.joda.time.DateTime
 
 typealias PostIdMessageId = Pair<Int, MessageIdentifier>
 
-
-val PostsTableScope = NewDefaultCoroutineScope()
-
-object PostsTable : Table() {
+class PostsTable(
+    tableName: String = ""
+) : Table(tableName) {
+    private val PostsTableScope = NewDefaultCoroutineScope()
     val postAllocatedChannel = BroadcastChannel<Int>(mediumBroadcastCapacity)
     val postRemovedChannel = BroadcastChannel<Int>(mediumBroadcastCapacity)
     val postMessageRegisteredChannel = BroadcastChannel<PostIdMessageId>(mediumBroadcastCapacity)
@@ -63,11 +63,10 @@ object PostsTable : Table() {
 
     fun removePost(postId: Int) {
         transaction {
-            PostsMessagesTable.removePostMessages(postId)
             deleteWhere { id.eq(postId) }
-            PostsTableScope.launch {
-                postRemovedChannel.send(postId)
-            }
+        }
+        PostsTableScope.launch {
+            postRemovedChannel.send(postId)
         }
     }
 

@@ -1,5 +1,6 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.utils.commands
 
+import com.github.insanusmokrassar.AutoPostTelegramBot.AutoPostTelegramBot
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.FinalConfig
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.PluginManager
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.RatingPlugin
@@ -14,10 +15,10 @@ abstract class RateCommand : CommandPlugin() {
     protected var postsLikesMessagesTable: PostsLikesMessagesTable? = null
         private set
 
-    override suspend fun onInit(executor: RequestsExecutor, baseConfig: FinalConfig, pluginManager: PluginManager) {
-        super.onInit(executor, baseConfig, pluginManager)
+    override suspend fun onInit(bot: AutoPostTelegramBot) {
+        super.onInit(bot)
 
-        (pluginManager.plugins.firstOrNull { it is RatingPlugin } as? RatingPlugin) ?.also {
+        (bot.pluginManager.plugins.firstOrNull { it is RatingPlugin } as? RatingPlugin) ?.also {
             postsLikesTable = it.postsLikesTable
             postsLikesMessagesTable = it.postsLikesMessagesTable
         }

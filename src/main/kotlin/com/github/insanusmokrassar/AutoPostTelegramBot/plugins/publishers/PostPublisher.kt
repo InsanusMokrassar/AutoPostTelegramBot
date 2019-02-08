@@ -1,5 +1,6 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.publishers
 
+import com.github.insanusmokrassar.AutoPostTelegramBot.AutoPostTelegramBot
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsMessagesTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.FinalConfig
@@ -51,23 +52,19 @@ class PostPublisher : Publisher {
     @Transient
     private var publishPostCommand: PublishPost? = null
 
-    override suspend fun onInit(
-        executor: RequestsExecutor,
-        baseConfig: FinalConfig,
-        pluginManager: PluginManager
-    ) {
-        botWR = WeakReference(executor).also {
+    override suspend fun onInit(bot: AutoPostTelegramBot) {
+        botWR = WeakReference(bot.executor).also {
             publishPostCommand = PublishPost(
-                pluginManager.plugins.firstOrNull { it is Chooser } as? Chooser,
-                pluginManager.plugins.firstOrNull { it is Publisher } as Publisher,
+                bot.pluginManager.plugins.firstOrNull { it is Chooser } as? Chooser,
+                bot.pluginManager.plugins.firstOrNull { it is Publisher } as Publisher,
                 it,
-                baseConfig.logsChatId
+                bot.config.logsChatId
             )
         }
 
-        sourceChatId = baseConfig.sourceChatId
-        targetChatId = baseConfig.targetChatId
-        logsChatId = baseConfig.logsChatId
+        sourceChatId = bot.config.sourceChatId
+        targetChatId = bot.config.targetChatId
+        logsChatId = bot.config.logsChatId
     }
 
     override suspend fun publishPost(postId: Int) {

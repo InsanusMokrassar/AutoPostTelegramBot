@@ -14,7 +14,9 @@ typealias PostIdToPluginName = Pair<Int, PluginName>
 
 private val PostsUsedTableScope = NewDefaultCoroutineScope()
 
-class PostsUsedTable internal constructor() : Table() {
+class PostsUsedTable internal constructor(
+    postsTable: PostsTable
+) : Table() {
     val registeredLinkChannel = BroadcastChannel<PostIdToPluginName>(smallBroadcastCapacity)
     val unregisteredLinkChannel = BroadcastChannel<PostIdToPluginName>(smallBroadcastCapacity)
 
@@ -28,7 +30,7 @@ class PostsUsedTable internal constructor() : Table() {
             SchemaUtils.createMissingTablesAndColumns(this@PostsUsedTable)
         }
 
-        PostsTable.postRemovedChannel.subscribe {
+        postsTable.postRemovedChannel.subscribe {
             transaction {
                 val wasRegistered = getLinks(it)
                 if (deleteWhere { postId.eq(it) } > 0) {

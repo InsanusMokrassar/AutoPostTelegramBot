@@ -1,5 +1,6 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins
 
+import com.github.insanusmokrassar.AutoPostTelegramBot.AutoPostTelegramBot
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.FinalConfig
 import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
 
@@ -17,8 +18,6 @@ interface Plugin {
         get() = this::class.java.simpleName
 
     suspend fun onInit(
-        executor: RequestsExecutor,
-        baseConfig: FinalConfig,
-        pluginManager: PluginManager
+        bot: AutoPostTelegramBot
     ) { }
 }

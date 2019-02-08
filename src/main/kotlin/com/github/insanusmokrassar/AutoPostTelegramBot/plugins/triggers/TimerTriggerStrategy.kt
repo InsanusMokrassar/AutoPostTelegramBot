@@ -1,5 +1,6 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.triggers
 
+import com.github.insanusmokrassar.AutoPostTelegramBot.AutoPostTelegramBot
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.FinalConfig
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.Plugin
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.PluginManager
@@ -36,10 +37,10 @@ class TimerTriggerStrategy (
             lastTime
         } ?: timesOfTriggering.nearDateTime()
 
-    override suspend fun onInit(executor: RequestsExecutor, baseConfig: FinalConfig, pluginManager: PluginManager) {
-        val publisher = pluginManager.plugins.firstOrNull { it is Publisher } as? Publisher
+    override suspend fun onInit(bot: AutoPostTelegramBot) {
+        val publisher = bot.pluginManager.plugins.firstOrNull { it is Publisher } as? Publisher
             ?: return
-        val chooser: Chooser = pluginManager.plugins.firstOrNull { it is Chooser } as? Chooser
+        val chooser: Chooser = bot.pluginManager.plugins.firstOrNull { it is Chooser } as? Chooser
             ?: return
 
         TimerTriggerStrategyScope.launch {

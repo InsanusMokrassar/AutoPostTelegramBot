@@ -1,5 +1,6 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.plugins
 
+import com.github.insanusmokrassar.AutoPostTelegramBot.AutoPostTelegramBot
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.FinalConfig
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.*
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.RatingPlugin
@@ -14,23 +15,23 @@ import java.lang.ref.WeakReference
 
 @Serializable
 class RatingTimerAutoDisablePlugin : Plugin {
-    override suspend fun onInit(executor: RequestsExecutor, baseConfig: FinalConfig, pluginManager: PluginManager) {
-        val ratingPlugin: RatingPlugin = pluginManager.plugins.firstOrNull {
+    override suspend fun onInit(bot: AutoPostTelegramBot) {
+        val ratingPlugin: RatingPlugin = bot.pluginManager.plugins.firstOrNull {
             it is RatingPlugin
         } as? RatingPlugin ?:let {
             commonLogger.warning("Plugin $name was not load for the reason that rating plugin was not found")
             return
         }
 
-        val schedulerPlugin: SchedulerPlugin = (pluginManager.plugins.firstOrNull {
+        val schedulerPlugin: SchedulerPlugin = (bot.pluginManager.plugins.firstOrNull {
             it is SchedulerPlugin
         } as? SchedulerPlugin) ?:let {
             commonLogger.warning("Plugin $name was not load for the reason that scheduler plugin was not found")
             return
         }
 
-        val botWR = WeakReference(executor)
-        val sourceChatId = baseConfig.sourceChatId
+        val botWR = WeakReference(bot.executor)
+        val sourceChatId = bot.config.sourceChatId
 
         schedulerPlugin.timerSchedulesTable.postTimeRegisteredChannel.subscribeChecking(
             {
