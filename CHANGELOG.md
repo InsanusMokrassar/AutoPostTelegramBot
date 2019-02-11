@@ -267,3 +267,7 @@ Fix of `CalculatedDateTime#asPastFor` - now it will decrease time even if source
 ### 1.0.8
 
 * Update `TelegramBotAPI` version `0.9.3` -> `0.10.0`
+* Fix problem of replying for message in post which is absent. Now when
+message is absent registerer will try to get a new one (first one) until
+it will find some present or delete post for the reason that there is no
+available messages for post

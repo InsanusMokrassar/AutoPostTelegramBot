@@ -9,7 +9,9 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.database.P
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.receivers.*
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.*
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.makeLinkToMessage
+import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestException
 import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
+import com.github.insanusmokrassar.TelegramBotAPI.bot.exceptions.ReplyMessageNotFound
 import com.github.insanusmokrassar.TelegramBotAPI.requests.DeleteMessage
 import com.github.insanusmokrassar.TelegramBotAPI.requests.edit.text.EditChatMessageText
 import com.github.insanusmokrassar.TelegramBotAPI.requests.send.SendMessage
@@ -99,7 +101,7 @@ class RegisteredRefresher(
     }
 }
 
-internal fun refreshRegisteredMessage(
+internal suspend fun refreshRegisteredMessage(
     chatId: ChatId,
     executor: RequestsExecutor,
     postId: Int,
@@ -150,38 +152,47 @@ internal fun refreshRegisteredMessage(
 
     val message = "Rating: $postRating"
 
-    val registeredMessageId = postsLikesMessagesTable.messageIdByPostId(postId)
+    var registeredMessageId = postsLikesMessagesTable.messageIdByPostId(postId)
+    var currentMessageIdForReplying = PostsMessagesTable.getMessagesOfPost(postId).firstOrNull()?.messageId
 
-    if (registeredMessageId == null) {
-        SendMessage(
-            chatId,
-            message,
-            replyMarkup = markup,
-            replyToMessageId = PostsMessagesTable.getMessagesOfPost(postId).firstOrNull() ?.messageId ?: return,
-            parseMode = MarkdownParseMode
-        ).let {
-            executor.executeAsync(
-                it,
-                onSuccess = { response ->
-                    if (!postsLikesMessagesTable.enableLikes(postId, response.messageId)) {
-                        executor.executeAsync(
-                            DeleteMessage(
-                                chatId,
-                                response.messageId
-                            )
-                        )
-                    }
-                }
-            )
-        }
-    } else {
-        EditChatMessageText(
+    if (registeredMessageId != null) {
+        val request = EditChatMessageText(
             chatId,
             registeredMessageId,
             message,
             replyMarkup = markup
-        ).let {
-            executor.executeAsync(it)
+        )
+        executor.executeUnsafe(request)
+    } else {
+        while (registeredMessageId == null && currentMessageIdForReplying != null) {
+            registeredMessageId = try {
+                val response = SendMessage(
+                    chatId,
+                    message,
+                    replyMarkup = markup,
+                    replyToMessageId = currentMessageIdForReplying,
+                    parseMode = MarkdownParseMode
+                ).let {
+                    executor.execute(it)
+                }
+                if (!postsLikesMessagesTable.enableLikes(postId, response.messageId)) {
+                    executor.executeAsync(
+                        DeleteMessage(
+                            chatId,
+                            response.messageId
+                        )
+                    )
+                }
+                response.messageId
+            } catch (e: ReplyMessageNotFound) {
+                PostsMessagesTable.removePostMessage(postId, currentMessageIdForReplying)
+                currentMessageIdForReplying = PostsMessagesTable.getMessagesOfPost(postId).firstOrNull() ?.messageId
+                null
+            }
+        }
+        if (registeredMessageId == null && currentMessageIdForReplying == null) {
+            PostsTable.removePost(postId)
+            commonLogger.warning("Message with id $postId was removed from database")
         }
     }
 }
