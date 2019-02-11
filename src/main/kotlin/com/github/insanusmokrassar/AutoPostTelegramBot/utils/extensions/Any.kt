@@ -1,7 +1,7 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions
 
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.commonLogger
-import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestException
+import com.github.insanusmokrassar.TelegramBotAPI.bot.exceptions.RequestException
 import com.github.insanusmokrassar.TelegramBotAPI.types.buttons.Matrix
 import com.github.insanusmokrassar.TelegramBotAPI.utils.matrix
 import com.github.insanusmokrassar.TelegramBotAPI.utils.row

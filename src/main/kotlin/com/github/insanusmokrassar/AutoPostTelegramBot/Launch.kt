@@ -6,6 +6,7 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.Config
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.FinalConfig
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.DefaultPluginManager
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.commonLogger
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.NewDefaultCoroutineScope
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscribe
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.load
 import com.github.insanusmokrassar.TelegramBotAPI.requests.chat.get.GetChat
@@ -15,7 +16,6 @@ import com.github.insanusmokrassar.TelegramBotAPI.types.update.CallbackQueryUpda
 import com.github.insanusmokrassar.TelegramBotAPI.types.update.abstracts.BaseMessageUpdate
 import com.github.insanusmokrassar.TelegramBotAPI.utils.extensions.startGettingOfUpdates
 import kotlinx.coroutines.channels.BroadcastChannel
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -72,7 +72,7 @@ fun main(args: Array<String>) {
             config
         )
 
-        coroutineScope {
+        NewDefaultCoroutineScope().apply {
             allMessagesListener.subscribe(
                 scope = this
             ) {

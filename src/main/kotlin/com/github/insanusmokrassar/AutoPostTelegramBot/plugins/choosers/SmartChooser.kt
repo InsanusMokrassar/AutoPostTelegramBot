@@ -73,25 +73,17 @@ private val commonInnerChoosers = mapOf<String, InnerChooser>(
     }
 )
 
-@Serializable
-data class SmartChooserConfigItem (
-    @Optional
-    val minRate: Int? = null,
-    @Optional
-    val maxRate: Int? = null,
-    @Optional
-    val time: String? = null,
-    @Optional
-    val times: List<String>? = null,
-    @Optional
-    val sort: String = defaultSort,
-    @Optional
-    val count: Int = 1,
-    @Optional
-    val minAge: Long? = null,
-    @Optional
-    val maxAge: Long? = null
-) {
+interface SmartChooserBaseConfigItem {
+    val minRate: Int?
+    val maxRate: Int?
+    val sort: String
+    val count: Int
+    val minAge: Long?
+    val maxAge: Long?
+    val otherwise: SmartChooserAdditionalConfigItem?
+}
+
+abstract class AbstractSmartChooserBaseConfigItem : SmartChooserBaseConfigItem {
     @Transient
     private val minAgeAsDateTime: DateTime? by lazy {
         minAge ?.let {
@@ -107,6 +99,63 @@ data class SmartChooserConfigItem (
     }
 
     @Transient
+    val chooser: InnerChooser?
+        get() = commonInnerChoosers[sort]
+
+    fun checkPostAge(postId: Int): Boolean {
+        val postDateTime: DateTime = PostsTable.getPostCreationDateTime(postId) ?: return false
+        val minIsOk = minAgeAsDateTime ?.let {
+                minDateTime ->
+            postDateTime.plus(minDateTime.millis).isBeforeNow
+        } ?: true
+        val maxIsOk = maxAgeAsDateTime ?.let {
+                minDateTime ->
+            postDateTime.plus(minDateTime.millis).isAfterNow
+        } ?: true
+        return minIsOk && maxIsOk
+    }
+}
+
+@Serializable
+data class SmartChooserAdditionalConfigItem(
+    @Optional
+    override val minRate: Int? = null,
+    @Optional
+    override val maxRate: Int? = null,
+    @Optional
+    override val sort: String = defaultSort,
+    @Optional
+    override val count: Int = 1,
+    @Optional
+    override val minAge: Long? = null,
+    @Optional
+    override val maxAge: Long? = null,
+    @Optional
+    override val otherwise: SmartChooserAdditionalConfigItem? = null
+) : AbstractSmartChooserBaseConfigItem()
+
+@Serializable
+data class SmartChooserConfigItem (
+    @Optional
+    override val minRate: Int? = null,
+    @Optional
+    override val maxRate: Int? = null,
+    @Optional
+    val time: String? = null,
+    @Optional
+    val times: List<String>? = null,
+    @Optional
+    override val sort: String = defaultSort,
+    @Optional
+    override val count: Int = 1,
+    @Optional
+    override val minAge: Long? = null,
+    @Optional
+    override val maxAge: Long? = null,
+    @Optional
+    override val otherwise: SmartChooserAdditionalConfigItem? = null
+) : AbstractSmartChooserBaseConfigItem() {
+    @Transient
     private val timePairs: List<CalculatedPeriod> by lazy {
         (times ?.flatMap {
             it.parseDateTimes()
@@ -117,26 +166,9 @@ data class SmartChooserConfigItem (
         now: DateTime = DateTime.now()
     ): Boolean {
         return timePairs.firstOrNull {
-            pair ->
+                pair ->
             pair.isBetween(now)
         } != null
-    }
-
-    @Transient
-    val chooser: InnerChooser?
-        get() = commonInnerChoosers[sort]
-
-    fun checkPostAge(postId: Int): Boolean {
-        val postDateTime: DateTime = PostsTable.getPostCreationDateTime(postId) ?: return false
-        val minIsOk = minAgeAsDateTime ?.let {
-            minDateTime ->
-            postDateTime.plus(minDateTime.millis).isBeforeNow
-        } ?: true
-        val maxIsOk = maxAgeAsDateTime ?.let {
-            minDateTime ->
-            postDateTime.plus(minDateTime.millis).isAfterNow
-        } ?: true
-        return minIsOk && maxIsOk
     }
 
     override fun toString(): String {
@@ -144,7 +176,7 @@ data class SmartChooserConfigItem (
         stringBuilder.append("Rating: ${minRate ?: "any low"} - ${maxRate ?: "any big"}\n")
         stringBuilder.append("Time:\n")
         timePairs.forEach {
-            (from, to) ->
+                (from, to) ->
             stringBuilder.append("  ${from.dateTime} - ${to.dateTime}\n")
         }
         return stringBuilder.toString()
@@ -161,21 +193,23 @@ class SmartChooser(
     }
 
     override fun triggerChoose(): Collection<Int> {
-        val actualItem = times.firstOrNull { it.isActual() }
-        return actualItem ?.let {
-            postsLikesTable ?.getRateRange(
-                it.minRate,
-                it.maxRate
-            ) ?.filter {
-                (postId, _) ->
-                actualItem.checkPostAge(postId)
-            }
-        } ?.let {
-            chosenList ->
-            actualItem.chooser ?.invoke(
-                chosenList,
-                actualItem.count
-            )
-        } ?: emptyList()
+        var actualItem: AbstractSmartChooserBaseConfigItem? = times.firstOrNull { it.isActual() }
+        var resultList: Collection<Int> = emptyList()
+        while (actualItem != null && resultList.isEmpty()) {
+            val realItem = actualItem
+            resultList = postsLikesTable ?.getRateRange(
+                realItem.minRate,
+                realItem.maxRate
+            ) ?.filter { (postId, _) ->
+                realItem.checkPostAge(postId)
+            } ?.let { chosenList ->
+                realItem.chooser ?.invoke(
+                    chosenList,
+                    realItem.count
+                )
+            } ?: emptyList()
+            actualItem = realItem.otherwise
+        }
+        return resultList
     }
 }
