@@ -9,7 +9,7 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.database.P
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.receivers.*
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.*
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.makeLinkToMessage
-import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestException
+import com.github.insanusmokrassar.TelegramBotAPI.bot.exceptions.RequestException
 import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
 import com.github.insanusmokrassar.TelegramBotAPI.bot.exceptions.ReplyMessageNotFound
 import com.github.insanusmokrassar.TelegramBotAPI.requests.DeleteMessage

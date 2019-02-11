@@ -2,7 +2,7 @@ package com.github.insanusmokrassar.AutoPostTelegramBot.utils
 
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.commonLogger
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.splitForMessageWithAdditionalStep
-import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestException
+import com.github.insanusmokrassar.TelegramBotAPI.bot.exceptions.RequestException
 import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
 import com.github.insanusmokrassar.TelegramBotAPI.requests.send.SendMessage
 import com.github.insanusmokrassar.TelegramBotAPI.types.ChatIdentifier
