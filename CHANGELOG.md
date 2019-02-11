@@ -272,3 +272,4 @@ message is absent registerer will try to get a new one (first one) until
 it will find some present or delete post for the reason that there is no
 available messages for post
 * Add optional otherwise field
+* Add custom scope for launch
