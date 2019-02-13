@@ -6,6 +6,7 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.extraSmallBroadcastCapaci
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.base.PostsUsedTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.smallBroadcastCapacity
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.NewDefaultCoroutineScope
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.chooseCapacity
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscribe
 import com.github.insanusmokrassar.TelegramBotAPI.types.MessageIdentifier
 import kotlinx.coroutines.channels.BroadcastChannel
@@ -19,8 +20,8 @@ private val PostsLikesMessagesTableScope = NewDefaultCoroutineScope()
 class PostsLikesMessagesTable(
     private val postsLikesTable: PostsLikesTable
 ) : Table() {
-    val ratingMessageRegisteredChannel = BroadcastChannel<PostIdMessageId>(smallBroadcastCapacity)
-    val ratingMessageUnregisteredChannel = BroadcastChannel<Int>(extraSmallBroadcastCapacity)
+    val ratingMessageRegisteredChannel = BroadcastChannel<PostIdMessageId>(chooseCapacity(smallBroadcastCapacity))
+    val ratingMessageUnregisteredChannel = BroadcastChannel<Int>(chooseCapacity(extraSmallBroadcastCapacity))
 
     private val postId = integer("postId").primaryKey()
     private val messageId = long("messageId")

@@ -3,10 +3,12 @@ package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.base
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsMessagesTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.transactionCompletedChannel
+import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.commonLogger
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.NewDefaultCoroutineScope
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.sendToLogger
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscribeChecking
 import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
+import com.github.insanusmokrassar.TelegramBotAPI.bot.exceptions.ReplyMessageNotFound
 import com.github.insanusmokrassar.TelegramBotAPI.requests.send.SendMessage
 import com.github.insanusmokrassar.TelegramBotAPI.types.ChatIdentifier
 import com.github.insanusmokrassar.TelegramBotAPI.types.MessageIdentifier
@@ -52,27 +54,46 @@ class PostMessagesRegistrant(
         retries: Int = 3
     ): MessageIdentifier? {
         val executor = botWR.get() ?: return null
-        return try {
-            val response = executor.execute(
-                SendMessage(
-                    sourceChatId,
-                    "Post registered",
-                    parseMode = MarkdownParseMode,
-                    replyToMessageId = PostsMessagesTable.getMessagesOfPost(
-                        registeredPostId
-                    ).firstOrNull() ?.messageId ?: return null
+        val messages = PostsMessagesTable.getMessagesOfPost(
+            registeredPostId
+        ).toMutableList()
+        var registeredMessageId: MessageIdentifier? = null
+        var actualRetries = retries
+        while (registeredMessageId == null && messages.isNotEmpty()) {
+            val messageId = messages.first().messageId
+            try {
+                val response = executor.execute(
+                    SendMessage(
+                        sourceChatId,
+                        "Post registered",
+                        parseMode = MarkdownParseMode,
+                        replyToMessageId = messageId
+                    )
                 )
-            )
-            PostsTable.postRegistered(registeredPostId, response.messageId)
-        } catch (e: Exception) {
-            sendToLogger(
-                e,
-                "Register message; Left retries: $retries"
-            )
-            if (retries > 0) {
-                registerPostMessage(registeredPostId, retries - 1)
-            } else {
-                null
+                registeredMessageId = response.messageId
+                actualRetries = retries
+            } catch (e: ReplyMessageNotFound) {
+                sendToLogger(
+                    e,
+                    "Register message"
+                )
+                PostsMessagesTable.removePostMessage(registeredPostId, messageId)
+                messages.removeAt(0)
+            } catch (e: Exception) {
+                sendToLogger(
+                    e,
+                    "Register message; Left retries: $actualRetries"
+                )
+                actualRetries--
+            }
+        }
+        return if (messages.isEmpty()) {
+            PostsTable.removePost(registeredPostId)
+            commonLogger.warning("Post $registeredPostId was removed")
+            null
+        } else {
+            registeredMessageId ?.also {
+                PostsTable.postRegistered(registeredPostId, it)
             }
         }
     }

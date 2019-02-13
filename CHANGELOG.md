@@ -273,3 +273,9 @@ it will find some present or delete post for the reason that there is no
 available messages for post
 * Add optional otherwise field
 * Add custom scope for launch
+
+### 1.0.9
+
+* Fix renew registered message and autoremove of post when there is no available post messages
+* Add method `chooseCapacity` for cases when capacity of channels can be `CONFLATED`
+* Add usage `chooseCapacity` to all default BroadcastChannels instantiating

@@ -6,14 +6,15 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.Post
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.PostMessage
 import com.github.insanusmokrassar.AutoPostTelegramBot.mediumBroadcastCapacity
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.NewDefaultCoroutineScope
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.chooseCapacity
 import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.launch
 import java.io.Closeable
 
-val transactionStartedChannel = BroadcastChannel<Unit>(mediumBroadcastCapacity)
-val transactionMessageAddedChannel = BroadcastChannel<Array<out PostMessage>>(mediumBroadcastCapacity)
-val transactionMessageRemovedChannel = BroadcastChannel<PostMessage>(mediumBroadcastCapacity)
-val transactionCompletedChannel = BroadcastChannel<Int>(mediumBroadcastCapacity)
+val transactionStartedChannel = BroadcastChannel<Unit>(chooseCapacity(mediumBroadcastCapacity))
+val transactionMessageAddedChannel = BroadcastChannel<Array<out PostMessage>>(chooseCapacity(mediumBroadcastCapacity))
+val transactionMessageRemovedChannel = BroadcastChannel<PostMessage>(chooseCapacity(mediumBroadcastCapacity))
+val transactionCompletedChannel = BroadcastChannel<Int>(chooseCapacity(mediumBroadcastCapacity))
 
 val PostTransactionsScope = NewDefaultCoroutineScope()
 
