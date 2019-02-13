@@ -275,3 +275,5 @@ available messages for post
 * Add custom scope for launch
 
 ### 1.0.9
+
+* Fix renew registered message and autoremove of post when there is no available post messages
