@@ -277,3 +277,4 @@ available messages for post
 ### 1.0.9
 
 * Fix renew registered message and autoremove of post when there is no available post messages
+* Add method `chooseCapacity` for cases when capacity of channels can be `CONFLATED`
