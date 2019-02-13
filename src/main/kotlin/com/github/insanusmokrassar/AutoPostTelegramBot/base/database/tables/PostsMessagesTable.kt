@@ -4,6 +4,7 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.PostMessage
 import com.github.insanusmokrassar.AutoPostTelegramBot.extraSmallBroadcastCapacity
 import com.github.insanusmokrassar.AutoPostTelegramBot.largeBroadcastCapacity
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.NewDefaultCoroutineScope
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.chooseCapacity
 import com.github.insanusmokrassar.TelegramBotAPI.types.MessageIdentifier
 import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.launch
@@ -15,12 +16,12 @@ typealias PostIdToMessagesIds = Pair<Int, Collection<MessageIdentifier>>
 val PostsMessagesTableScope = NewDefaultCoroutineScope()
 
 object PostsMessagesTable : Table() {
-    val newMessagesOfPost = BroadcastChannel<PostIdToMessagesIds>(largeBroadcastCapacity)
+    val newMessagesOfPost = BroadcastChannel<PostIdToMessagesIds>(chooseCapacity(largeBroadcastCapacity))
 
     @Deprecated("This channel is not determine post id", ReplaceWith("removedMessageOfPost"))
-    val removeMessageOfPost = BroadcastChannel<MessageIdentifier>(extraSmallBroadcastCapacity)
-    val removedMessagesOfPost = BroadcastChannel<PostIdToMessagesIds>(extraSmallBroadcastCapacity)
-    val removedMessageOfPost = BroadcastChannel<PostIdMessageId>(extraSmallBroadcastCapacity)
+    val removeMessageOfPost = BroadcastChannel<MessageIdentifier>(chooseCapacity(extraSmallBroadcastCapacity))
+    val removedMessagesOfPost = BroadcastChannel<PostIdToMessagesIds>(chooseCapacity(extraSmallBroadcastCapacity))
+    val removedMessageOfPost = BroadcastChannel<PostIdMessageId>(chooseCapacity(extraSmallBroadcastCapacity))
 
     private val messageId = long("messageId").primaryKey()
     private val mediaGroupId = text("mediaGroupId").nullable()

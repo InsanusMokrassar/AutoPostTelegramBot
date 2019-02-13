@@ -278,3 +278,4 @@ available messages for post
 
 * Fix renew registered message and autoremove of post when there is no available post messages
 * Add method `chooseCapacity` for cases when capacity of channels can be `CONFLATED`
+* Add usage `chooseCapacity` to all default BroadcastChannels instantiating
