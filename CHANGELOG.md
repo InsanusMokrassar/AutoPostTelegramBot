@@ -281,3 +281,5 @@ available messages for post
 * Add usage `chooseCapacity` to all default BroadcastChannels instantiating
 
 ### 1.0.10
+
+* Update version of `TelegramBotAPI` from `0.10.0` to `0.10.3`
