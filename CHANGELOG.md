@@ -279,3 +279,9 @@ available messages for post
 * Fix renew registered message and autoremove of post when there is no available post messages
 * Add method `chooseCapacity` for cases when capacity of channels can be `CONFLATED`
 * Add usage `chooseCapacity` to all default BroadcastChannels instantiating
+
+### 1.0.10
+
+* Update version of `TelegramBotAPI` from `0.10.0` to `0.10.3`
+* Enable and disable of ratings now are using with commands
+* Fixes in `RegisteredRefresher`

@@ -165,17 +165,21 @@ internal suspend fun refreshRegisteredMessage(
     } else {
         while (registeredMessageId == null && currentMessageIdForReplying != null) {
             registeredMessageId = try {
-                val response = SendMessage(
-                    chatId,
-                    message,
-                    replyMarkup = markup,
-                    replyToMessageId = currentMessageIdForReplying,
-                    parseMode = MarkdownParseMode
-                ).let {
-                    executor.execute(it)
+                val response = executor.executeUnsafe(
+                    SendMessage(
+                        chatId,
+                        message,
+                        replyMarkup = markup,
+                        replyToMessageId = currentMessageIdForReplying,
+                        parseMode = MarkdownParseMode
+                    ),
+                    3
+                ) ?: postId.let {
+                    commonLogger.warning("Can't register likes for post $it")
+                    return
                 }
                 if (!postsLikesMessagesTable.enableLikes(postId, response.messageId)) {
-                    executor.executeAsync(
+                    executor.executeUnsafe(
                         DeleteMessage(
                             chatId,
                             response.messageId

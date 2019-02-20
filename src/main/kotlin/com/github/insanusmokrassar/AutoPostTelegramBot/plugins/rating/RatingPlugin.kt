@@ -4,8 +4,7 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.FinalConfig
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.Plugin
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.PluginManager
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.base.BasePlugin
-import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.commands.AvailableRates
-import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.commands.MostRated
+import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.commands.*
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.database.PostsLikesMessagesTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.database.PostsLikesTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.receivers.*
@@ -24,9 +23,9 @@ class RatingPlugin : Plugin {
     @Transient
     private var dislikeReceiver: DislikeReceiver? = null
     @Transient
-    private var disableReceiver: DisableReceiver? = null
+    private var disableRating: DisableRating? = null
     @Transient
-    private var enableReceiver: EnableReceiver? = null
+    private var enableRating: EnableRating? = null
 
     @Transient
     private var registeredRefresher: RegisteredRefresher? = null
@@ -66,11 +65,11 @@ class RatingPlugin : Plugin {
         dislikeReceiver ?: let {
             dislikeReceiver = DislikeReceiver(executor, baseConfig.sourceChatId, postsLikesTable, postsLikesMessagesTable)
         }
-        disableReceiver ?: let {
-            disableReceiver = DisableReceiver(executor, baseConfig.sourceChatId, postsLikesMessagesTable)
+        disableRating ?: let {
+            disableRating = DisableRating(executor, postsLikesMessagesTable)
         }
-        enableReceiver ?: let {
-            enableReceiver = EnableReceiver(executor, baseConfig.sourceChatId, postsLikesTable, postsLikesMessagesTable)
+        enableRating ?: let {
+            enableRating = EnableRating(executor, postsLikesMessagesTable, postsLikesTable)
         }
 
         mostRated ?:let {
