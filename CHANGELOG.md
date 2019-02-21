@@ -285,3 +285,5 @@ available messages for post
 * Update version of `TelegramBotAPI` from `0.10.0` to `0.10.3`
 * Enable and disable of ratings now are using with commands
 * Fixes in `RegisteredRefresher`
+
+## 1.1.0
