@@ -287,3 +287,7 @@ available messages for post
 * Fixes in `RegisteredRefresher`
 
 ## 1.1.0
+
+* Update version of libraries
+* Remove deprecations
+* Fix errors

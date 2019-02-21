@@ -9,7 +9,7 @@ import com.github.insanusmokrassar.TelegramBotAPI.types.CallbackQuery.MessageDat
 import com.github.insanusmokrassar.TelegramBotAPI.types.ChatId
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
-import kotlinx.serialization.json.JSON
+import kotlinx.serialization.json.Json
 
 const val like = "\uD83D\uDC4D"
 
@@ -20,12 +20,12 @@ private data class LikeData(
     val like: Int
 )
 
-fun makeLikeInline(postId: Int): String = JSON.stringify(
+fun makeLikeInline(postId: Int): String = Json.stringify(
     LikeData.serializer(),
     LikeData(postId)
 )
 fun extractLikeInline(from: String): Int? = try {
-    JSON.parse(LikeData.serializer(), from).like
+    Json.parse(LikeData.serializer(), from).like
 } catch (e: SerializationException) {
     null
 }
