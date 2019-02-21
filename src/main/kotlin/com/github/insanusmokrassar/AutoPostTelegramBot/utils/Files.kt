@@ -1,7 +1,7 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.utils
 
 import kotlinx.serialization.KSerializer
-import kotlinx.serialization.json.JSON
+import kotlinx.serialization.json.Json
 import java.io.FileInputStream
 import java.io.InputStream
 
@@ -10,7 +10,7 @@ fun <T> load(
     serializer: KSerializer<T>,
     deserializationMethod: (InputStream) -> T = {
         val data = it.reader().readText()
-        JSON.parse(
+        Json.parse(
             serializer,
             data
         )

@@ -9,7 +9,7 @@ import com.github.insanusmokrassar.TelegramBotAPI.types.CallbackQuery.MessageDat
 import com.github.insanusmokrassar.TelegramBotAPI.types.ChatId
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
-import kotlinx.serialization.json.JSON
+import kotlinx.serialization.json.Json
 
 const val dislike = "\uD83D\uDC4E"
 
@@ -20,12 +20,12 @@ private data class DislikeData(
     val dislike: Int
 )
 
-fun makeDislikeInline(postId: Int): String = JSON.stringify(
+fun makeDislikeInline(postId: Int): String = Json.stringify(
     DislikeData.serializer(),
     DislikeData(postId)
 )
 fun extractDislikeInline(from: String): Int? = try {
-    JSON.parse(DislikeData.serializer(), from).dislike
+    Json.parse(DislikeData.serializer(), from).dislike
 } catch (e: SerializationException) {
     null
 }
