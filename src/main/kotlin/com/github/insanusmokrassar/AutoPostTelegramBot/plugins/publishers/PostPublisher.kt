@@ -16,8 +16,9 @@ import com.github.insanusmokrassar.TelegramBotAPI.requests.DeleteMessage
 import com.github.insanusmokrassar.TelegramBotAPI.requests.ForwardMessage
 import com.github.insanusmokrassar.TelegramBotAPI.requests.send.SendMessage
 import com.github.insanusmokrassar.TelegramBotAPI.requests.send.media.SendMediaGroup
+import com.github.insanusmokrassar.TelegramBotAPI.requests.send.media.membersCountInMediaGroup
 import com.github.insanusmokrassar.TelegramBotAPI.types.*
-import com.github.insanusmokrassar.TelegramBotAPI.types.files.biggest
+import com.github.insanusmokrassar.TelegramBotAPI.types.message.RawMessage
 import com.github.insanusmokrassar.TelegramBotAPI.types.message.abstracts.*
 import com.github.insanusmokrassar.TelegramBotAPI.types.message.content.abstracts.MediaGroupContent
 import com.github.insanusmokrassar.TelegramBotAPI.types.message.content.media.PhotoContent
@@ -208,30 +209,36 @@ class PostPublisher : Publisher {
         targetChatId: ChatIdentifier,
         mediaGroup: List<PostMessage>
     ): List<Pair<PostMessage, Message>> {
-        val media = mediaGroup.mapNotNull {
-            ((it.message as? ContentMessage<*>) ?.content as? MediaGroupContent) ?.toMediaGroupMemberInputMedia() ?.let { media ->
-                it to media
+        return when {
+            mediaGroup.size < 2 -> {
+                val postMessage = mediaGroup.firstOrNull() ?: return emptyList()
+                val contentMessage = (postMessage.message as? ContentMessage<*>) ?: return emptyList()
+                val request = contentMessage.content.createResend(
+                    targetChatId
+                )
+                val response = executor.execute(request)
+                listOf(
+                    postMessage to response.asMessage
+                )
             }
-        }.toMap()
-        return executor.execute(
-            SendMediaGroup(
-                targetChatId,
-                media.values.toList()
-            )
-        ).mapNotNull {
-            it.asMessage as? MediaGroupMessage
-        }.mapNotNull {
-            val content = it.content
-            when (content) {
-                is PhotoContent -> media.keys.firstOrNull { postMessage ->
-                    media[postMessage] ?.file == content.media.biggest() ?.fileId
+            mediaGroup.size in membersCountInMediaGroup -> {
+                val mediaGroupContent = mediaGroup.mapNotNull {
+                    ((it.message as? ContentMessage<*>) ?.content as? MediaGroupContent) ?.toMediaGroupMemberInputMedia() ?.let { media ->
+                        it to media
+                    }
+                }.toMap()
+                val request = SendMediaGroup(
+                    targetChatId,
+                    mediaGroupContent.values.toList()
+                )
+                val response = executor.execute(request)
+                val contentResponse = response.mapNotNull { it.asMessage as? ContentMessage<*> }
+                contentResponse.mapIndexed { i, contentMessage ->
+                    mediaGroup[i] to contentMessage
                 }
-                is VideoContent -> media.keys.firstOrNull { postMessage ->
-                    media[postMessage] ?.file == content.media.fileId
-                }
-                else -> null
-            } ?.let { postMessage ->
-                postMessage to it
+            }
+            else -> mediaGroup.chunked(membersCountInMediaGroup.endInclusive).flatMap { postMessages ->
+                sendMediaGroup(executor, targetChatId, postMessages)
             }
         }
     }

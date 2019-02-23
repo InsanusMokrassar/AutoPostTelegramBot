@@ -293,3 +293,5 @@ available messages for post
 * Fix errors
 
 ### 1.1.1
+
+* Fix publishing of media groups
