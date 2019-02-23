@@ -188,6 +188,7 @@ internal suspend fun refreshRegisteredMessage(
                 }
                 response.messageId
             } catch (e: ReplyMessageNotFound) {
+                commonLogger.warning("Message for reply was not found: ${e.message}")
                 PostsMessagesTable.removePostMessage(postId, currentMessageIdForReplying)
                 currentMessageIdForReplying = PostsMessagesTable.getMessagesOfPost(postId).firstOrNull() ?.messageId
                 null
