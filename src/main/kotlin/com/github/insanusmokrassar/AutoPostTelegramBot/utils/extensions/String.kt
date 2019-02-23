@@ -26,4 +26,4 @@ fun String.toMarkdown(): String {
 private const val maxMessageSymbols = 4095
 
 fun String.splitForMessage(): List<String> = splitByStep(maxMessageSymbols)
-fun String.splitForMessageWithAdditionalStep(addStep: Int): List<String> = splitByStep(maxMessageSymbols + addStep)
+fun String.splitForMessageWithAdditionalStep(addStep: Int): List<String> = splitByStep(maxMessageSymbols - addStep)
