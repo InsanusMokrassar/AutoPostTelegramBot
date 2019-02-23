@@ -291,3 +291,5 @@ available messages for post
 * Update version of libraries
 * Remove deprecations
 * Fix errors
+
+### 1.1.1
