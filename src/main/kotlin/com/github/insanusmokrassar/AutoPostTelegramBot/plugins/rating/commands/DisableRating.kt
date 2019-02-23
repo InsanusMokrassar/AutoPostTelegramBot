@@ -5,9 +5,9 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.database.P
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.disableLikesForPost
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.commands.Command
 import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
-import com.github.insanusmokrassar.TelegramBotAPI.types.*
-import com.github.insanusmokrassar.TelegramBotAPI.types.message.abstracts.*
-import com.github.insanusmokrassar.TelegramBotAPI.types.message.content.TextContent
+import com.github.insanusmokrassar.TelegramBotAPI.types.UpdateIdentifier
+import com.github.insanusmokrassar.TelegramBotAPI.types.message.abstracts.AbleToReplyMessage
+import com.github.insanusmokrassar.TelegramBotAPI.types.message.abstracts.CommonMessage
 import java.lang.ref.WeakReference
 
 class DisableRating(

@@ -19,7 +19,8 @@ import com.github.insanusmokrassar.TelegramBotAPI.requests.send.media.SendMediaG
 import com.github.insanusmokrassar.TelegramBotAPI.requests.send.media.membersCountInMediaGroup
 import com.github.insanusmokrassar.TelegramBotAPI.types.*
 import com.github.insanusmokrassar.TelegramBotAPI.types.files.biggest
-import com.github.insanusmokrassar.TelegramBotAPI.types.message.abstracts.*
+import com.github.insanusmokrassar.TelegramBotAPI.types.message.abstracts.ContentMessage
+import com.github.insanusmokrassar.TelegramBotAPI.types.message.abstracts.Message
 import com.github.insanusmokrassar.TelegramBotAPI.types.message.content.abstracts.MediaGroupContent
 import com.github.insanusmokrassar.TelegramBotAPI.types.message.content.media.PhotoContent
 import com.github.insanusmokrassar.TelegramBotAPI.types.message.content.media.VideoContent

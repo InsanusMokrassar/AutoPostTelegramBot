@@ -19,7 +19,6 @@ import com.github.insanusmokrassar.TelegramBotAPI.types.ChatIdentifier
 import com.github.insanusmokrassar.TelegramBotAPI.types.ParseMode.MarkdownParseMode
 import com.github.insanusmokrassar.TelegramBotAPI.types.buttons.InlineKeyboardButtons.*
 import com.github.insanusmokrassar.TelegramBotAPI.types.buttons.InlineKeyboardMarkup
-import com.github.insanusmokrassar.TelegramBotAPI.utils.extensions.executeAsync
 import com.github.insanusmokrassar.TelegramBotAPI.utils.extensions.executeUnsafe
 import com.github.insanusmokrassar.TelegramBotAPI.utils.matrix
 import com.github.insanusmokrassar.TelegramBotAPI.utils.row

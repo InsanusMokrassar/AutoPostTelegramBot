@@ -7,11 +7,11 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.base.BasePlugin
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.commands.*
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.database.PostsLikesMessagesTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.database.PostsLikesTable
-import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.receivers.*
+import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.receivers.DislikeReceiver
+import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.receivers.LikeReceiver
 import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
-
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.lang.ref.WeakReference
