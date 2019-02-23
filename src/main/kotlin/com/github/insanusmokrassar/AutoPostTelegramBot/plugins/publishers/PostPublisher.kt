@@ -18,12 +18,11 @@ import com.github.insanusmokrassar.TelegramBotAPI.requests.send.SendMessage
 import com.github.insanusmokrassar.TelegramBotAPI.requests.send.media.SendMediaGroup
 import com.github.insanusmokrassar.TelegramBotAPI.requests.send.media.membersCountInMediaGroup
 import com.github.insanusmokrassar.TelegramBotAPI.types.*
-import com.github.insanusmokrassar.TelegramBotAPI.types.message.RawMessage
+import com.github.insanusmokrassar.TelegramBotAPI.types.files.biggest
 import com.github.insanusmokrassar.TelegramBotAPI.types.message.abstracts.*
 import com.github.insanusmokrassar.TelegramBotAPI.types.message.content.abstracts.MediaGroupContent
 import com.github.insanusmokrassar.TelegramBotAPI.types.message.content.media.PhotoContent
 import com.github.insanusmokrassar.TelegramBotAPI.types.message.content.media.VideoContent
-import com.github.insanusmokrassar.TelegramBotAPI.utils.extensions.executeAsync
 import com.github.insanusmokrassar.TelegramBotAPI.utils.extensions.executeUnsafe
 import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.serialization.Serializable
@@ -194,7 +193,7 @@ class PostPublisher : Publisher {
             sendToLogger(e, "Publish post")
         } finally {
             messagesToDelete.forEach {
-                executor.executeAsync(
+                executor.executeUnsafe(
                     DeleteMessage(
                         it.first,
                         it.second
@@ -233,8 +232,20 @@ class PostPublisher : Publisher {
                 )
                 val response = executor.execute(request)
                 val contentResponse = response.mapNotNull { it.asMessage as? ContentMessage<*> }
-                contentResponse.mapIndexed { i, contentMessage ->
-                    mediaGroup[i] to contentMessage
+
+                contentResponse.mapNotNull {
+                    val content = it.content
+                    when (content) {
+                        is PhotoContent -> mediaGroupContent.keys.firstOrNull { postMessage ->
+                            mediaGroupContent[postMessage] ?.file == content.media.biggest() ?.fileId
+                        }
+                        is VideoContent -> mediaGroupContent.keys.firstOrNull { postMessage ->
+                            mediaGroupContent[postMessage] ?.file == content.media.fileId
+                        }
+                        else -> null
+                    } ?.let { postMessage ->
+                        postMessage to it
+                    }
                 }
             }
             else -> mediaGroup.chunked(membersCountInMediaGroup.endInclusive).flatMap { postMessages ->

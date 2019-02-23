@@ -17,7 +17,7 @@ private class LoggerHandler(
     executor: RequestsExecutor,
     private val logsChatId: ChatIdentifier
 ) : Handler() {
-    private val scope = NewDefaultCoroutineScope(2)
+    private val scope = CoroutineScope(Dispatchers.Default)
     private val botWR = WeakReference(executor)
 
     private val logsChannel = Channel<LogRecord>(Channel.UNLIMITED)
@@ -43,6 +43,8 @@ private class LoggerHandler(
                 }
             }
         }
+    }.apply {
+        start()
     }
 
     init {
@@ -52,9 +54,10 @@ private class LoggerHandler(
     }
 
     override fun publish(record: LogRecord?) {
-        record ?: return
-        scope.launch {
-            logsChannel.send(record)
+        record ?.let {
+            scope.launch {
+                logsChannel.send(record)
+            }
         }
     }
 
@@ -64,7 +67,6 @@ private class LoggerHandler(
         botWR.clear()
         logsChannel.cancel()
         recordsSendingJob.cancel()
-        scope.cancel()
     }
 }
 
