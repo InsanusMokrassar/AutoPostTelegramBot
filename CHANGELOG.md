@@ -291,3 +291,9 @@ available messages for post
 * Update version of libraries
 * Remove deprecations
 * Fix errors
+
+### 1.1.1
+
+* Fix publishing of media groups
+* Fix BotLogger scope
+* Fix problem with repeated media group triggering of posts

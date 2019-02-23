@@ -17,32 +17,29 @@ private class LoggerHandler(
     executor: RequestsExecutor,
     private val logsChatId: ChatIdentifier
 ) : Handler() {
+    private val scope = NewDefaultCoroutineScope(2)
     private val botWR = WeakReference(executor)
 
     private val logsChannel = Channel<LogRecord>(Channel.UNLIMITED)
-    private val recordsSendingJob = GlobalScope.launch {
-        coroutineScope {
-            launch {
-                for (msg in logsChannel) {
-                    val bot = botWR.get() ?: break
-                    formatter.format(msg).splitForMessageWithAdditionalStep(6).forEach { record ->
-                        try {
-                            bot.execute(
-                                SendMessage(
-                                    logsChatId,
-                                    record,
-                                    MarkdownParseMode
-                                )
-                            )
-                        } catch (e: RequestException) {
-                            bot.execute(
-                                SendMessage(
-                                    logsChatId,
-                                    record
-                                )
-                            )
-                        }
-                    }
+    private val recordsSendingJob = scope.launch {
+        for (msg in logsChannel) {
+            val bot = botWR.get() ?: break
+            formatter.format(msg).splitForMessageWithAdditionalStep(6).forEach { record ->
+                try {
+                    bot.execute(
+                        SendMessage(
+                            logsChatId,
+                            record,
+                            MarkdownParseMode
+                        )
+                    )
+                } catch (e: RequestException) {
+                    bot.execute(
+                        SendMessage(
+                            logsChatId,
+                            record
+                        )
+                    )
                 }
             }
         }
@@ -56,7 +53,7 @@ private class LoggerHandler(
 
     override fun publish(record: LogRecord?) {
         record ?: return
-        GlobalScope.launch {
+        scope.launch {
             logsChannel.send(record)
         }
     }
@@ -67,6 +64,7 @@ private class LoggerHandler(
         botWR.clear()
         logsChannel.cancel()
         recordsSendingJob.cancel()
+        scope.cancel()
     }
 }
 

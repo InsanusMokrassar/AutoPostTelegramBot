@@ -99,18 +99,23 @@ fun main(args: Array<String>) {
             }
 
             bot.startGettingOfUpdates(
-                messageCallback = {
+                {
                     allMessagesListener.send(it)
                 },
-                mediaGroupCallback = {
+                {
                     allMediaGroupsListener.send(it)
                 },
                 channelPostCallback = {
                     allMessagesListener.send(it)
                 },
+                channelPostMediaGroupCallback = {
+                    allMediaGroupsListener.send(it)
+                },
                 callbackQueryCallback = {
                     allCallbackQueryListener.send(it)
                 },
+                editedMessageMediaGroupCallback = null,
+                editedChannelPostMediaGroupCallback = null,
                 scope = this
             )
         }
