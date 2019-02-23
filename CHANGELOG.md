@@ -295,3 +295,4 @@ available messages for post
 ### 1.1.1
 
 * Fix publishing of media groups
+* Fix BotLogger scope
