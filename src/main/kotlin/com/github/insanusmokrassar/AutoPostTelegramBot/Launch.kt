@@ -12,7 +12,9 @@ import com.github.insanusmokrassar.TelegramBotAPI.requests.chat.get.GetChat
 import com.github.insanusmokrassar.TelegramBotAPI.types.CallbackQuery.MessageDataCallbackQuery
 import com.github.insanusmokrassar.TelegramBotAPI.types.message.abstracts.MediaGroupMessage
 import com.github.insanusmokrassar.TelegramBotAPI.types.update.CallbackQueryUpdate
+import com.github.insanusmokrassar.TelegramBotAPI.types.update.MessageUpdate
 import com.github.insanusmokrassar.TelegramBotAPI.types.update.abstracts.BaseMessageUpdate
+import com.github.insanusmokrassar.TelegramBotAPI.utils.extensions.UpdateReceiver
 import com.github.insanusmokrassar.TelegramBotAPI.utils.extensions.startGettingOfUpdates
 import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.runBlocking
@@ -99,18 +101,23 @@ fun main(args: Array<String>) {
             }
 
             bot.startGettingOfUpdates(
-                messageCallback = {
+                {
                     allMessagesListener.send(it)
                 },
-                mediaGroupCallback = {
+                {
                     allMediaGroupsListener.send(it)
                 },
                 channelPostCallback = {
                     allMessagesListener.send(it)
                 },
+                channelPostMediaGroupCallback = {
+                    allMediaGroupsListener.send(it)
+                },
                 callbackQueryCallback = {
                     allCallbackQueryListener.send(it)
                 },
+                editedMessageMediaGroupCallback = null,
+                editedChannelPostMediaGroupCallback = null,
                 scope = this
             )
         }
