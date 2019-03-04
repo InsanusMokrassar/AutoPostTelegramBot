@@ -15,7 +15,8 @@ import java.io.File
 data class WebhookConfig(
     val url: String,
     val port: Int,
-    val certificatePath: String,
+    @Optional
+    val certificatePath: String? = null,
     @Optional
     val maxConnections: Int? = null
 ) {
@@ -26,8 +27,8 @@ data class WebhookConfig(
     ): Job = requestsExecutor.setWebhook(
         url,
         port,
-        File(certificatePath).toInputFile(),
         filter,
+        certificatePath ?.let { File(it).toInputFile() },
         scope,
         maxConnections
     )
