@@ -7,6 +7,7 @@ import com.github.insanusmokrassar.TelegramBotAPI.utils.extensions.UpdatesFilter
 import com.github.insanusmokrassar.TelegramBotAPI.utils.extensions.setWebhook
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import kotlinx.serialization.Optional
 import kotlinx.serialization.Serializable
 import java.io.File
 
@@ -15,6 +16,7 @@ data class WebhookConfig(
     val url: String,
     val port: Int,
     val certificatePath: String,
+    @Optional
     val maxConnections: Int? = null
 ) {
     suspend fun setWebhook(
