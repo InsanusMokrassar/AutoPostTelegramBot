@@ -299,3 +299,5 @@ available messages for post
 * Fix problem with repeated media group triggering of posts
 
 ## 1.2.0
+
+* Update version of `TelegramBotAPI` from `0.11.0` to `0.12.0`
