@@ -297,3 +297,5 @@ available messages for post
 * Fix publishing of media groups
 * Fix BotLogger scope
 * Fix problem with repeated media group triggering of posts
+
+## 1.2.0
