@@ -301,3 +301,4 @@ available messages for post
 ## 1.2.0
 
 * Update version of `TelegramBotAPI` from `0.11.0` to `0.12.0`
+* Remove `CONFLATED_MODE_ON` environment variable checking. Now all channels by default conflated

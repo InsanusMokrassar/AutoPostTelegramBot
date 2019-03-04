@@ -15,6 +15,7 @@ import com.github.insanusmokrassar.TelegramBotAPI.types.update.CallbackQueryUpda
 import com.github.insanusmokrassar.TelegramBotAPI.types.update.abstracts.BaseMessageUpdate
 import com.github.insanusmokrassar.TelegramBotAPI.utils.extensions.startGettingOfUpdates
 import kotlinx.coroutines.channels.BroadcastChannel
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -37,13 +38,13 @@ const val extraLargeBroadcastCapacity = 64
 
 const val commonListenersCapacity = mediumBroadcastCapacity
 
-val allMessagesListener = BroadcastChannel<BaseMessageUpdate>(chooseCapacity(commonListenersCapacity))
-val allCallbackQueryListener = BroadcastChannel<CallbackQueryUpdate>(chooseCapacity(commonListenersCapacity))
-val allMediaGroupsListener = BroadcastChannel<List<BaseMessageUpdate>>(chooseCapacity(commonListenersCapacity))
+val allMessagesListener = BroadcastChannel<BaseMessageUpdate>(Channel.CONFLATED)
+val allCallbackQueryListener = BroadcastChannel<CallbackQueryUpdate>(Channel.CONFLATED)
+val allMediaGroupsListener = BroadcastChannel<List<BaseMessageUpdate>>(Channel.CONFLATED)
 
-val messagesListener = BroadcastChannel<BaseMessageUpdate>(chooseCapacity(commonListenersCapacity))
-val callbackQueryListener = BroadcastChannel<CallbackQueryUpdate>(chooseCapacity(commonListenersCapacity))
-val mediaGroupsListener = BroadcastChannel<List<BaseMessageUpdate>>(chooseCapacity(commonListenersCapacity))
+val messagesListener = BroadcastChannel<BaseMessageUpdate>(Channel.CONFLATED)
+val callbackQueryListener = BroadcastChannel<CallbackQueryUpdate>(Channel.CONFLATED)
+val mediaGroupsListener = BroadcastChannel<List<BaseMessageUpdate>>(Channel.CONFLATED)
 
 fun main(args: Array<String>) {
     val config: FinalConfig = load(args[0], Config.serializer()).finalConfig
