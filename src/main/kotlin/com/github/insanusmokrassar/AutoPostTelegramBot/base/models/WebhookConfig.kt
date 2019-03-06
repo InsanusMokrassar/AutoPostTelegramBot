@@ -3,8 +3,7 @@ package com.github.insanusmokrassar.AutoPostTelegramBot.base.models
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.NewDefaultCoroutineScope
 import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
 import com.github.insanusmokrassar.TelegramBotAPI.requests.abstracts.toInputFile
-import com.github.insanusmokrassar.TelegramBotAPI.utils.extensions.UpdatesFilter
-import com.github.insanusmokrassar.TelegramBotAPI.utils.extensions.setWebhook
+import com.github.insanusmokrassar.TelegramBotAPI.utils.extensions.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.serialization.Optional
@@ -18,7 +17,9 @@ data class WebhookConfig(
     @Optional
     val certificatePath: String? = null,
     @Optional
-    val maxConnections: Int? = null
+    val maxConnections: Int? = null,
+    @Optional
+    val privateKeyConfig: WebhookPrivateKeyConfig? = null
 ) {
     suspend fun setWebhook(
         requestsExecutor: RequestsExecutor,
@@ -29,6 +30,7 @@ data class WebhookConfig(
         port,
         filter,
         certificatePath ?.let { File(it).toInputFile() },
+        privateKeyConfig,
         scope,
         maxConnections
     )
