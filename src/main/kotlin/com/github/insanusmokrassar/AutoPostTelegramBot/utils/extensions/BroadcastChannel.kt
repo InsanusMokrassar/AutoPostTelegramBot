@@ -7,39 +7,6 @@ import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.ReceiveChannel
 import java.util.concurrent.TimeUnit
 
-fun <T> BroadcastChannel<T>.subscribeChecking(
-    throwableHandler: (Throwable) -> Boolean = {
-        it.printStackTrace()
-        true
-    },
-    scope: CoroutineScope = NewDefaultCoroutineScope(1),
-    by: suspend (T) -> Boolean
-): ReceiveChannel<T> {
-    return openSubscription().apply {
-        subscribeChecking(
-            throwableHandler,
-            scope,
-            by
-        )
-    }
-}
-
-fun <T> BroadcastChannel<T>.subscribe(
-    throwableHandler: (Throwable) -> Boolean = {
-        it.printStackTrace()
-        true
-    },
-    scope: CoroutineScope = NewDefaultCoroutineScope(1),
-    by: suspend (T) -> Unit
-): ReceiveChannel<T> {
-    return openSubscription().apply {
-        subscribeChecking(throwableHandler, scope) {
-            by(it)
-            true
-        }
-    }
-}
-
 fun <T> ReceiveChannel<T>.subscribeChecking(
     throwableHandler: (Throwable) -> Boolean = {
         it.printStackTrace()
@@ -80,22 +47,6 @@ fun <T> ReceiveChannel<T>.subscribe(
     }
 }
 
-
-fun <T> BroadcastChannel<T>.debounce(
-    delay: Long,
-    timeUnit: TimeUnit = TimeUnit.MILLISECONDS,
-    scope: CoroutineScope = NewDefaultCoroutineScope(1),
-    resultBroadcastChannelCapacity: Int = extraSmallBroadcastCapacity
-): BroadcastChannel<T> {
-    return openSubscription().debounce(
-        delay,
-        timeUnit,
-        scope,
-        resultBroadcastChannelCapacity
-    )
-}
-
-
 fun <T> ReceiveChannel<T>.debounce(
     delay: Long,
     timeUnit: TimeUnit = TimeUnit.MILLISECONDS,
@@ -113,4 +64,51 @@ fun <T> ReceiveChannel<T>.debounce(
             }
         }
     }
+}
+
+fun <T> BroadcastChannel<T>.subscribeChecking(
+    throwableHandler: (Throwable) -> Boolean = {
+        it.printStackTrace()
+        true
+    },
+    scope: CoroutineScope = NewDefaultCoroutineScope(1),
+    by: suspend (T) -> Boolean
+): ReceiveChannel<T> {
+    return openSubscription().apply {
+        subscribeChecking(
+            throwableHandler,
+            scope,
+            by
+        )
+    }
+}
+
+fun <T> BroadcastChannel<T>.subscribe(
+    throwableHandler: (Throwable) -> Boolean = {
+        it.printStackTrace()
+        true
+    },
+    scope: CoroutineScope = NewDefaultCoroutineScope(1),
+    by: suspend (T) -> Unit
+): ReceiveChannel<T> {
+    return openSubscription().apply {
+        subscribe(throwableHandler, scope) {
+            by(it)
+        }
+    }
+}
+
+
+fun <T> BroadcastChannel<T>.debounce(
+    delay: Long,
+    timeUnit: TimeUnit = TimeUnit.MILLISECONDS,
+    scope: CoroutineScope = NewDefaultCoroutineScope(1),
+    resultBroadcastChannelCapacity: Int = extraSmallBroadcastCapacity
+): BroadcastChannel<T> {
+    return openSubscription().debounce(
+        delay,
+        timeUnit,
+        scope,
+        resultBroadcastChannelCapacity
+    )
 }

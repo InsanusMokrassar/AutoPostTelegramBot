@@ -2,13 +2,11 @@ package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.database
 
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.commonLogger
-import com.github.insanusmokrassar.AutoPostTelegramBot.mediumBroadcastCapacity
-import com.github.insanusmokrassar.AutoPostTelegramBot.smallBroadcastCapacity
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.NewDefaultCoroutineScope
-import com.github.insanusmokrassar.AutoPostTelegramBot.utils.chooseCapacity
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscribe
 import com.github.insanusmokrassar.TelegramBotAPI.types.ChatId
 import kotlinx.coroutines.channels.BroadcastChannel
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 import org.h2.jdbc.JdbcSQLException
 import org.jetbrains.exposed.sql.*
@@ -23,9 +21,9 @@ private const val resultColumnName = "result"
 private val PostsLikesTableScope = NewDefaultCoroutineScope()
 
 class PostsLikesTable : Table() {
-    val likesChannel = BroadcastChannel<PostIdUserId>(chooseCapacity(smallBroadcastCapacity))
-    val dislikesChannel = BroadcastChannel<PostIdUserId>(chooseCapacity(smallBroadcastCapacity))
-    val ratingsChannel = BroadcastChannel<PostIdRatingPair>(chooseCapacity(mediumBroadcastCapacity))
+    val likesChannel = BroadcastChannel<PostIdUserId>(Channel.CONFLATED)
+    val dislikesChannel = BroadcastChannel<PostIdUserId>(Channel.CONFLATED)
+    val ratingsChannel = BroadcastChannel<PostIdRatingPair>(Channel.CONFLATED)
 
     private val userId = long("userId").primaryKey()
     private val postId = integer("postId").primaryKey()

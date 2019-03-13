@@ -6,15 +6,16 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.Config
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.FinalConfig
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.DefaultPluginManager
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.commonLogger
-import com.github.insanusmokrassar.AutoPostTelegramBot.utils.*
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.NewDefaultCoroutineScope
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscribe
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.load
 import com.github.insanusmokrassar.TelegramBotAPI.requests.chat.get.GetChat
 import com.github.insanusmokrassar.TelegramBotAPI.types.CallbackQuery.MessageDataCallbackQuery
 import com.github.insanusmokrassar.TelegramBotAPI.types.message.abstracts.MediaGroupMessage
 import com.github.insanusmokrassar.TelegramBotAPI.types.update.CallbackQueryUpdate
 import com.github.insanusmokrassar.TelegramBotAPI.types.update.abstracts.BaseMessageUpdate
-import com.github.insanusmokrassar.TelegramBotAPI.utils.extensions.startGettingOfUpdates
 import kotlinx.coroutines.channels.BroadcastChannel
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -37,13 +38,13 @@ const val extraLargeBroadcastCapacity = 64
 
 const val commonListenersCapacity = mediumBroadcastCapacity
 
-val allMessagesListener = BroadcastChannel<BaseMessageUpdate>(chooseCapacity(commonListenersCapacity))
-val allCallbackQueryListener = BroadcastChannel<CallbackQueryUpdate>(chooseCapacity(commonListenersCapacity))
-val allMediaGroupsListener = BroadcastChannel<List<BaseMessageUpdate>>(chooseCapacity(commonListenersCapacity))
+val allMessagesListener = BroadcastChannel<BaseMessageUpdate>(Channel.CONFLATED)
+val allCallbackQueryListener = BroadcastChannel<CallbackQueryUpdate>(Channel.CONFLATED)
+val allMediaGroupsListener = BroadcastChannel<List<BaseMessageUpdate>>(Channel.CONFLATED)
 
-val messagesListener = BroadcastChannel<BaseMessageUpdate>(chooseCapacity(commonListenersCapacity))
-val callbackQueryListener = BroadcastChannel<CallbackQueryUpdate>(chooseCapacity(commonListenersCapacity))
-val mediaGroupsListener = BroadcastChannel<List<BaseMessageUpdate>>(chooseCapacity(commonListenersCapacity))
+val messagesListener = BroadcastChannel<BaseMessageUpdate>(Channel.CONFLATED)
+val callbackQueryListener = BroadcastChannel<CallbackQueryUpdate>(Channel.CONFLATED)
+val mediaGroupsListener = BroadcastChannel<List<BaseMessageUpdate>>(Channel.CONFLATED)
 
 fun main(args: Array<String>) {
     val config: FinalConfig = load(args[0], Config.serializer()).finalConfig
@@ -98,25 +99,16 @@ fun main(args: Array<String>) {
                 }
             }
 
-            bot.startGettingOfUpdates(
-                {
-                    allMessagesListener.send(it)
-                },
-                {
-                    allMediaGroupsListener.send(it)
-                },
-                channelPostCallback = {
-                    allMessagesListener.send(it)
-                },
-                channelPostMediaGroupCallback = {
-                    allMediaGroupsListener.send(it)
-                },
-                callbackQueryCallback = {
-                    allCallbackQueryListener.send(it)
-                },
-                editedMessageMediaGroupCallback = null,
-                editedChannelPostMediaGroupCallback = null,
-                scope = this
+            val filter = config.createFilter(
+                allMessagesListener,
+                allMessagesListener,
+                allMediaGroupsListener,
+                allCallbackQueryListener
+            )
+
+            config.subscribe(
+                filter,
+                this
             )
         }
     }

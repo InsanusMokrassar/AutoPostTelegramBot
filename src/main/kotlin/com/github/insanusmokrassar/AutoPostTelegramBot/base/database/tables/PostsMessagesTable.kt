@@ -1,12 +1,10 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables
 
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.PostMessage
-import com.github.insanusmokrassar.AutoPostTelegramBot.extraSmallBroadcastCapacity
-import com.github.insanusmokrassar.AutoPostTelegramBot.largeBroadcastCapacity
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.NewDefaultCoroutineScope
-import com.github.insanusmokrassar.AutoPostTelegramBot.utils.chooseCapacity
 import com.github.insanusmokrassar.TelegramBotAPI.types.MessageIdentifier
 import kotlinx.coroutines.channels.BroadcastChannel
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -16,12 +14,12 @@ typealias PostIdToMessagesIds = Pair<Int, Collection<MessageIdentifier>>
 val PostsMessagesTableScope = NewDefaultCoroutineScope()
 
 object PostsMessagesTable : Table() {
-    val newMessagesOfPost = BroadcastChannel<PostIdToMessagesIds>(chooseCapacity(largeBroadcastCapacity))
+    val newMessagesOfPost = BroadcastChannel<PostIdToMessagesIds>(Channel.CONFLATED)
 
     @Deprecated("This channel is not determine post id", ReplaceWith("removedMessageOfPost"))
-    val removeMessageOfPost = BroadcastChannel<MessageIdentifier>(chooseCapacity(extraSmallBroadcastCapacity))
-    val removedMessagesOfPost = BroadcastChannel<PostIdToMessagesIds>(chooseCapacity(extraSmallBroadcastCapacity))
-    val removedMessageOfPost = BroadcastChannel<PostIdMessageId>(chooseCapacity(extraSmallBroadcastCapacity))
+    val removeMessageOfPost = BroadcastChannel<MessageIdentifier>(Channel.CONFLATED)
+    val removedMessagesOfPost = BroadcastChannel<PostIdToMessagesIds>(Channel.CONFLATED)
+    val removedMessageOfPost = BroadcastChannel<PostIdMessageId>(Channel.CONFLATED)
 
     private val messageId = long("messageId").primaryKey()
     private val mediaGroupId = text("mediaGroupId").nullable()

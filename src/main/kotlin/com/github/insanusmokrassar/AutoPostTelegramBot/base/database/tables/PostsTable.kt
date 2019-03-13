@@ -2,11 +2,10 @@ package com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables
 
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.exceptions.CreationException
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.exceptions.NoRowFoundException
-import com.github.insanusmokrassar.AutoPostTelegramBot.mediumBroadcastCapacity
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.NewDefaultCoroutineScope
-import com.github.insanusmokrassar.AutoPostTelegramBot.utils.chooseCapacity
 import com.github.insanusmokrassar.TelegramBotAPI.types.MessageIdentifier
 import kotlinx.coroutines.channels.BroadcastChannel
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -18,9 +17,9 @@ typealias PostIdMessageId = Pair<Int, MessageIdentifier>
 val PostsTableScope = NewDefaultCoroutineScope()
 
 object PostsTable : Table() {
-    val postAllocatedChannel = BroadcastChannel<Int>(chooseCapacity(mediumBroadcastCapacity))
-    val postRemovedChannel = BroadcastChannel<Int>(chooseCapacity(mediumBroadcastCapacity))
-    val postMessageRegisteredChannel = BroadcastChannel<PostIdMessageId>(chooseCapacity(mediumBroadcastCapacity))
+    val postAllocatedChannel = BroadcastChannel<Int>(Channel.CONFLATED)
+    val postRemovedChannel = BroadcastChannel<Int>(Channel.CONFLATED)
+    val postMessageRegisteredChannel = BroadcastChannel<PostIdMessageId>(Channel.CONFLATED)
 
     private val id = integer("id").primaryKey().autoIncrement()
     private val postRegisteredMessageId = long("postRegistered").nullable()

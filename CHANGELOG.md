@@ -297,3 +297,10 @@ available messages for post
 * Fix publishing of media groups
 * Fix BotLogger scope
 * Fix problem with repeated media group triggering of posts
+
+## 1.2.0
+
+* Update version of `TelegramBotAPI` from `0.11.0` to `0.12.0`
+* Remove `CONFLATED_MODE_ON` environment variable checking. Now all channels by default conflated
+* Added section to bot config `webhookConfig`
+* `DisableRating` now have more obvious logging and behaviour

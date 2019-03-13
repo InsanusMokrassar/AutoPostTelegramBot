@@ -2,15 +2,11 @@ package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.database
 
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostIdMessageId
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.PluginName
-import com.github.insanusmokrassar.AutoPostTelegramBot.extraSmallBroadcastCapacity
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.base.PostsUsedTable
-import com.github.insanusmokrassar.AutoPostTelegramBot.smallBroadcastCapacity
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.NewDefaultCoroutineScope
-import com.github.insanusmokrassar.AutoPostTelegramBot.utils.chooseCapacity
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscribe
 import com.github.insanusmokrassar.TelegramBotAPI.types.MessageIdentifier
-import kotlinx.coroutines.channels.BroadcastChannel
-import kotlinx.coroutines.channels.ReceiveChannel
+import kotlinx.coroutines.channels.*
 import kotlinx.coroutines.launch
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -20,8 +16,8 @@ private val PostsLikesMessagesTableScope = NewDefaultCoroutineScope()
 class PostsLikesMessagesTable(
     private val postsLikesTable: PostsLikesTable
 ) : Table() {
-    val ratingMessageRegisteredChannel = BroadcastChannel<PostIdMessageId>(chooseCapacity(smallBroadcastCapacity))
-    val ratingMessageUnregisteredChannel = BroadcastChannel<Int>(chooseCapacity(extraSmallBroadcastCapacity))
+    val ratingMessageRegisteredChannel = BroadcastChannel<PostIdMessageId>(Channel.CONFLATED)
+    val ratingMessageUnregisteredChannel = BroadcastChannel<Int>(Channel.CONFLATED)
 
     private val postId = integer("postId").primaryKey()
     private val messageId = long("messageId")
