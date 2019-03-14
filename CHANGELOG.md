@@ -304,3 +304,7 @@ available messages for post
 * Remove `CONFLATED_MODE_ON` environment variable checking. Now all channels by default conflated
 * Added section to bot config `webhookConfig`
 * `DisableRating` now have more obvious logging and behaviour
+
+### 1.2.1
+
+* `TelegramBotAPI` version `0.12.0` -> `0.12.1`
