@@ -308,3 +308,5 @@ available messages for post
 ### 1.2.1
 
 * `TelegramBotAPI` version `0.12.0` -> `0.12.1`
+
+### 1.2.2
