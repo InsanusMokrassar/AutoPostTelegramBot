@@ -310,3 +310,5 @@ available messages for post
 * `TelegramBotAPI` version `0.12.0` -> `0.12.1`
 
 ### 1.2.2
+
+* Adapt project tto new types of updates
