@@ -27,8 +27,7 @@ class OnMediaGroup(
                 true
             }
         ) {
-            val mediaGroup = it.mapNotNull { it.data as? MediaGroupMessage }
-            invoke(mediaGroup, sourceChatId)
+            invoke(it.data, sourceChatId)
         }
     }
 

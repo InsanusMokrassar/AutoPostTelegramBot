@@ -76,7 +76,7 @@ data class FinalConfig (
     fun createFilter(
         messagesChannel: SendChannel<MessageUpdate>,
         channelPostChannel: SendChannel<ChannelPostUpdate>,
-        mediaGroupChannel: SendChannel<List<MediaGroupUpdate>>,
+        mediaGroupChannel: SendChannel<MediaGroupUpdate>,
         callbackQueryChannel: SendChannel<CallbackQueryUpdate>
     ): UpdatesFilter = UpdatesFilter(
         {
