@@ -13,6 +13,7 @@ import com.github.insanusmokrassar.TelegramBotAPI.requests.chat.get.GetChat
 import com.github.insanusmokrassar.TelegramBotAPI.types.CallbackQuery.MessageDataCallbackQuery
 import com.github.insanusmokrassar.TelegramBotAPI.types.message.abstracts.MediaGroupMessage
 import com.github.insanusmokrassar.TelegramBotAPI.types.update.CallbackQueryUpdate
+import com.github.insanusmokrassar.TelegramBotAPI.types.update.MediaGroupUpdates.MediaGroupUpdate
 import com.github.insanusmokrassar.TelegramBotAPI.types.update.abstracts.BaseMessageUpdate
 import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel
@@ -40,11 +41,11 @@ const val commonListenersCapacity = mediumBroadcastCapacity
 
 val allMessagesListener = BroadcastChannel<BaseMessageUpdate>(Channel.CONFLATED)
 val allCallbackQueryListener = BroadcastChannel<CallbackQueryUpdate>(Channel.CONFLATED)
-val allMediaGroupsListener = BroadcastChannel<List<BaseMessageUpdate>>(Channel.CONFLATED)
+val allMediaGroupsListener = BroadcastChannel<MediaGroupUpdate>(Channel.CONFLATED)
 
 val messagesListener = BroadcastChannel<BaseMessageUpdate>(Channel.CONFLATED)
 val callbackQueryListener = BroadcastChannel<CallbackQueryUpdate>(Channel.CONFLATED)
-val mediaGroupsListener = BroadcastChannel<List<BaseMessageUpdate>>(Channel.CONFLATED)
+val mediaGroupsListener = BroadcastChannel<MediaGroupUpdate>(Channel.CONFLATED)
 
 fun main(args: Array<String>) {
     val config: FinalConfig = load(args[0], Config.serializer()).finalConfig
@@ -93,7 +94,7 @@ fun main(args: Array<String>) {
             allMediaGroupsListener.subscribe(
                 scope = this
             ) { mediaGroup ->
-                val mediaGroupChatId = mediaGroup.firstOrNull() ?.data ?.chat ?.id ?: return@subscribe
+                val mediaGroupChatId = mediaGroup.data.first().chat.id
                 if (mediaGroupChatId == config.sourceChatId) {
                     mediaGroupsListener.send(mediaGroup)
                 }
