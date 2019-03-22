@@ -10,7 +10,7 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.receivers.
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.*
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.makeLinkToMessage
 import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
-import com.github.insanusmokrassar.TelegramBotAPI.bot.exceptions.ReplyMessageNotFound
+import com.github.insanusmokrassar.TelegramBotAPI.bot.exceptions.ReplyMessageNotFoundException
 import com.github.insanusmokrassar.TelegramBotAPI.requests.DeleteMessage
 import com.github.insanusmokrassar.TelegramBotAPI.requests.edit.text.EditChatMessageText
 import com.github.insanusmokrassar.TelegramBotAPI.requests.send.SendMessage
@@ -186,7 +186,7 @@ internal suspend fun refreshRegisteredMessage(
                     )
                 }
                 response.messageId
-            } catch (e: ReplyMessageNotFound) {
+            } catch (e: ReplyMessageNotFoundException) {
                 commonLogger.warning("Message for reply was not found: ${e.message}")
                 PostsMessagesTable.removePostMessage(postId, currentMessageIdForReplying)
                 currentMessageIdForReplying = PostsMessagesTable.getMessagesOfPost(postId).firstOrNull() ?.messageId

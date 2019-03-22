@@ -16,7 +16,6 @@ import com.github.insanusmokrassar.TelegramBotAPI.requests.send.SendMessage
 import com.github.insanusmokrassar.TelegramBotAPI.requests.send.media.SendMediaGroup
 import com.github.insanusmokrassar.TelegramBotAPI.requests.send.media.membersCountInMediaGroup
 import com.github.insanusmokrassar.TelegramBotAPI.types.*
-import com.github.insanusmokrassar.TelegramBotAPI.types.files.biggest
 import com.github.insanusmokrassar.TelegramBotAPI.types.message.abstracts.ContentMessage
 import com.github.insanusmokrassar.TelegramBotAPI.types.message.abstracts.Message
 import com.github.insanusmokrassar.TelegramBotAPI.types.message.content.abstracts.MediaGroupContent
@@ -237,7 +236,7 @@ class PostPublisher : Publisher {
                     val content = it.content
                     when (content) {
                         is PhotoContent -> mediaGroupContent.keys.firstOrNull { postMessage ->
-                            mediaGroupContent[postMessage] ?.file == content.media.biggest() ?.fileId
+                            mediaGroupContent[postMessage] ?.file == content.media.fileId
                         }
                         is VideoContent -> mediaGroupContent.keys.firstOrNull { postMessage ->
                             mediaGroupContent[postMessage] ?.file == content.media.fileId

@@ -8,7 +8,7 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.utils.NewDefaultCoroutine
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.sendToLogger
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscribeChecking
 import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
-import com.github.insanusmokrassar.TelegramBotAPI.bot.exceptions.ReplyMessageNotFound
+import com.github.insanusmokrassar.TelegramBotAPI.bot.exceptions.ReplyMessageNotFoundException
 import com.github.insanusmokrassar.TelegramBotAPI.requests.send.SendMessage
 import com.github.insanusmokrassar.TelegramBotAPI.types.ChatIdentifier
 import com.github.insanusmokrassar.TelegramBotAPI.types.MessageIdentifier
@@ -72,7 +72,7 @@ class PostMessagesRegistrant(
                 )
                 registeredMessageId = response.messageId
                 actualRetries = retries
-            } catch (e: ReplyMessageNotFound) {
+            } catch (e: ReplyMessageNotFoundException) {
                 sendToLogger(
                     e,
                     "Register message"

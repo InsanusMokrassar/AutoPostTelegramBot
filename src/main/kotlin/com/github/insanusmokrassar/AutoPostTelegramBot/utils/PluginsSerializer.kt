@@ -12,13 +12,11 @@ object ListSerializer: KSerializer<List<Plugin>> {
     override val descriptor: SerialDescriptor
         get() = realSerializer.descriptor
 
-    override fun deserialize(
-        input: Decoder
-    ): List<Plugin> = realSerializer.deserialize(
-        input
+    override fun deserialize(decoder: Decoder): List<Plugin> = realSerializer.deserialize(
+        decoder
     ).map { it as Plugin }
 
-    override fun serialize(output: Encoder, obj: List<Plugin>) = realSerializer.serialize(
-        output, obj
+    override fun serialize(encoder: Encoder, obj: List<Plugin>) = realSerializer.serialize(
+        encoder, obj
     )
 }
