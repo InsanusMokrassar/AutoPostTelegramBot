@@ -312,3 +312,5 @@ available messages for post
 ### 1.2.2
 
 * Adapt project tto new types of updates
+
+## 1.2.3
