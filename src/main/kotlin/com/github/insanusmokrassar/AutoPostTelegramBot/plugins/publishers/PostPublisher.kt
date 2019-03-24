@@ -88,30 +88,34 @@ class PostPublisher : Publisher {
                 messagesToDelete.add(it.chat.id to it.messageId)
             }
 
-            val messageToPost = PostsMessagesTable.getMessagesOfPost(postId).also {
-                if (it.isEmpty()) {
-                    PostsTable.removePost(postId)
-                    return
-                }
+            val messagesOfPost = mutableListOf<PostMessage>()
+
+            PostsMessagesTable.getMessagesOfPost(postId).also {
                 it.forEach { message ->
-                    try {
-                        executor.execute(
-                            ForwardMessage(
-                                sourceChatId,
-                                logsChatId,
-                                message.messageId,
-                                disableNotification = true
-                            )
-                        ).asMessage.also {
-                            messagesToDelete.add(it.chat.id to it.messageId)
-                            message.message = it
-                        }
-                    } catch (e: Exception) {
+                    executor.executeUnsafe(
+                        ForwardMessage(
+                            sourceChatId,
+                            logsChatId,
+                            message.messageId,
+                            disableNotification = true
+                        ),
+                        retries = 3
+                    ) ?.asMessage ?.also {
+                        messagesToDelete.add(it.chat.id to it.messageId)
+                        message.message = it
+                        messagesOfPost.add(message)
+                    } ?: message.messageId.let {
                         commonLogger.warning(
-                            "Can't forward message with id: ${message.messageId}"
+                            "Can't forward message with id: $it; it will be removed from post"
                         )
+                        PostsMessagesTable.removePostMessage(postId, it)
                     }
                 }
+            }
+            if (messagesOfPost.isEmpty()) {
+                PostsTable.removePost(postId)
+                commonLogger.warning("Post $postId will be removed cause it contains not publishable messages")
+                return
             }
 
             val responses = mutableListOf<Pair<PostMessage, Message>>()
@@ -119,7 +123,7 @@ class PostPublisher : Publisher {
             var mediaGroup: MutableList<PostMessage>? = null
 
             try {
-                messageToPost.forEach { postMessage ->
+                messagesOfPost.forEach { postMessage ->
                     //TODO:: REFACTOR
                     mediaGroup?.let { currentMediaGroup ->
                         if (postMessage.mediaGroupId != currentMediaGroup.first().mediaGroupId) {

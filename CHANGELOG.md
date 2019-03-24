@@ -313,6 +313,10 @@ available messages for post
 
 * Adapt project tto new types of updates
 
-## 1.2.3
+### 1.2.3
 
 * Update `TelegramBotAPI` version `0.12.2` -> `0.12.3`
+
+### 1.2.4 Hotfix
+
+* Hotfix for `PostPublisher` behaviour - now it will remove posts without forwardable messages
