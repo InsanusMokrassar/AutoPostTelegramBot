@@ -326,3 +326,4 @@ available messages for post
 * `Chooser` abstraction was replaced to the base package
 * Add abstraction `PostId` which actually is `Int`
 * Now all choosers can accept exceptions for skip choosing of some posts
+* Added new command `getAutoPublications`

@@ -288,6 +288,8 @@
           }
         ]
     ```
+    Кроме того, добавляет доступ к команде `getAutoPublications`, которая возвращает ближайшую публикацию или
+    несколько публикаций, если использована с числом
 * [SchedulerPlugin](src/main/kotlin/com/github/insanusmokrassar/AutoPostTelegramBot/plugins/scheduler/SchedulerPlugin.kt)
     \- позволяет ставить посты на публикацию в определенное время (в том числе на конкретную дату). Добавляет
     команды:
