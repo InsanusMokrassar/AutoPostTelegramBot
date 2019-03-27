@@ -322,3 +322,5 @@ available messages for post
 * Hotfix for `PostPublisher` behaviour - now it will remove posts without forwardable messages
 
 ### 1.2.5 Better choosers
+
+* `Chooser` abstraction was replaced to the base package
