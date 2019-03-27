@@ -27,8 +27,8 @@ import org.joda.time.DateTime
 
 private val TimerTriggerStrategyScope = NewDefaultCoroutineScope(1)
 
-private val timerScheduleCommandRegex = Regex("((getA)|(a))utoPublication(s [\\d]+)?")
-private val numberRegex: Regex = Regex("[\\d]+")
+private val timerScheduleCommandRegex = Regex("/?((getA)|(a))utoPublication(s [\\d]+)?$")
+private val numberRegex: Regex = Regex("[\\d]+$")
 private class TimerScheduleCommand(
     private val sourceChatId: ChatId,
     private val timesOfTriggering: List<CalculatedDateTime>,
@@ -41,12 +41,7 @@ private class TimerScheduleCommand(
 
     override suspend fun onCommand(updateId: UpdateIdentifier, message: CommonMessage<*>) {
         val content = message.content as? TextContent ?: return
-        val entity = content.entities.first {
-            it is BotCommandMessageEntity && timerScheduleCommandRegex.matches(it.command)
-        }
-        val count = numberRegex.find(entity.sourceString) ?.let {
-            it.value.toIntOrNull()
-        } ?: 1
+        val count = numberRegex.find(content.text) ?.value ?.toIntOrNull() ?: 1
         var nearDateTime = DateTime.now()
         val chosen = mutableMapOf<DateTime, List<PostId>>()
         for (i in 0 until count) {
