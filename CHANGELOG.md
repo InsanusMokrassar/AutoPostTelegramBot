@@ -324,3 +324,5 @@ available messages for post
 ### 1.2.5 Better choosers
 
 * `Chooser` abstraction was replaced to the base package
+* Add abstraction `PostId` which actually is `Int`
+* Now all choosers can accept exceptions for skip choosing of some posts

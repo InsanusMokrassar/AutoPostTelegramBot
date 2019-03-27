@@ -1,6 +1,7 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.choosers
 
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsTable
+import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.PostId
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.commonLogger
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.database.PostIdRatingPair
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.*
@@ -192,24 +193,29 @@ class SmartChooser(
         commonLogger.info("Smart chooser inited: ${times.joinToString(separator = "\n") { it.toString() }}")
     }
 
-    override fun triggerChoose(): Collection<Int> {
-        var actualItem: AbstractSmartChooserBaseConfigItem? = times.firstOrNull { it.isActual() }
-        var resultList: Collection<Int> = emptyList()
-        while (actualItem != null && resultList.isEmpty()) {
-            val realItem = actualItem
-            resultList = postsLikesTable ?.getRateRange(
-                realItem.minRate,
-                realItem.maxRate
-            ) ?.filter { (postId, _) ->
-                realItem.checkPostAge(postId)
-            } ?.let { chosenList ->
-                realItem.chooser ?.invoke(
-                    chosenList,
-                    realItem.count
-                )
-            } ?: emptyList()
-            actualItem = realItem.otherwise
+    override fun triggerChoose(time: DateTime, exceptions: List<PostId>): Collection<Int> {
+        var actualItem: AbstractSmartChooserBaseConfigItem? = times.firstOrNull { it.isActual(time) }
+        while (true) {
+            actualItem ?.also { item ->
+                postsLikesTable ?.getRateRange(
+                    item.minRate,
+                    item.maxRate
+                ) ?.filter { (postId, _) ->
+                    item.checkPostAge(postId)
+                } ?.let { chosenList ->
+                    item.chooser ?.invoke(
+                        chosenList,
+                        item.count
+                    )
+                } ?.minus(
+                    exceptions
+                ) ?.let {
+                    if (it.isNotEmpty()) {
+                        return it
+                    }
+                }
+                actualItem = item.otherwise
+            } ?: return emptyList()
         }
-        return resultList
     }
 }

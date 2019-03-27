@@ -2,6 +2,7 @@ package com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables
 
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.exceptions.CreationException
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.exceptions.NoRowFoundException
+import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.PostId
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.NewDefaultCoroutineScope
 import com.github.insanusmokrassar.TelegramBotAPI.types.MessageIdentifier
 import kotlinx.coroutines.channels.BroadcastChannel
@@ -11,14 +12,14 @@ import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.joda.time.DateTime
 
-typealias PostIdMessageId = Pair<Int, MessageIdentifier>
+typealias PostIdMessageId = Pair<PostId, MessageIdentifier>
 
 
 val PostsTableScope = NewDefaultCoroutineScope()
 
 object PostsTable : Table() {
-    val postAllocatedChannel = BroadcastChannel<Int>(Channel.CONFLATED)
-    val postRemovedChannel = BroadcastChannel<Int>(Channel.CONFLATED)
+    val postAllocatedChannel = BroadcastChannel<PostId>(Channel.CONFLATED)
+    val postRemovedChannel = BroadcastChannel<PostId>(Channel.CONFLATED)
     val postMessageRegisteredChannel = BroadcastChannel<PostIdMessageId>(Channel.CONFLATED)
 
     private val id = integer("id").primaryKey().autoIncrement()
@@ -26,7 +27,7 @@ object PostsTable : Table() {
     private val postDateTime = datetime("postDateTime").default(DateTime.now())
 
     @Throws(CreationException::class)
-    fun allocatePost(): Int {
+    fun allocatePost(): PostId {
         return transaction {
             insert {
                 it[postDateTime] = DateTime.now()
@@ -41,7 +42,7 @@ object PostsTable : Table() {
     /**
      * @return Old message identifier if available
      */
-    fun postRegistered(postId: Int, messageId: MessageIdentifier): MessageIdentifier? {
+    fun postRegistered(postId: PostId, messageId: MessageIdentifier): MessageIdentifier? {
         return transaction {
             val previousMessageId = postRegisteredMessage(postId)
             update({ id.eq(postId) }) {
@@ -55,13 +56,13 @@ object PostsTable : Table() {
         }
     }
 
-    fun postRegisteredMessage(postId: Int): MessageIdentifier? {
+    fun postRegisteredMessage(postId: PostId): MessageIdentifier? {
         return transaction {
             select { id.eq(postId) }.firstOrNull() ?.get(postRegisteredMessageId)
         }
     }
 
-    fun removePost(postId: Int) {
+    fun removePost(postId: PostId) {
         transaction {
             PostsMessagesTable.removePostMessages(postId)
             deleteWhere { id.eq(postId) }
@@ -71,14 +72,14 @@ object PostsTable : Table() {
         }
     }
 
-    fun getAll(): List<Int> {
+    fun getAll(): List<PostId> {
         return transaction {
             selectAll().map { it[id] }
         }
     }
 
     @Throws(NoRowFoundException::class)
-    fun findPost(messageId: MessageIdentifier): Int {
+    fun findPost(messageId: MessageIdentifier): PostId {
         return transaction {
             select {
                 postRegisteredMessageId.eq(messageId)
@@ -86,7 +87,7 @@ object PostsTable : Table() {
         }
     }
 
-    fun getPostCreationDateTime(postId: Int): DateTime? {
+    fun getPostCreationDateTime(postId: PostId): DateTime? {
         return transaction {
             select {
                 id.eq(postId)

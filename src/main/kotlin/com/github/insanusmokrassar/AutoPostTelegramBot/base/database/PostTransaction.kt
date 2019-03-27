@@ -13,7 +13,7 @@ import java.io.Closeable
 val transactionStartedChannel = BroadcastChannel<Unit>(Channel.CONFLATED)
 val transactionMessageAddedChannel = BroadcastChannel<Array<out PostMessage>>(Channel.CONFLATED)
 val transactionMessageRemovedChannel = BroadcastChannel<PostMessage>(Channel.CONFLATED)
-val transactionCompletedChannel = BroadcastChannel<Int>(Channel.CONFLATED)
+val transactionCompletedChannel = BroadcastChannel<PostId>(Channel.CONFLATED)
 
 val PostTransactionsScope = NewDefaultCoroutineScope()
 
