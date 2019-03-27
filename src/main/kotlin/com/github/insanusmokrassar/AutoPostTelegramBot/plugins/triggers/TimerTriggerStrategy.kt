@@ -101,6 +101,7 @@ class TimerTriggerStrategy (
             lastTime
         } ?: timesOfTriggering.nearDateTime()
 
+    @Transient
     private lateinit var timerScheduleCommand: TimerScheduleCommand
 
     override suspend fun onInit(executor: RequestsExecutor, baseConfig: FinalConfig, pluginManager: PluginManager) {
