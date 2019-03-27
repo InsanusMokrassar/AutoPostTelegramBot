@@ -27,7 +27,7 @@ import org.joda.time.DateTime
 
 private val TimerTriggerStrategyScope = NewDefaultCoroutineScope(1)
 
-private val timerScheduleCommandRegex = Regex("((getA)|(a))utoPublications?( [\\d]+)?")
+private val timerScheduleCommandRegex = Regex("((getA)|(a))utoPublication(s [\\d]+)?")
 private val numberRegex: Regex = Regex("[\\d]+")
 private class TimerScheduleCommand(
     private val sourceChatId: ChatId,
