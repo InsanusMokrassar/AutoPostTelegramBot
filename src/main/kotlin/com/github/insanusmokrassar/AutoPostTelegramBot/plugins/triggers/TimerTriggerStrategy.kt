@@ -4,8 +4,7 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.Post
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.FinalConfig
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.PostId
-import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.Plugin
-import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.PluginManager
+import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.*
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.abstractions.Chooser
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.publishers.Publisher
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.*
@@ -17,6 +16,7 @@ import com.github.insanusmokrassar.TelegramBotAPI.requests.ForwardMessage
 import com.github.insanusmokrassar.TelegramBotAPI.requests.send.SendMessage
 import com.github.insanusmokrassar.TelegramBotAPI.types.ChatId
 import com.github.insanusmokrassar.TelegramBotAPI.types.MessageEntity.BotCommandMessageEntity
+import com.github.insanusmokrassar.TelegramBotAPI.types.ParseMode.MarkdownParseMode
 import com.github.insanusmokrassar.TelegramBotAPI.types.UpdateIdentifier
 import com.github.insanusmokrassar.TelegramBotAPI.types.message.abstracts.CommonMessage
 import com.github.insanusmokrassar.TelegramBotAPI.types.message.content.TextContent
@@ -48,13 +48,15 @@ private class TimerScheduleCommand(
             nearDateTime = timesOfTriggering.nearDateTime(nearDateTime + 1000L) // plus one second
             chosen[nearDateTime] = chooser.triggerChoose(nearDateTime, chosen.values.flatten()).toList()
         }
+        commonLogger.info("Was requested auto publishing count: $count; Was chosen to show: ${chosen.values.sumBy { it.size }}")
         chosen.asSequence().sortedBy {
             it.key
         }.forEach { (dateTime, posts) ->
             executor.execute(
                 SendMessage(
                     message.chat.id,
-                    "Must be posted at $dateTime :"
+                    "Must be posted at `$dateTime`:",
+                    MarkdownParseMode
                 )
             )
             posts.sorted().forEach {
@@ -70,8 +72,16 @@ private class TimerScheduleCommand(
                 } ?: it.let {
                     postsTable.removePost(it)
                 }
+                delay(500L)
             }
+            delay(1000L)
         }
+        executor.execute(
+            SendMessage(
+                message.chat.id,
+                "End of requested auto publishing messages"
+            )
+        )
     }
 }
 
