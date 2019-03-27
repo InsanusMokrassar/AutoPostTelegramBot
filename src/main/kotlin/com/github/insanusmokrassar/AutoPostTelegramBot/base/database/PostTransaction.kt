@@ -3,6 +3,7 @@ package com.github.insanusmokrassar.AutoPostTelegramBot.base.database
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.exceptions.NothingToSaveException
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsMessagesTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsTable
+import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.PostId
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.PostMessage
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.NewDefaultCoroutineScope
 import kotlinx.coroutines.channels.BroadcastChannel
@@ -13,7 +14,7 @@ import java.io.Closeable
 val transactionStartedChannel = BroadcastChannel<Unit>(Channel.CONFLATED)
 val transactionMessageAddedChannel = BroadcastChannel<Array<out PostMessage>>(Channel.CONFLATED)
 val transactionMessageRemovedChannel = BroadcastChannel<PostMessage>(Channel.CONFLATED)
-val transactionCompletedChannel = BroadcastChannel<Int>(Channel.CONFLATED)
+val transactionCompletedChannel = BroadcastChannel<PostId>(Channel.CONFLATED)
 
 val PostTransactionsScope = NewDefaultCoroutineScope()
 

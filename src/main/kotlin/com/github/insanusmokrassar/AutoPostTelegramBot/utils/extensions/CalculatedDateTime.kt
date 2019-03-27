@@ -7,11 +7,10 @@ import org.joda.time.DateTime
 
 typealias CalculatedPeriod = Pair<CalculatedDateTime, CalculatedDateTime>
 
-fun Iterable<CalculatedDateTime>.nearDateTime(): DateTime? {
-    val now = DateTime.now()
+fun Iterable<CalculatedDateTime>.nearDateTime(nearTo: DateTime = DateTime.now()): DateTime? {
     var found: DateTime? = null
     forEach {
-        val currentAsFuture = it.asFutureFor(now)
+        val currentAsFuture = it.asFutureFor(nearTo)
         if (found == null || currentAsFuture.isBefore(found)) {
             found = currentAsFuture
         }

@@ -1,5 +1,6 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables
 
+import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.PostId
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.PostMessage
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.NewDefaultCoroutineScope
 import com.github.insanusmokrassar.TelegramBotAPI.types.MessageIdentifier
@@ -9,7 +10,7 @@ import kotlinx.coroutines.launch
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 
-typealias PostIdToMessagesIds = Pair<Int, Collection<MessageIdentifier>>
+typealias PostIdToMessagesIds = Pair<PostId, Collection<MessageIdentifier>>
 
 val PostsMessagesTableScope = NewDefaultCoroutineScope()
 
@@ -25,7 +26,7 @@ object PostsMessagesTable : Table() {
     private val mediaGroupId = text("mediaGroupId").nullable()
     private val postId = integer("postId")
 
-    fun getMessagesOfPost(postId: Int): List<PostMessage> {
+    fun getMessagesOfPost(postId: PostId): List<PostMessage> {
         return transaction {
             select {
                 PostsMessagesTable.postId.eq(postId)
@@ -38,7 +39,7 @@ object PostsMessagesTable : Table() {
         }
     }
 
-    fun findPostByMessageId(messageId: MessageIdentifier): Int? {
+    fun findPostByMessageId(messageId: MessageIdentifier): PostId? {
         return transaction {
             select {
                 this@PostsMessagesTable.messageId.eq(messageId)
@@ -46,7 +47,7 @@ object PostsMessagesTable : Table() {
         }
     }
 
-    fun addMessagesToPost(postId: Int, vararg messages: PostMessage) {
+    fun addMessagesToPost(postId: PostId, vararg messages: PostMessage) {
         transaction {
             messages.map {
                 message ->
@@ -75,7 +76,7 @@ object PostsMessagesTable : Table() {
         }
     }
 
-    fun removePostMessages(postId: Int) {
+    fun removePostMessages(postId: PostId) {
         getMessagesOfPost(postId).let {
             transaction {
                 it.mapNotNull {
@@ -96,7 +97,7 @@ object PostsMessagesTable : Table() {
         }
     }
 
-    fun removePostMessage(postId: Int, messageId: MessageIdentifier): Boolean {
+    fun removePostMessage(postId: PostId, messageId: MessageIdentifier): Boolean {
         return transaction {
             if (deleteWhere { PostsMessagesTable.messageId.eq(messageId) } > 0) {
                 PostsMessagesTableScope.launch {
