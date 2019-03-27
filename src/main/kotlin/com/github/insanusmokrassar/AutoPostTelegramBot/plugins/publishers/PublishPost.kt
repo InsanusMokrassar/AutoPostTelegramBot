@@ -67,23 +67,12 @@ class PublishPost(
             } ?: 1
 
             while (choosen.size < count) {
-                val toAdd = chooser.triggerChoose().filter {
-                    !choosen.contains(it)
-                }.let {
-                    val futureSize = choosen.size + it.size
-                    val toAdd = if (futureSize > count) {
-                        futureSize - count
-                    } else {
-                        it.size
-                    }
-                    it.toList().subList(0, toAdd)
-                }
-                if (toAdd.isEmpty()) {
+                val fromChooser = chooser.triggerChoose(exceptions = choosen)
+                if (fromChooser.isEmpty()) {
                     break
+                } else {
+                    choosen.addAll(fromChooser)
                 }
-                choosen.addAll(
-                    toAdd
-                )
             }
         } catch (e: NumberFormatException) {
             println("Can't extract number of posts")
