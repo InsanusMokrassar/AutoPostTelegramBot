@@ -329,3 +329,5 @@ available messages for post
 * Added new command `getAutoPublications`
 
 ### 1.2.6
+
+* Update version of `TelegramBotAPI` from `0.12.3` to `0.12.4`
