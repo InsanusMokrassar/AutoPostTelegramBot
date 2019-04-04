@@ -107,7 +107,11 @@ class PostPublisher : Publisher {
                 it.messageId to it
             }.also { associatedPostMessages ->
                 messages.forEach { (id, message) ->
-                    associatedPostMessages[id] ?.message = message
+                    message.forwarded ?.messageId ?.let { realId ->
+                        associatedPostMessages[realId] ?.message = message
+                    } ?: id.let {
+                        associatedPostMessages[id] ?.message = message
+                    }
                 }
 
                 messagesOfPost.filter {
@@ -121,6 +125,9 @@ class PostPublisher : Publisher {
                     PostsMessagesTable.removePostMessage(postId, messageId)
                     messagesOfPost.remove(it)
                 }
+            }
+            messagesOfPost.forEach {
+                messagesToDelete.add(sourceChatId to it.messageId)
             }
 
             val contentMessages = messages.asSequence().mapNotNull { it.value as? ContentMessage<*> }.associate { it.messageId to it }

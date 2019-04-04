@@ -20,7 +20,7 @@ suspend fun cacheMessages(
     cacheChatId: ChatId,
     messagesIds: Iterable<MessageIdentifier>,
     clear: Boolean = true
-): List<Message> {
+): List<AbleToBeForwardedMessage> {
     val messagesToDelete = mutableListOf<ChatIdMessageIdPair>()
 
     return messagesIds.mapNotNull { message ->
@@ -34,7 +34,7 @@ suspend fun cacheMessages(
             retries = 3
         ) ?.asMessage ?.also {
             messagesToDelete.add(it.chat.id to it.messageId)
-        }
+        } as? AbleToBeForwardedMessage
     }.also {
         if (clear) {
             messagesToDelete.forEach {
