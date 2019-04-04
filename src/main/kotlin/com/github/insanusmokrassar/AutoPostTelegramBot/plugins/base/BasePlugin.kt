@@ -42,9 +42,7 @@ class BasePlugin : Plugin {
             botWR
         )
         startPost = StartPost()
-        fixPost = FixPost(
-            botWR
-        )
+        fixPost = FixPost()
 
         onMediaGroup = OnMediaGroup(baseConfig.sourceChatId)
         onMessage = OnMessage(baseConfig.sourceChatId)
