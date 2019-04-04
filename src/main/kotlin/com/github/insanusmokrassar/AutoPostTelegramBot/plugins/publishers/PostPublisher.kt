@@ -150,7 +150,7 @@ class PostPublisher : Publisher {
                 executor,
                 targetChatId,
                 contentMessages.values,
-                mediaGroups.values.map { it.map { it.messageId } }
+                mediaGroups.values.map { it.mapNotNull { it.message ?.messageId } }
             )
 
 
