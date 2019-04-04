@@ -330,7 +330,7 @@ available messages for post
 
 ### 1.2.6
 
-* Update version of `TelegramBotAPI` from `0.12.3` to `0.12.4`
+* Update version of `TelegramBotAPI` from `0.12.3` to `0.12.5`
 * Add utility methods for messages resending
 * Extracted base commands regexps outside of classes
 * `PostPublisher` channel `postPublishedChannel` now have list of messages as value for notification

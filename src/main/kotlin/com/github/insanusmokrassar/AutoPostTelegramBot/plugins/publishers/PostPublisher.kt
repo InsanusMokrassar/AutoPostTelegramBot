@@ -137,10 +137,20 @@ class PostPublisher : Publisher {
                 return
             }
 
+            val mediaGroups = mutableMapOf<MediaGroupIdentifier, MutableList<PostMessage>>()
+            messagesOfPost.forEach {
+                it.mediaGroupId ?.let { mediaGroupId ->
+                    (mediaGroups[mediaGroupId] ?: mutableListOf<PostMessage>().also {
+                        mediaGroups[mediaGroupId] = it
+                    }).add(it)
+                }
+            }
+
             val responses = resend(
                 executor,
                 targetChatId,
-                contentMessages.values
+                contentMessages.values,
+                mediaGroups.values.map { it.map { it.messageId } }
             )
 
 

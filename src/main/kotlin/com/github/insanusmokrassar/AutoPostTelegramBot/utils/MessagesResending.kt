@@ -3,12 +3,14 @@ package com.github.insanusmokrassar.AutoPostTelegramBot.utils
 import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
 import com.github.insanusmokrassar.TelegramBotAPI.requests.DeleteMessage
 import com.github.insanusmokrassar.TelegramBotAPI.requests.ForwardMessage
+import com.github.insanusmokrassar.TelegramBotAPI.requests.abstracts.Request
 import com.github.insanusmokrassar.TelegramBotAPI.requests.send.media.SendMediaGroup
 import com.github.insanusmokrassar.TelegramBotAPI.requests.send.media.membersCountInMediaGroup
 import com.github.insanusmokrassar.TelegramBotAPI.types.*
+import com.github.insanusmokrassar.TelegramBotAPI.types.message.RawMessage
 import com.github.insanusmokrassar.TelegramBotAPI.types.message.abstracts.*
-import com.github.insanusmokrassar.TelegramBotAPI.types.message.content.media.PhotoContent
-import com.github.insanusmokrassar.TelegramBotAPI.types.message.content.media.VideoContent
+import com.github.insanusmokrassar.TelegramBotAPI.types.message.content.abstracts.MediaContent
+import com.github.insanusmokrassar.TelegramBotAPI.types.message.content.abstracts.MediaGroupContent
 import com.github.insanusmokrassar.TelegramBotAPI.utils.extensions.executeAsync
 import com.github.insanusmokrassar.TelegramBotAPI.utils.extensions.executeUnsafe
 
@@ -52,33 +54,72 @@ suspend fun cacheMessages(
 suspend fun resend(
     executor: RequestsExecutor,
     targetChatId: ChatId,
-    messages: Iterable<ContentMessage<*>>
-): MutableList<Pair<Message, Message>> {
-    var mediaGroup: MutableList<MediaGroupMessage> = mutableListOf()
-    val responses = mutableListOf<Pair<Message, Message>>()
+    messages: Iterable<ContentMessage<*>>,
+    mediaGroups: List<List<MessageIdentifier>>
+): MutableList<Pair<ContentMessage<*>, Message>> {
+    val responses = mutableListOf<Pair<ContentMessage<*>, Message>>()
+
+    val sendingMap = mutableMapOf<Request<*>, List<ContentMessage<*>>>()
+
+    val leftMessages = messages.toMutableList()
+    val leftMediaGroups = mediaGroups.toMutableList()
+
+    while (leftMessages.isNotEmpty()) {
+        val message = leftMessages.first()
+        leftMediaGroups.firstOrNull {
+            it.contains(message.messageId)
+        } ?.let { mediaGroup ->
+
+            val contents = leftMessages.filter {
+                it.messageId in mediaGroup
+            }.also {
+                leftMessages.removeAll(it)
+            }.mapNotNull { contentMessage ->
+                (contentMessage.content as? MediaGroupContent) ?.let {
+                    contentMessage to it
+                }
+            }.toMap()
+
+            val requests = sendMediaGroup(
+                executor,
+                targetChatId,
+                contents.values
+            ).associate {
+                it.first to it.second.map {
+                    contents.keys.elementAt(contents.values.indexOf(it))
+                }
+            }
+
+            sendingMap.putAll(requests)
+
+            leftMediaGroups.remove(mediaGroup)
+            leftMessages.removeAll { it in contents.keys }
+        } ?: message.let {
+            sendingMap[it.content.createResend(targetChatId)] = listOf(it)
+            leftMessages.remove(message)
+        }
+    }
 
     try {
-        messages.forEach { message ->
-            (message as? MediaGroupMessage) ?.let { mediaGroupMessage ->
-                if (mediaGroup.firstOrNull() ?.mediaGroupId == mediaGroupMessage.mediaGroupId) {
-                    mediaGroup.add(mediaGroupMessage)
-                } else {
-                    if (mediaGroup.isNotEmpty()) {
-                        responses += sendMediaGroup(executor, targetChatId, mediaGroup)
-                        mediaGroup = mutableListOf()
+        sendingMap.forEach { (request, sourceMessages) ->
+            responses += executor.execute(request).let {
+                when (it) {
+                    // media group
+                    is List<*> -> it.mapNotNull {
+                        (it as? RawMessage) ?.asMessage as? MediaGroupMessage
+                    }.mapNotNull { responseMessage ->
+                        val fileId = responseMessage.content.media.fileId
+                        sourceMessages.firstOrNull { sourceMessage ->
+                            (sourceMessage.content as? MediaGroupContent) ?.media ?.fileId == fileId
+                        } ?.to(responseMessage)
                     }
-                    mediaGroup.add(mediaGroupMessage)
+                    // common message
+                    is RawMessage -> sourceMessages.map { source ->
+                        source to it.asMessage
+                    }
+                    // something other
+                    else -> emptyList()
                 }
-            } ?: (message as? ContentMessage) ?.let { contentMessage ->
-                if (mediaGroup.isNotEmpty()) {
-                    responses += sendMediaGroup(executor, targetChatId, mediaGroup)
-                    mediaGroup = mutableListOf()
-                }
-                responses.add(
-                    contentMessage to executor.execute(
-                        contentMessage.content.createResend(targetChatId)
-                    ).asMessage
-                )
             }
         }
     } catch (e: Exception) {
@@ -92,57 +133,35 @@ suspend fun resend(
         }
         throw e
     }
-
-    if (mediaGroup.isNotEmpty()) {
-        responses += sendMediaGroup(executor, targetChatId, mediaGroup)
-        mediaGroup = mutableListOf()
-    }
     return responses
 }
 
 private suspend fun sendMediaGroup(
     executor: RequestsExecutor,
     targetChatId: ChatIdentifier,
-    mediaGroup: List<MediaGroupMessage>
-): List<Pair<Message, Message>> {
+    contents: Collection<MediaGroupContent>
+): List<Pair<Request<*>, List<MediaGroupContent>>> {
     return when {
-        mediaGroup.size < 2 -> {
-            val message = mediaGroup.firstOrNull() ?: return emptyList()
-            val request = message.content.createResend(
-                targetChatId
-            )
-            val response = executor.execute(request)
+        contents.size < 2 -> {
+            val content = contents.firstOrNull() ?: return emptyList()
             listOf(
-                message to response.asMessage
+                content.createResend(
+                    targetChatId
+                ) to listOf(content)
             )
         }
-        mediaGroup.size in membersCountInMediaGroup -> {
-            val mediaGroupContent = mediaGroup.map {
-                it to it.content.toMediaGroupMemberInputMedia()
+        contents.size in membersCountInMediaGroup -> {
+            val mediaGroupContent = contents.map {
+                it to it.toMediaGroupMemberInputMedia()
             }.toMap()
-            val request = SendMediaGroup(
-                targetChatId,
-                mediaGroupContent.values.toList()
+            listOf(
+                SendMediaGroup(
+                    targetChatId,
+                    mediaGroupContent.values.toList()
+                ) to contents.toList()
             )
-            val response = executor.execute(request)
-            val contentResponse = response.mapNotNull { it.asMessage as? ContentMessage<*> }
-
-            contentResponse.mapNotNull {
-                val content = it.content
-                when (content) {
-                    is PhotoContent -> mediaGroupContent.keys.firstOrNull { postMessage ->
-                        mediaGroupContent[postMessage] ?.file == content.media.fileId
-                    }
-                    is VideoContent -> mediaGroupContent.keys.firstOrNull { postMessage ->
-                        mediaGroupContent[postMessage] ?.file == content.media.fileId
-                    }
-                    else -> null
-                } ?.let { postMessage ->
-                    postMessage to it
-                }
-            }
         }
-        else -> mediaGroup.chunked(membersCountInMediaGroup.endInclusive).flatMap { postMessages ->
+        else -> contents.chunked(membersCountInMediaGroup.endInclusive).flatMap { postMessages ->
             sendMediaGroup(executor, targetChatId, postMessages)
         }
     }
