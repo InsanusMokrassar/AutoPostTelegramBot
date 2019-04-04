@@ -45,10 +45,12 @@ suspend fun deletePost(
     }
 }
 
+val deletePostRegex: Regex = Regex("^/deletePost$")
+
 class DeletePost(
     private val botWR: WeakReference<RequestsExecutor>
 ) : Command() {
-    override val commandRegex: Regex = Regex("^/deletePost$")
+    override val commandRegex: Regex = deletePostRegex
 
     override suspend fun onCommand(updateId: UpdateIdentifier, message: CommonMessage<*>) {
         val bot = botWR.get() ?: return

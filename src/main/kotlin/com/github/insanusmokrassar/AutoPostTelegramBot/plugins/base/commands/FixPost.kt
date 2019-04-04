@@ -10,10 +10,10 @@ import com.github.insanusmokrassar.TelegramBotAPI.types.message.abstracts.Common
 import com.github.insanusmokrassar.TelegramBotAPI.types.message.abstracts.FromUserMessage
 import java.lang.ref.WeakReference
 
-class FixPost(
-    private val botWR: WeakReference<RequestsExecutor>
-) : Command() {
-    override val commandRegex: Regex = Regex("^/fixPost$")
+val fixPostRegex: Regex = Regex("^/fixPost$")
+
+class FixPost : Command() {
+    override val commandRegex: Regex = fixPostRegex
 
     override suspend fun onCommand(updateId: UpdateIdentifier, message: CommonMessage<*>) {
         try {
