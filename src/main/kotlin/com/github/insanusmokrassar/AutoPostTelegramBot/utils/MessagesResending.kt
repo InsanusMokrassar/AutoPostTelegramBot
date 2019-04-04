@@ -18,7 +18,8 @@ suspend fun cacheMessages(
     executor: RequestsExecutor,
     sourceChatId: ChatId,
     cacheChatId: ChatId,
-    messagesIds: List<MessageIdentifier>
+    messagesIds: Iterable<MessageIdentifier>,
+    clear: Boolean = true
 ): List<Message> {
     val messagesToDelete = mutableListOf<ChatIdMessageIdPair>()
 
@@ -33,15 +34,17 @@ suspend fun cacheMessages(
             retries = 3
         ) ?.asMessage ?.also {
             messagesToDelete.add(it.chat.id to it.messageId)
-        } as? ContentMessage<*>
+        }
     }.also {
-        messagesToDelete.forEach {
-            executor.executeAsync(
-                DeleteMessage(
-                    it.first,
-                    it.second
+        if (clear) {
+            messagesToDelete.forEach {
+                executor.executeAsync(
+                    DeleteMessage(
+                        it.first,
+                        it.second
+                    )
                 )
-            )
+            }
         }
     }
 }
@@ -49,7 +52,7 @@ suspend fun cacheMessages(
 suspend fun resend(
     executor: RequestsExecutor,
     targetChatId: ChatId,
-    messages: List<ContentMessage<*>>
+    messages: Iterable<ContentMessage<*>>
 ): MutableList<Pair<Message, Message>> {
     var mediaGroup: MutableList<MediaGroupMessage> = mutableListOf()
     val responses = mutableListOf<Pair<Message, Message>>()
