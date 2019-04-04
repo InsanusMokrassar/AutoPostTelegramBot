@@ -333,3 +333,4 @@ available messages for post
 * Update version of `TelegramBotAPI` from `0.12.3` to `0.12.4`
 * Add utility methods for messages resending
 * Extracted base commands regexps outside of classes
+* `PostPublisher` channel `postPublishedChannel` now have list of messages as value for notification

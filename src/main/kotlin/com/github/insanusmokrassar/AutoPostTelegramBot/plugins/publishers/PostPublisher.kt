@@ -30,7 +30,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import java.lang.ref.WeakReference
 
-typealias PostIdListPostMessagesTelegramMessages = Pair<Int, Map<PostMessage, Message>>
+typealias PostIdListPostMessagesTelegramMessages = Pair<Int, List<Message>>
 private typealias ChatIdMessageIdPair = Pair<ChatId, MessageIdentifier>
 
 @Serializable
@@ -103,15 +103,24 @@ class PostPublisher : Publisher {
                 it.messageId to it
             }
 
-            messagesOfPost.filter {
-                val messageId = it.messageId
-                messageId !in messages.keys || messages[messageId] !is ContentMessage<*>
-            }.forEach {
-                val messageId = it.messageId
-                commonLogger.warning(
-                    "Can't forward message with id: $messageId; it will be removed from post"
-                )
-                PostsMessagesTable.removePostMessage(postId, messageId)
+            messagesOfPost.associate {
+                it.messageId to it
+            }.also { associatedPostMessages ->
+                messages.forEach { (id, message) ->
+                    associatedPostMessages[id] ?.message = message
+                }
+
+                messagesOfPost.filter {
+                    val message = it.message
+                    message == null || message !is ContentMessage<*>
+                }.forEach {
+                    val messageId = it.messageId
+                    commonLogger.warning(
+                        "Can't forward message with id: $messageId; it will be removed from post"
+                    )
+                    PostsMessagesTable.removePostMessage(postId, messageId)
+                    messagesOfPost.remove(it)
+                }
             }
 
             val contentMessages = messages.asSequence().mapNotNull { it.value as? ContentMessage<*> }.associate { it.messageId to it }
@@ -127,35 +136,28 @@ class PostPublisher : Publisher {
                 contentMessages.values
             )
 
-            responses.also {
-                it.forEach { (_, message) ->
-                    try {
-                        executor.execute(
-                            ForwardMessage(
-                                message.chat.id,
-                                logsChatId,
-                                message.messageId
-                            )
+
+            responses.forEach { (_, message) ->
+                try {
+                    executor.execute(
+                        ForwardMessage(
+                            message.chat.id,
+                            logsChatId,
+                            message.messageId
                         )
-                    } catch (e: Exception) {
-                        commonLogger.warning(
-                            "Can't forward message with id: ${message.messageId}"
-                        )
-                    }
-                }
-                postPublishedChannel.send(
-                    PostIdListPostMessagesTelegramMessages(
-                        postId,
-                        it.associate {
-                            messagesOfPost.first { postMessage ->
-                                postMessage.messageId == it.first.messageId
-                            }.also { postMessage ->
-                                postMessage.message = it.first
-                            } to it.second
-                        }
                     )
-                )
+                } catch (e: Exception) {
+                    commonLogger.warning(
+                        "Can't forward message with id: ${message.messageId}"
+                    )
+                }
             }
+            postPublishedChannel.send(
+                PostIdListPostMessagesTelegramMessages(
+                    postId,
+                    responses.map { it.second }
+                )
+            )
 
             deletePost(
                 executor,
