@@ -327,3 +327,10 @@ available messages for post
 * Add abstraction `PostId` which actually is `Int`
 * Now all choosers can accept exceptions for skip choosing of some posts
 * Added new command `getAutoPublications`
+
+### 1.2.6
+
+* Update version of `TelegramBotAPI` from `0.12.3` to `0.12.5`
+* Add utility methods for messages resending
+* Extracted base commands regexps outside of classes
+* `PostPublisher` channel `postPublishedChannel` now have list of messages as value for notification

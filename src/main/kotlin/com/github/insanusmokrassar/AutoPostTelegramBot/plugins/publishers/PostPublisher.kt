@@ -8,7 +8,9 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.PluginManage
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.commonLogger
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.base.commands.deletePost
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.abstractions.Chooser
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.cacheMessages
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.sendToLogger
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.resend
 import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
 import com.github.insanusmokrassar.TelegramBotAPI.requests.DeleteMessage
 import com.github.insanusmokrassar.TelegramBotAPI.requests.ForwardMessage
@@ -28,7 +30,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import java.lang.ref.WeakReference
 
-typealias PostIdListPostMessagesTelegramMessages = Pair<Int, Map<PostMessage, Message>>
+typealias PostIdListPostMessagesTelegramMessages = Pair<Int, List<Message>>
 private typealias ChatIdMessageIdPair = Pair<ChatId, MessageIdentifier>
 
 @Serializable
@@ -88,104 +90,91 @@ class PostPublisher : Publisher {
                 messagesToDelete.add(it.chat.id to it.messageId)
             }
 
-            val messagesOfPost = mutableListOf<PostMessage>()
+            val messagesOfPost = mutableListOf<PostMessage>().also {
+                it.addAll(PostsMessagesTable.getMessagesOfPost(postId))
+            }
 
-            PostsMessagesTable.getMessagesOfPost(postId).also {
-                it.forEach { message ->
-                    executor.executeUnsafe(
-                        ForwardMessage(
-                            sourceChatId,
-                            logsChatId,
-                            message.messageId,
-                            disableNotification = true
-                        ),
-                        retries = 3
-                    ) ?.asMessage ?.also {
-                        messagesToDelete.add(it.chat.id to it.messageId)
-                        message.message = it
-                        messagesOfPost.add(message)
-                    } ?: message.messageId.let {
-                        commonLogger.warning(
-                            "Can't forward message with id: $it; it will be removed from post"
-                        )
-                        PostsMessagesTable.removePostMessage(postId, it)
+            val messages = cacheMessages(
+                executor,
+                sourceChatId,
+                logsChatId,
+                PostsMessagesTable.getMessagesOfPost(postId).map { it.messageId }
+            ).associate {
+                it.messageId to it
+            }
+
+            messagesOfPost.associate {
+                it.messageId to it
+            }.also { associatedPostMessages ->
+                messages.forEach { (id, message) ->
+                    message.forwarded ?.messageId ?.let { realId ->
+                        associatedPostMessages[realId] ?.message = message
+                    } ?: id.let {
+                        associatedPostMessages[id] ?.message = message
                     }
                 }
+
+                messagesOfPost.filter {
+                    val message = it.message
+                    message == null || message !is ContentMessage<*>
+                }.forEach {
+                    val messageId = it.messageId
+                    commonLogger.warning(
+                        "Can't forward message with id: $messageId; it will be removed from post"
+                    )
+                    PostsMessagesTable.removePostMessage(postId, messageId)
+                    messagesOfPost.remove(it)
+                }
             }
-            if (messagesOfPost.isEmpty()) {
+            messagesOfPost.forEach {
+                messagesToDelete.add(sourceChatId to it.messageId)
+            }
+
+            val contentMessages = messages.asSequence().mapNotNull { it.value as? ContentMessage<*> }.associate { it.messageId to it }
+            if (contentMessages.isEmpty()) {
                 PostsTable.removePost(postId)
                 commonLogger.warning("Post $postId will be removed cause it contains not publishable messages")
                 return
             }
 
-            val responses = mutableListOf<Pair<PostMessage, Message>>()
-
-            var mediaGroup: MutableList<PostMessage>? = null
-
-            try {
-                messagesOfPost.forEach { postMessage ->
-                    //TODO:: REFACTOR
-                    mediaGroup?.let { currentMediaGroup ->
-                        if (postMessage.mediaGroupId != currentMediaGroup.first().mediaGroupId) {
-                            mediaGroup = null
-                            responses += sendMediaGroup(executor, targetChatId, currentMediaGroup)
-                            null
-                        } else {
-                            currentMediaGroup.add(postMessage)
-                        }
-                    } ?: also {
-                        if (postMessage.mediaGroupId != null) {
-                            mediaGroup = mutableListOf<PostMessage>().apply {
-                                add(postMessage)
-                            }
-                        } else {
-                            (postMessage.message as? ContentMessage<*>)?.content?.createResends(
-                                targetChatId
-                            )?.forEach { request ->
-                                responses.add(postMessage to executor.execute(request).asMessage)
-                            }
-                        }
-                    }
+            val mediaGroups = mutableMapOf<MediaGroupIdentifier, MutableList<PostMessage>>()
+            messagesOfPost.forEach {
+                it.mediaGroupId ?.let { mediaGroupId ->
+                    (mediaGroups[mediaGroupId] ?: mutableListOf<PostMessage>().also {
+                        mediaGroups[mediaGroupId] = it
+                    }).add(it)
                 }
-            } catch (e: Exception) {
-                responses.forEach { (_, response) ->
-                    executor.executeUnsafe(
-                        DeleteMessage(
-                            response.chat.id,
-                            response.messageId
-                        )
-                    )
-                }
-                throw e
             }
 
-            mediaGroup ?.also {
-                responses += sendMediaGroup(executor, targetChatId, it)
-            }
+            val responses = resend(
+                executor,
+                targetChatId,
+                contentMessages.values,
+                mediaGroups.values.map { it.mapNotNull { it.message ?.messageId } }
+            )
 
-            responses.also {
-                it.forEach { (_, message) ->
-                    try {
-                        executor.execute(
-                            ForwardMessage(
-                                message.chat.id,
-                                logsChatId,
-                                message.messageId
-                            )
+
+            responses.forEach { (_, message) ->
+                try {
+                    executor.execute(
+                        ForwardMessage(
+                            message.chat.id,
+                            logsChatId,
+                            message.messageId
                         )
-                    } catch (e: Exception) {
-                        commonLogger.warning(
-                            "Can't forward message with id: ${message.messageId}"
-                        )
-                    }
-                }
-                postPublishedChannel.send(
-                    PostIdListPostMessagesTelegramMessages(
-                        postId,
-                        it.toMap()
                     )
+                } catch (e: Exception) {
+                    commonLogger.warning(
+                        "Can't forward message with id: ${message.messageId}"
+                    )
+                }
+            }
+            postPublishedChannel.send(
+                PostIdListPostMessagesTelegramMessages(
+                    postId,
+                    responses.map { it.second }
                 )
-            }
+            )
 
             deletePost(
                 executor,
@@ -202,57 +191,6 @@ class PostPublisher : Publisher {
                         it.second
                     )
                 )
-            }
-        }
-    }
-
-    private suspend fun sendMediaGroup(
-        executor: RequestsExecutor,
-        targetChatId: ChatIdentifier,
-        mediaGroup: List<PostMessage>
-    ): List<Pair<PostMessage, Message>> {
-        return when {
-            mediaGroup.size < 2 -> {
-                val postMessage = mediaGroup.firstOrNull() ?: return emptyList()
-                val contentMessage = (postMessage.message as? ContentMessage<*>) ?: return emptyList()
-                val request = contentMessage.content.createResend(
-                    targetChatId
-                )
-                val response = executor.execute(request)
-                listOf(
-                    postMessage to response.asMessage
-                )
-            }
-            mediaGroup.size in membersCountInMediaGroup -> {
-                val mediaGroupContent = mediaGroup.mapNotNull {
-                    ((it.message as? ContentMessage<*>) ?.content as? MediaGroupContent) ?.toMediaGroupMemberInputMedia() ?.let { media ->
-                        it to media
-                    }
-                }.toMap()
-                val request = SendMediaGroup(
-                    targetChatId,
-                    mediaGroupContent.values.toList()
-                )
-                val response = executor.execute(request)
-                val contentResponse = response.mapNotNull { it.asMessage as? ContentMessage<*> }
-
-                contentResponse.mapNotNull {
-                    val content = it.content
-                    when (content) {
-                        is PhotoContent -> mediaGroupContent.keys.firstOrNull { postMessage ->
-                            mediaGroupContent[postMessage] ?.file == content.media.fileId
-                        }
-                        is VideoContent -> mediaGroupContent.keys.firstOrNull { postMessage ->
-                            mediaGroupContent[postMessage] ?.file == content.media.fileId
-                        }
-                        else -> null
-                    } ?.let { postMessage ->
-                        postMessage to it
-                    }
-                }
-            }
-            else -> mediaGroup.chunked(membersCountInMediaGroup.endInclusive).flatMap { postMessages ->
-                sendMediaGroup(executor, targetChatId, postMessages)
             }
         }
     }

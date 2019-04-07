@@ -7,8 +7,10 @@ import com.github.insanusmokrassar.TelegramBotAPI.types.UpdateIdentifier
 import com.github.insanusmokrassar.TelegramBotAPI.types.message.abstracts.CommonMessage
 import com.github.insanusmokrassar.TelegramBotAPI.types.message.abstracts.FromUserMessage
 
+val startPostRegex: Regex = Regex("^/startPost$")
+
 class StartPost : Command() {
-    override val commandRegex: Regex = Regex("^/startPost$")
+    override val commandRegex: Regex = startPostRegex
 
     override suspend fun onCommand(updateId: UpdateIdentifier, message: CommonMessage<*>) {
         val userId: ChatIdentifier? = (message as? FromUserMessage) ?.user ?.id ?: message.chat.id

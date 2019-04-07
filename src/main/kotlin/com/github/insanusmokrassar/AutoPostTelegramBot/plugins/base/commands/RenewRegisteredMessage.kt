@@ -11,10 +11,12 @@ import com.github.insanusmokrassar.TelegramBotAPI.types.message.abstracts.Common
 import com.github.insanusmokrassar.TelegramBotAPI.utils.extensions.executeAsync
 import com.github.insanusmokrassar.TelegramBotAPI.utils.extensions.executeUnsafe
 
+val renewRegisteredMessageRegex: Regex = Regex("^renewRegistered(Message)?$")
+
 class RenewRegisteredMessage(
     private val postMessagesRegistrant: PostMessagesRegistrant
 ) : CommandPlugin() {
-    override val commandRegex: Regex = Regex("^renewRegistered(Message)?$")
+    override val commandRegex: Regex = renewRegisteredMessageRegex
 
     override suspend fun onCommand(updateId: UpdateIdentifier, message: CommonMessage<*>) {
         val executor = botWR ?.get() ?: return
