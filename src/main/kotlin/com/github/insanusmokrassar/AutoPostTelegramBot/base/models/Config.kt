@@ -19,23 +19,17 @@ import org.h2.Driver
 class Config (
     val targetChatId: Long,
     val sourceChatId: Long,
-    @Optional
     val logsChatId: Long? = null,
-    @Optional
     val databaseConfig: DatabaseConfig = DatabaseConfig(
         "jdbc:h2:mem:test;DB_CLOSE_DELAY=-1",
         Driver::class.java.canonicalName,
         "sa",
         ""
     ),
-    @Optional
     val clientConfig: HttpClientConfig? = null,
-    @Optional
     val botToken: String? = null,
     @Serializable(ListSerializer::class)
-    @Optional
     val plugins: List<Plugin> = emptyList(),
-    @Optional
     val commonBot: BotConfig? = null
 ) {
     @Transient

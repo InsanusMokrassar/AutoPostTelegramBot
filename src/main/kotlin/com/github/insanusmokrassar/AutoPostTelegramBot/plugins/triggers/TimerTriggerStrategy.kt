@@ -87,9 +87,7 @@ private class TimerScheduleCommand(
 
 @Serializable
 class TimerTriggerStrategy (
-    @Optional
     private val delay: Long? = null,
-    @Optional
     private val time: String = "00:00-00:00 01:00"
 ) : Plugin {
     @Transient

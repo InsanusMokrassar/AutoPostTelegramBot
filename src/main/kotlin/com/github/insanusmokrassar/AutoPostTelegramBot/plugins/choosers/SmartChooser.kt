@@ -6,7 +6,6 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.commonLogger
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.database.PostIdRatingPair
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.*
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.parseDateTimes
-import kotlinx.serialization.Optional
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import org.joda.time.DateTime
@@ -119,41 +118,25 @@ abstract class AbstractSmartChooserBaseConfigItem : SmartChooserBaseConfigItem {
 
 @Serializable
 data class SmartChooserAdditionalConfigItem(
-    @Optional
     override val minRate: Int? = null,
-    @Optional
     override val maxRate: Int? = null,
-    @Optional
     override val sort: String = defaultSort,
-    @Optional
     override val count: Int = 1,
-    @Optional
     override val minAge: Long? = null,
-    @Optional
     override val maxAge: Long? = null,
-    @Optional
     override val otherwise: SmartChooserAdditionalConfigItem? = null
 ) : AbstractSmartChooserBaseConfigItem()
 
 @Serializable
 data class SmartChooserConfigItem (
-    @Optional
     override val minRate: Int? = null,
-    @Optional
     override val maxRate: Int? = null,
-    @Optional
     val time: String? = null,
-    @Optional
     val times: List<String>? = null,
-    @Optional
     override val sort: String = defaultSort,
-    @Optional
     override val count: Int = 1,
-    @Optional
     override val minAge: Long? = null,
-    @Optional
     override val maxAge: Long? = null,
-    @Optional
     override val otherwise: SmartChooserAdditionalConfigItem? = null
 ) : AbstractSmartChooserBaseConfigItem() {
     @Transient
@@ -186,7 +169,6 @@ data class SmartChooserConfigItem (
 
 @Serializable
 class SmartChooser(
-    @Optional
     val times: List<SmartChooserConfigItem> = emptyList()
 ) : RateChooser() {
     init {

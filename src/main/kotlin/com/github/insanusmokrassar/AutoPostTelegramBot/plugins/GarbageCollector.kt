@@ -23,11 +23,8 @@ private val zeroDateTime: DateTime by lazy {
 
 @Serializable
 class GarbageCollector(
-    @Optional
     val minimalRate: Int = -3,
-    @Optional
     private val skipTime: String? = null,
-    @Optional
     private val manualCheckTime: String? = null
 ) : Plugin {
     @Transient

@@ -1,6 +1,5 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.base.models
 
-import kotlinx.serialization.Optional
 import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.sql.Database
 
@@ -10,7 +9,6 @@ data class DatabaseConfig(
     val driver: String,
     val username: String,
     val password: String,
-    @Optional
     val initAutomatically: Boolean = true
 ) {
     init {
