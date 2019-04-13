@@ -334,3 +334,5 @@ available messages for post
 * Add utility methods for messages resending
 * Extracted base commands regexps outside of classes
 * `PostPublisher` channel `postPublishedChannel` now have list of messages as value for notification
+
+### 1.2.7
