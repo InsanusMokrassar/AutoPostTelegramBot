@@ -1,8 +1,8 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.base.models
 
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.Plugin
-import com.github.insanusmokrassar.AutoPostTelegramBot.utils.ListSerializer
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.NewDefaultCoroutineScope
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.PluginsListSerializer
 import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
 import com.github.insanusmokrassar.TelegramBotAPI.types.ChatId
 import com.github.insanusmokrassar.TelegramBotAPI.types.toChatId
@@ -28,7 +28,7 @@ class Config (
     ),
     val clientConfig: HttpClientConfig? = null,
     val botToken: String? = null,
-    @Serializable(ListSerializer::class)
+    @Serializable(PluginsListSerializer::class)
     val plugins: List<Plugin> = emptyList(),
     val commonBot: BotConfig? = null
 ) {

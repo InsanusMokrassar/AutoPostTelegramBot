@@ -341,3 +341,5 @@ available messages for post
 * `kotlin coroutines` version `1.1.1` -> `1.2.0`
 * `kotlin serialization` version `0.10.0` -> `0.11.0`
 * `TelegramBotAPI` version `0.12.5` -> `0.12.6`
+* `ListSerializer` renamed to `PluginsListSerializer` and now just delegated by `ArrayListSerializer`
+with new `PluginSerializer`
