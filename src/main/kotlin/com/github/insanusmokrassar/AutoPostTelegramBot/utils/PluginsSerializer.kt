@@ -6,7 +6,7 @@ import kotlinx.serialization.internal.ArrayListSerializer
 
 object ListSerializer: KSerializer<List<Plugin>> {
     private val realSerializer = ArrayListSerializer(
-        PolymorphicSerializer
+        PolymorphicSerializer(Plugin::class)
     )
 
     override val descriptor: SerialDescriptor
