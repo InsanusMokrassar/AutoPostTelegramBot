@@ -1,8 +1,8 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.base.models
 
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.Plugin
-import com.github.insanusmokrassar.AutoPostTelegramBot.utils.ListSerializer
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.NewDefaultCoroutineScope
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.PluginsListSerializer
 import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
 import com.github.insanusmokrassar.TelegramBotAPI.types.ChatId
 import com.github.insanusmokrassar.TelegramBotAPI.types.toChatId
@@ -19,23 +19,17 @@ import org.h2.Driver
 class Config (
     val targetChatId: Long,
     val sourceChatId: Long,
-    @Optional
     val logsChatId: Long? = null,
-    @Optional
     val databaseConfig: DatabaseConfig = DatabaseConfig(
         "jdbc:h2:mem:test;DB_CLOSE_DELAY=-1",
         Driver::class.java.canonicalName,
         "sa",
         ""
     ),
-    @Optional
     val clientConfig: HttpClientConfig? = null,
-    @Optional
     val botToken: String? = null,
-    @Serializable(ListSerializer::class)
-    @Optional
+    @Serializable(PluginsListSerializer::class)
     val plugins: List<Plugin> = emptyList(),
-    @Optional
     val commonBot: BotConfig? = null
 ) {
     @Transient

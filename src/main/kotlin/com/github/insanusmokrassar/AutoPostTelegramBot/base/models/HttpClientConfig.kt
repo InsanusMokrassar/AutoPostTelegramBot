@@ -9,15 +9,10 @@ import java.util.concurrent.TimeUnit
 
 @Serializable
 data class HttpClientConfig(
-    @Optional
     val proxy: ProxySettings? = null,
-    @Optional
     val connectTimeout: Long = 0,
-    @Optional
     val writeTimeout: Long = 0,
-    @Optional
     val readTimeout: Long = 0,
-    @Optional
     val debug: Boolean = false
 ) {
     @Transient
