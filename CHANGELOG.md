@@ -344,6 +344,8 @@ available messages for post
 * `ListSerializer` renamed to `PluginsListSerializer` and now just delegated by `ArrayListSerializer`
 with new `PluginSerializer`
 
-# 1.2.8
+### 1.2.8
 
 * `TelegramBotAPI` version `0.12.6` -> `0.12.7`
+
+## 1.3.0
