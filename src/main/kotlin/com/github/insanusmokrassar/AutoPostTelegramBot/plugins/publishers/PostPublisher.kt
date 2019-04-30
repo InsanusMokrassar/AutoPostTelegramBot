@@ -18,6 +18,7 @@ import com.github.insanusmokrassar.TelegramBotAPI.requests.send.SendMessage
 import com.github.insanusmokrassar.TelegramBotAPI.requests.send.media.SendMediaGroup
 import com.github.insanusmokrassar.TelegramBotAPI.requests.send.media.membersCountInMediaGroup
 import com.github.insanusmokrassar.TelegramBotAPI.types.*
+import com.github.insanusmokrassar.TelegramBotAPI.types.message.PublicForwardedMessage
 import com.github.insanusmokrassar.TelegramBotAPI.types.message.abstracts.ContentMessage
 import com.github.insanusmokrassar.TelegramBotAPI.types.message.abstracts.Message
 import com.github.insanusmokrassar.TelegramBotAPI.types.message.content.abstracts.MediaGroupContent
@@ -107,7 +108,7 @@ class PostPublisher : Publisher {
                 it.messageId to it
             }.also { associatedPostMessages ->
                 messages.forEach { (id, message) ->
-                    message.forwarded ?.messageId ?.let { realId ->
+                    (message.forwarded as? PublicForwardedMessage) ?.messageId ?.let { realId ->
                         associatedPostMessages[realId] ?.message = message
                     } ?: id.let {
                         associatedPostMessages[id] ?.message = message
