@@ -3,12 +3,10 @@ package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.base.commands
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.exceptions.NothingToSaveException
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.commonLogger
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.commands.Command
-import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
 import com.github.insanusmokrassar.TelegramBotAPI.types.ChatIdentifier
 import com.github.insanusmokrassar.TelegramBotAPI.types.UpdateIdentifier
 import com.github.insanusmokrassar.TelegramBotAPI.types.message.abstracts.CommonMessage
 import com.github.insanusmokrassar.TelegramBotAPI.types.message.abstracts.FromUserMessage
-import java.lang.ref.WeakReference
 
 val fixPostRegex: Regex = Regex("^/fixPost$")
 

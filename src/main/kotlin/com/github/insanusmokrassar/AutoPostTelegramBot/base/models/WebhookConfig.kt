@@ -4,6 +4,7 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.utils.NewDefaultCoroutine
 import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
 import com.github.insanusmokrassar.TelegramBotAPI.requests.abstracts.toInputFile
 import com.github.insanusmokrassar.TelegramBotAPI.utils.extensions.*
+import io.ktor.server.cio.CIO
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.serialization.Serializable
@@ -25,6 +26,7 @@ data class WebhookConfig(
         url,
         port,
         filter,
+        CIO,
         certificatePath ?.let { File(it).toInputFile() },
         privateKeyConfig,
         scope,

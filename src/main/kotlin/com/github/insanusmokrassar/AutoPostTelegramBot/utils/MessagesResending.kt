@@ -9,7 +9,6 @@ import com.github.insanusmokrassar.TelegramBotAPI.requests.send.media.membersCou
 import com.github.insanusmokrassar.TelegramBotAPI.types.*
 import com.github.insanusmokrassar.TelegramBotAPI.types.message.RawMessage
 import com.github.insanusmokrassar.TelegramBotAPI.types.message.abstracts.*
-import com.github.insanusmokrassar.TelegramBotAPI.types.message.content.abstracts.MediaContent
 import com.github.insanusmokrassar.TelegramBotAPI.types.message.content.abstracts.MediaGroupContent
 import com.github.insanusmokrassar.TelegramBotAPI.utils.extensions.executeAsync
 import com.github.insanusmokrassar.TelegramBotAPI.utils.extensions.executeUnsafe

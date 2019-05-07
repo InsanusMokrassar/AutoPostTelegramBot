@@ -1,7 +1,8 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.base.models
 
 import io.ktor.client.engine.okhttp.OkHttpConfig
-import kotlinx.serialization.*
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 import okhttp3.Credentials
 import java.net.InetSocketAddress
 import java.net.Proxy

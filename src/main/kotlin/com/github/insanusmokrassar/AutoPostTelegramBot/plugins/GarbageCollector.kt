@@ -12,7 +12,8 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.*
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.parseDateTimes
 import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
 import kotlinx.coroutines.*
-import kotlinx.serialization.*
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
 import java.lang.ref.WeakReference

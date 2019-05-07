@@ -6,7 +6,6 @@ import kotlinx.serialization.*
 import kotlinx.serialization.internal.ArrayListSerializer
 import kotlinx.serialization.internal.StringDescriptor
 import kotlinx.serialization.json.*
-import kotlin.reflect.KClass
 
 object PluginSerializer : KSerializer<Plugin> {
     override val descriptor: SerialDescriptor = StringDescriptor.withName(Plugin::class.simpleName ?: "Plugin")

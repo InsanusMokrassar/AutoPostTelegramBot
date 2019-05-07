@@ -12,7 +12,8 @@ import com.github.insanusmokrassar.TelegramBotAPI.utils.extensions.UpdatesFilter
 import com.github.insanusmokrassar.TelegramBotAPI.utils.extensions.startGettingOfUpdates
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.SendChannel
-import kotlinx.serialization.*
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 import org.h2.Driver
 
 @Serializable

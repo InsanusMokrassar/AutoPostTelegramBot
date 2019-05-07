@@ -3,72 +3,73 @@ package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.scheduler
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.commonLogger
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.publishers.Publisher
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.NewDefaultCoroutineScope
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.schedule
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscribe
-import kotlinx.coroutines.*
-import org.joda.time.DateTime
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.launch
 
 private typealias PostTimeToJob = Pair<PostIdPostTime, Job>
-
-private val SchedulerScope = NewDefaultCoroutineScope(8)
 
 class Scheduler(
     private val schedulesTable: PostsSchedulesTable,
     private val publisher: Publisher
 ) {
+    private val scope = NewDefaultCoroutineScope(8)
     private var currentPlannedPostTimeAndJob: PostTimeToJob? = null
 
-    init {
-        schedulesTable.postTimeRegisteredChannel.subscribe {
-            updateJob(it)
-        }
-        schedulesTable.postTimeChangedChannel.subscribe {
-            updateJob(it)
-        }
-        schedulesTable.postTimeRemovedChannel.subscribe {
-            if (currentPlannedPostTimeAndJob ?.first ?.first == it) {
-                schedulesTable.nearPost() ?.also {
-                    updateJob(it)
-                } ?:also {
+    private val updateJobChannel = Channel<Unit>(Channel.UNLIMITED)
+
+    private val updateJob: Job = scope.launch {
+        for (event in updateJobChannel) {
+            try {
+                schedulesTable.nearPost() ?.let { nearEvent ->
+                    val scheduleNew = currentPlannedPostTimeAndJob ?.let { (currentTime, currentJob) ->
+                        if (currentTime.second.millis != nearEvent.second.millis) {
+                            currentJob.cancel()
+                            true
+                        } else {
+                            false
+                        }
+                    } ?: true
+                    if (scheduleNew) {
+                        currentPlannedPostTimeAndJob = nearEvent to createScheduledJob(nearEvent)
+                    }
+                } ?: (currentPlannedPostTimeAndJob ?.second ?.cancel() ?.also {
                     currentPlannedPostTimeAndJob = null
-                }
+                })
+            } catch (e: Exception) {
+                commonLogger.throwing(
+                    Scheduler::class.java.simpleName,
+                    "update job",
+                    e
+                )
             }
-        }
-        schedulesTable.nearPost() ?.also {
-            updateJob(it)
         }
     }
 
-    @Synchronized
-    private fun updateJob(by: PostIdPostTime)  {
-        try {
-            val update = currentPlannedPostTimeAndJob ?.first ?.second ?.isAfter(by.second) ?: true
-            if (update) {
-                currentPlannedPostTimeAndJob ?.second ?.cancel()
-                currentPlannedPostTimeAndJob = by to createScheduledJob(by)
-            }
-        } catch (e: Exception) {
-            commonLogger.throwing(
-                Scheduler::class.java.simpleName,
-                "update job",
-                e
-            )
+    init {
+        schedulesTable.postTimeRegisteredChannel.subscribe {
+            updateJobChannel.send(Unit)
+        }
+        schedulesTable.postTimeChangedChannel.subscribe {
+            updateJobChannel.send(Unit)
+        }
+        schedulesTable.postTimeRemovedChannel.subscribe {
+            updateJobChannel.send(Unit)
+        }
+        schedulesTable.nearPost() ?.also {
+            updateJobChannel.offer(Unit)
         }
     }
 
     private fun createScheduledJob(by: PostIdPostTime): Job {
-        return SchedulerScope.launch {
-            delay(by.second.minus(DateTime.now().millis).millis)
-            if (isActive) {
-                currentPlannedPostTimeAndJob = null
-
-                publisher.publishPost(by.first)
-
-                schedulesTable.unregisterPost(by.first)
-
-                schedulesTable.nearPost() ?.also {
-                    updateJob(it)
-                }
-            }
+        return scope.schedule(
+            by.second.millis
+        ) {
+            publisher.publishPost(by.first)
+            schedulesTable.unregisterPost(by.first)
+            updateJobChannel.send(Unit)
         }
     }
 }

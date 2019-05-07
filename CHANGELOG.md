@@ -344,6 +344,13 @@ available messages for post
 * `ListSerializer` renamed to `PluginsListSerializer` and now just delegated by `ArrayListSerializer`
 with new `PluginSerializer`
 
-# 1.2.8
+### 1.2.8
 
 * `TelegramBotAPI` version `0.12.6` -> `0.12.7`
+
+## 1.3.0
+
+* `TelegramBotAPI` version `0.12.7` -> `0.14.0`
+* Added dependencies for server (`CIO`) and client (`OkHttp`) ktor engines
+* Added `CoroutineScope` helper functions
+* Rewritten logic of scheduler work

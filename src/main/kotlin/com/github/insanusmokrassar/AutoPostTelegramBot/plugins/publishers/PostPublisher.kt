@@ -5,9 +5,9 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.Post
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.FinalConfig
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.PostMessage
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.PluginManager
+import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.abstractions.Chooser
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.commonLogger
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.base.commands.deletePost
-import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.abstractions.Chooser
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.cacheMessages
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.sendToLogger
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.resend
@@ -15,14 +15,10 @@ import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
 import com.github.insanusmokrassar.TelegramBotAPI.requests.DeleteMessage
 import com.github.insanusmokrassar.TelegramBotAPI.requests.ForwardMessage
 import com.github.insanusmokrassar.TelegramBotAPI.requests.send.SendMessage
-import com.github.insanusmokrassar.TelegramBotAPI.requests.send.media.SendMediaGroup
-import com.github.insanusmokrassar.TelegramBotAPI.requests.send.media.membersCountInMediaGroup
 import com.github.insanusmokrassar.TelegramBotAPI.types.*
+import com.github.insanusmokrassar.TelegramBotAPI.types.message.PublicForwardedMessage
 import com.github.insanusmokrassar.TelegramBotAPI.types.message.abstracts.ContentMessage
 import com.github.insanusmokrassar.TelegramBotAPI.types.message.abstracts.Message
-import com.github.insanusmokrassar.TelegramBotAPI.types.message.content.abstracts.MediaGroupContent
-import com.github.insanusmokrassar.TelegramBotAPI.types.message.content.media.PhotoContent
-import com.github.insanusmokrassar.TelegramBotAPI.types.message.content.media.VideoContent
 import com.github.insanusmokrassar.TelegramBotAPI.utils.extensions.executeUnsafe
 import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel
@@ -107,7 +103,7 @@ class PostPublisher : Publisher {
                 it.messageId to it
             }.also { associatedPostMessages ->
                 messages.forEach { (id, message) ->
-                    message.forwarded ?.messageId ?.let { realId ->
+                    (message.forwarded as? PublicForwardedMessage) ?.messageId ?.let { realId ->
                         associatedPostMessages[realId] ?.message = message
                     } ?: id.let {
                         associatedPostMessages[id] ?.message = message
