@@ -16,7 +16,7 @@ import com.github.insanusmokrassar.TelegramBotAPI.requests.DeleteMessage
 import com.github.insanusmokrassar.TelegramBotAPI.requests.ForwardMessage
 import com.github.insanusmokrassar.TelegramBotAPI.requests.send.SendMessage
 import com.github.insanusmokrassar.TelegramBotAPI.types.*
-import com.github.insanusmokrassar.TelegramBotAPI.types.message.PublicForwardedMessage
+import com.github.insanusmokrassar.TelegramBotAPI.types.message.ForwardedFromChannelMessage
 import com.github.insanusmokrassar.TelegramBotAPI.types.message.abstracts.ContentMessage
 import com.github.insanusmokrassar.TelegramBotAPI.types.message.abstracts.Message
 import com.github.insanusmokrassar.TelegramBotAPI.utils.extensions.executeUnsafe
@@ -103,7 +103,7 @@ class PostPublisher : Publisher {
                 it.messageId to it
             }.also { associatedPostMessages ->
                 messages.forEach { (id, message) ->
-                    (message.forwarded as? PublicForwardedMessage) ?.messageId ?.let { realId ->
+                    (message.forwarded as? ForwardedFromChannelMessage) ?.messageId ?.let { realId ->
                         associatedPostMessages[realId] ?.message = message
                     } ?: id.let {
                         associatedPostMessages[id] ?.message = message
