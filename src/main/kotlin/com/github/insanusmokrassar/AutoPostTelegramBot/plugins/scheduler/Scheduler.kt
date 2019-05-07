@@ -5,8 +5,9 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.publishers.Publis
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.NewDefaultCoroutineScope
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.schedule
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscribe
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.launch
 
 private typealias PostTimeToJob = Pair<PostIdPostTime, Job>
 
