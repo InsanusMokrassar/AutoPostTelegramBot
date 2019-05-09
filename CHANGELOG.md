@@ -354,3 +354,5 @@ with new `PluginSerializer`
 * Added dependencies for server (`CIO`) and client (`OkHttp`) ktor engines
 * Added `CoroutineScope` helper functions
 * Rewritten logic of scheduler work
+
+### 1.3.1 Flows
