@@ -356,3 +356,5 @@ with new `PluginSerializer`
 * Rewritten logic of scheduler work
 
 ### 1.3.1 Flows
+
+* Replace all usages of broadcast channels in built-in plugins and abstracts

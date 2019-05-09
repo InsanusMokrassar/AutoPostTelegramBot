@@ -1,10 +1,11 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.utils.CallbackQueryReceivers
 
-import com.github.insanusmokrassar.AutoPostTelegramBot.callbackQueryListener
+import com.github.insanusmokrassar.AutoPostTelegramBot.checkedCallbackQueryFlow
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.NewDefaultCoroutineScope
-import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscribe
 import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
 import com.github.insanusmokrassar.TelegramBotAPI.types.update.CallbackQueryUpdate
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 import java.lang.ref.WeakReference
 
 private val CallbackQueryReceiversScope = NewDefaultCoroutineScope()
@@ -15,10 +16,9 @@ abstract class CallbackQueryReceiver(
     protected val executorWR = WeakReference(executor)
 
     init {
-        callbackQueryListener.subscribe(
-            scope = CallbackQueryReceiversScope,
-            by = ::invoke
-        )
+        CallbackQueryReceiversScope.launch {
+            checkedCallbackQueryFlow.collect(::invoke)
+        }
     }
 
     abstract suspend fun invoke(update: CallbackQueryUpdate)
