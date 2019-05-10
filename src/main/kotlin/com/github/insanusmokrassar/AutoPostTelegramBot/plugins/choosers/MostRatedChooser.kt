@@ -2,7 +2,6 @@ package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.choosers
 
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.PostId
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.abstractions.RatingPair
-import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.Serializable
 import org.joda.time.DateTime
 

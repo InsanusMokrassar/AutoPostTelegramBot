@@ -4,7 +4,6 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.exceptions.
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.abstractions.MutableRatingPlugin
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.commonLogger
-import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.database.PostsLikesMessagesTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.disableLikesForPost
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.commands.Command
 import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor

@@ -10,8 +10,9 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.base.commands.del
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.*
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.*
 import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
-import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import org.joda.time.DateTime

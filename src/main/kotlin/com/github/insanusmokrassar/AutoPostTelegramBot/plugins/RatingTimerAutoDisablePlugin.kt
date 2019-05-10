@@ -6,13 +6,10 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.abstractions
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.disableLikesForPost
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.scheduler.SchedulerPlugin
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscribe
-import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscribeChecking
 import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collect
 import kotlinx.serialization.Serializable
-
-import java.lang.ref.WeakReference
 
 @Serializable
 class RatingTimerAutoDisablePlugin : Plugin {
