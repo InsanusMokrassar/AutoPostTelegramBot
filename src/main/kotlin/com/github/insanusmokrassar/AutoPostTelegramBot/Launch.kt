@@ -7,16 +7,21 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.FinalConfig
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.DefaultPluginManager
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.commonLogger
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.NewDefaultCoroutineScope
-import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscribe
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.load
 import com.github.insanusmokrassar.TelegramBotAPI.requests.chat.get.GetChat
 import com.github.insanusmokrassar.TelegramBotAPI.types.CallbackQuery.MessageDataCallbackQuery
 import com.github.insanusmokrassar.TelegramBotAPI.types.message.abstracts.MediaGroupMessage
 import com.github.insanusmokrassar.TelegramBotAPI.types.update.CallbackQueryUpdate
 import com.github.insanusmokrassar.TelegramBotAPI.types.update.MediaGroupUpdates.MediaGroupUpdate
+import com.github.insanusmokrassar.TelegramBotAPI.types.update.MessageUpdate
 import com.github.insanusmokrassar.TelegramBotAPI.types.update.abstracts.BaseMessageUpdate
+import com.github.insanusmokrassar.TelegramBotAPI.updateshandlers.FlowsUpdatesFilter
+import com.github.insanusmokrassar.TelegramBotAPI.utils.extensions.UpdateReceiver
 import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.broadcastIn
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -39,8 +44,15 @@ const val extraLargeBroadcastCapacity = 64
 
 const val commonListenersCapacity = mediumBroadcastCapacity
 
+val flowFilter = FlowsUpdatesFilter()
+
+private val broadcastsCoroutineScope = NewDefaultCoroutineScope(1)
+
+@Deprecated("Solved to use flows in the future. Use \"flowFilter\" instead")
 val allMessagesListener = BroadcastChannel<BaseMessageUpdate>(Channel.CONFLATED)
-val allCallbackQueryListener = BroadcastChannel<CallbackQueryUpdate>(Channel.CONFLATED)
+@Deprecated("Solved to use flows in the future. Use \"flowFilter\" instead")
+val allCallbackQueryListener = flowFilter.callbackQueryFlow.broadcastIn(broadcastsCoroutineScope, Channel.CONFLATED)
+@Deprecated("Solved to use flows in the future. Use \"flowFilter\" instead")
 val allMediaGroupsListener = BroadcastChannel<MediaGroupUpdate>(Channel.CONFLATED)
 
 val messagesListener = BroadcastChannel<BaseMessageUpdate>(Channel.CONFLATED)
@@ -73,42 +85,53 @@ fun main(args: Array<String>) {
             config
         )
 
-        NewDefaultCoroutineScope().apply {
-            allMessagesListener.subscribe(
-                scope = this
-            ) {
+        NewDefaultCoroutineScope(8).apply {
+            val messageUpdatesCollector: UpdateReceiver<BaseMessageUpdate> = {
+                allMessagesListener.offer(it)
                 if (it.data.chat.id == config.sourceChatId && it.data !is MediaGroupMessage) {
                     messagesListener.send(it)
                 }
             }
+            launch {
+                flowFilter.messageFlow.collect(messageUpdatesCollector)
+            }
+            launch {
+                flowFilter.editedMessageFlow.collect(messageUpdatesCollector)
+            }
+            launch {
+                flowFilter.channelPostFlow.collect(messageUpdatesCollector)
+            }
+            launch {
+                flowFilter.editedChannelPostFlow.collect(messageUpdatesCollector)
+            }
 
-            allCallbackQueryListener.subscribe(
-                scope = this
-            ) {
-                (it.data as? MessageDataCallbackQuery) ?.also { query ->
-                    if (query.message.chat.id == config.sourceChatId) {
-                        callbackQueryListener.send(it)
+            launch {
+                flowFilter.callbackQueryFlow.collect {
+                    allCallbackQueryListener.offer(it)
+                    (it.data as? MessageDataCallbackQuery) ?.also { query ->
+                        if (query.message.chat.id == config.sourceChatId) {
+                            callbackQueryListener.send(it)
+                        }
                     }
                 }
             }
-            allMediaGroupsListener.subscribe(
-                scope = this
-            ) { mediaGroup ->
+
+            val mediaGroupUpdatesCollector: UpdateReceiver<MediaGroupUpdate> = { mediaGroup ->
+                allMediaGroupsListener.offer(mediaGroup)
                 val mediaGroupChatId = mediaGroup.data.first().chat.id
                 if (mediaGroupChatId == config.sourceChatId) {
                     mediaGroupsListener.send(mediaGroup)
                 }
             }
-
-            val filter = config.createFilter(
-                allMessagesListener,
-                allMessagesListener,
-                allMediaGroupsListener,
-                allCallbackQueryListener
-            )
+            launch {
+                flowFilter.messageMediaGroupFlow.collect(mediaGroupUpdatesCollector)
+            }
+            launch {
+                flowFilter.channelPostMediaGroupFlow.collect(mediaGroupUpdatesCollector)
+            }
 
             config.subscribe(
-                filter,
+                flowFilter.filter,
                 this
             )
         }
