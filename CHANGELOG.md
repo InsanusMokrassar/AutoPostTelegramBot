@@ -359,3 +359,5 @@ with new `PluginSerializer`
 
 * Update `TelegramBotAPI` version `0.14.0` -> `0.14.1`
 * In `Launch` added `flowFilter` and updates collecting rewritten on flows
+* `RatingPlugin` abstraction was added
+* `Chooser` now use suspend function instead of common

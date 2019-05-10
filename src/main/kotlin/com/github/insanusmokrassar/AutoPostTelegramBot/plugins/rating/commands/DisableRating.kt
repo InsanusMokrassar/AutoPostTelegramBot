@@ -2,6 +2,7 @@ package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.commands
 
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.exceptions.NoRowFoundException
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsTable
+import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.abstractions.MutableRatingPlugin
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.commonLogger
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.database.PostsLikesMessagesTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.disableLikesForPost
@@ -17,9 +18,9 @@ import java.lang.ref.WeakReference
 
 class DisableRating(
     executor: RequestsExecutor,
-    private val postsLikesMessagesTable: PostsLikesMessagesTable
+    private val ratingsPlugin: MutableRatingPlugin
 ) : Command() {
-    override val commandRegex: Regex = Regex("disableRating")
+    override val commandRegex: Regex = Regex("deleteRating")
     private val executorWR = WeakReference(executor)
 
     override suspend fun onCommand(updateId: UpdateIdentifier, message: CommonMessage<*>) {
@@ -32,9 +33,7 @@ class DisableRating(
             )
             disableLikesForPost(
                 postId,
-                executor,
-                replied.chat.id,
-                postsLikesMessagesTable
+                ratingsPlugin
             )
 
             executor.executeUnsafe(
@@ -46,7 +45,7 @@ class DisableRating(
 
             commonLogger.info("Rating was disabled")
         } catch (e: NoRowFoundException) {
-            commonLogger.throwing(this::class.simpleName, "disableRating", e)
+            commonLogger.throwing(this::class.simpleName, "deleteRating", e)
 
             executor.executeUnsafe(
                 SendMessage(

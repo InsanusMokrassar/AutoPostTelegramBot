@@ -2,6 +2,7 @@ package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.database
 
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostIdMessageId
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.PluginName
+import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.abstractions.RatingPair
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.base.PostsUsedTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.NewDefaultCoroutineScope
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscribe
@@ -35,7 +36,7 @@ class PostsLikesMessagesTable(
             value ?.also {
                 getEnabledPostsIdAndRatings().map {
                     (postId, _) ->
-                    postId
+                    postId.toInt()
                 }.minus(
                     value.first.getPluginLinks(value.second)
                 ).forEach {
@@ -104,12 +105,12 @@ class PostsLikesMessagesTable(
         }
     }
 
-    fun getEnabledPostsIdAndRatings(): List<PostIdRatingPair> {
+    fun getEnabledPostsIdAndRatings(): List<RatingPair> {
         return transaction {
             selectAll().mapNotNull {
                 it[postId]
             }.map {
-                it to postsLikesTable.getPostRating(it)
+                it.toLong() to postsLikesTable.getPostRating(it)
             }
         }
     }

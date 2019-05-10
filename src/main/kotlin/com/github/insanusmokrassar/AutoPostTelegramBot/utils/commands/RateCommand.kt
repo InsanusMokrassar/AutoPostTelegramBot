@@ -7,7 +7,7 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.database.P
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.database.PostsLikesTable
 import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
 
-
+@Deprecated("Since the RatingPlugin is abstraction, this usage must be avoided")
 abstract class RateCommand : CommandPlugin() {
     protected var postsLikesTable: PostsLikesTable? = null
         private set

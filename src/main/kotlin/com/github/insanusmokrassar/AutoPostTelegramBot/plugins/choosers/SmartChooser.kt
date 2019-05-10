@@ -2,8 +2,9 @@ package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.choosers
 
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.PostId
+import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.abstractions.RatingPair
+import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.abstractions.getRatingRange
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.commonLogger
-import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.database.PostIdRatingPair
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.*
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.parseDateTimes
 import kotlinx.serialization.Serializable
@@ -19,12 +20,22 @@ private const val defaultSort = descendSort
 
 private val commonRandom = Random()
 
-private typealias InnerChooser = (List<PostIdRatingPair>, Int) -> Collection<Int>
+private typealias InnerChooser = (List<Pair<PostId, RatingPair>>, Int) -> Collection<Pair<PostId, RatingPair>>
+
+private val randomSorter: InnerChooser = { pairs, count ->
+    val mutablePairs = pairs.toMutableList()
+    val resultList = mutableListOf<Pair<PostId, RatingPair>>()
+    while (mutablePairs.isNotEmpty() && resultList.size < count) {
+        val chosen = mutablePairs.random()
+        resultList.add(chosen)
+        mutablePairs.remove(chosen)
+    }
+    resultList
+}
 
 private val commonInnerChoosers = mapOf<String, InnerChooser>(
-    ascendSort to {
-        pairs, count ->
-        pairs.sortedBy { (_, rating) -> rating }.let {
+    ascendSort to { pairs, count ->
+        pairs.sortedBy { (_, rating) -> rating.second }.let {
             it.subList(
                 0,
                 if (it.size < count) {
@@ -33,14 +44,10 @@ private val commonInnerChoosers = mapOf<String, InnerChooser>(
                     count
                 }
             )
-        }.map {
-            (postId, _) ->
-            postId
         }
     },
-    descendSort to {
-        pairs, count ->
-        pairs.sortedByDescending { (_, rating) -> rating }.let {
+    descendSort to { pairs, count ->
+        pairs.sortedByDescending { (_, rating) -> rating.second }.let {
             it.subList(
                 0,
                 if (it.size < count) {
@@ -49,28 +56,9 @@ private val commonInnerChoosers = mapOf<String, InnerChooser>(
                     count
                 }
             )
-        }.map {
-            (postId, _) ->
-            postId
         }
     },
-    randomSort to {
-        pairs, count ->
-        mutableSetOf<Int>().apply {
-            val from = pairs.toMutableSet()
-            while (size < count && size < from.size) {
-                val chosen = from.elementAt(
-                    commonRandom.nextInt(
-                        from.size
-                    )
-                )
-                from.remove(chosen)
-                add(
-                    chosen.first
-                )
-            }
-        }
-    }
+    randomSort to randomSorter
 )
 
 interface SmartChooserBaseConfigItem {
@@ -99,8 +87,8 @@ abstract class AbstractSmartChooserBaseConfigItem : SmartChooserBaseConfigItem {
     }
 
     @Transient
-    val chooser: InnerChooser?
-        get() = commonInnerChoosers[sort]
+    val chooser: InnerChooser
+        get() = commonInnerChoosers[sort] ?: randomSorter
 
     fun checkPostAge(postId: Int): Boolean {
         val postDateTime: DateTime = PostsTable.getPostCreationDateTime(postId) ?: return false
@@ -175,25 +163,28 @@ class SmartChooser(
         commonLogger.info("Smart chooser inited: ${times.joinToString(separator = "\n") { it.toString() }}")
     }
 
-    override fun triggerChoose(time: DateTime, exceptions: List<PostId>): Collection<Int> {
+    override suspend fun triggerChoose(time: DateTime, exceptions: List<PostId>): Collection<Int> {
         var actualItem: AbstractSmartChooserBaseConfigItem? = times.firstOrNull { it.isActual(time) }
         while (true) {
             actualItem ?.also { item ->
-                postsLikesTable ?.getRateRange(
+                ratingPlugin.getRatingRange(
                     item.minRate,
                     item.maxRate
-                ) ?.filter { (postId, _) ->
-                    item.checkPostAge(postId)
-                } ?.let { chosenList ->
-                    item.chooser ?.invoke(
+                ).mapNotNull {
+                    ratingPlugin.resolvePostId(it.first) ?.let { postId ->
+                        if (postId !in exceptions && item.checkPostAge(postId)) {
+                            postId to it
+                        } else {
+                            null
+                        }
+                    }
+                }.let { chosenList ->
+                    val resultChosen = item.chooser.invoke(
                         chosenList,
                         item.count
-                    )
-                } ?.minus(
-                    exceptions
-                ) ?.let {
-                    if (it.isNotEmpty()) {
-                        return it
+                    ).map { it.first }
+                    if (resultChosen.isNotEmpty()) {
+                        return resultChosen
                     }
                 }
                 actualItem = item.otherwise
