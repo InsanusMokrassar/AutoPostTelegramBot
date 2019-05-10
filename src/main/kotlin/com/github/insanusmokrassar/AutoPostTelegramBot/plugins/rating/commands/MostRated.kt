@@ -24,31 +24,6 @@ class MostRated(
         val mostRated = postsLikesTable.getMostRated()
         val chatId = message.chat.id
 
-        /*message.chat.username() ?.let {
-                username ->
-            bot.executeAsync(
-                SendMessage(
-                    chatId,
-                    "Most rated posts"
-                ).replyMarkup(
-                    InlineKeyboardMarkup(
-                        *mostRated.mapNotNull {
-                            PostsTable.postRegisteredMessage(it)
-                        }.mapIndexed {
-                                index, id ->
-                            InlineKeyboardButton(
-                                (index + 1).toString()
-                            ).url(
-                                makeLinkToMessage(
-                                    username,
-                                    id
-                                )
-                            )
-                        }.toTable(4)
-                    )
-                )
-            )
-        }*/
         MostRatedScope.launch {
             mostRated.mapNotNull {
                 PostsTable.postRegisteredMessage(it)
