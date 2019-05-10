@@ -355,4 +355,6 @@ with new `PluginSerializer`
 * Added `CoroutineScope` helper functions
 * Rewritten logic of scheduler work
 
-### 1.3.1 Flows
+### 1.3.1
+
+* Update `TelegramBotAPI` version `0.14.0` -> `0.14.1`
