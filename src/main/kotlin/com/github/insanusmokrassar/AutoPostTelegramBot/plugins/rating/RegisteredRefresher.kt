@@ -5,6 +5,7 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.Post
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.transactionCompletedChannel
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.PostId
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.abstractions.MutableRatingPlugin
+import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.abstractions.Rating
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.commonLogger
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.database.PostsLikesMessagesTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.database.PostsLikesTable
@@ -94,7 +95,7 @@ internal suspend fun refreshRegisteredMessage(
     postId: Int,
     postsLikesTable: PostsLikesTable,
     postsLikesMessagesTable: PostsLikesMessagesTable,
-    postRating: Int = postsLikesTable.getPostRating(postId),
+    postRating: Rating = postsLikesTable.getPostRating(postId).toFloat(),
     username: String? = null
 ) {
     val dislikeButton = CallbackDataInlineKeyboardButton(

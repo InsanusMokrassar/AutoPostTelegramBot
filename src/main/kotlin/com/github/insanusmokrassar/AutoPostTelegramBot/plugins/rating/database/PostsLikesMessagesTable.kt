@@ -110,7 +110,7 @@ class PostsLikesMessagesTable(
             selectAll().mapNotNull {
                 it[postId]
             }.map {
-                it.toLong() to postsLikesTable.getPostRating(it)
+                it.toLong() to postsLikesTable.getPostRating(it).toFloat()
             }
         }
     }

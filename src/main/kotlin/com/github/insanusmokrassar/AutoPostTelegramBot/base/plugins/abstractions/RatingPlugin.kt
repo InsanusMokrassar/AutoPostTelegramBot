@@ -5,7 +5,8 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.Plugin
 import kotlinx.coroutines.flow.Flow
 
 typealias RatingId = Long
-typealias RatingPair = Pair<RatingId, Int>
+typealias Rating = Float
+typealias RatingPair = Pair<RatingId, Rating>
 typealias PostIdRatingIdPair = Pair<PostId, RatingId>
 
 interface RatingPlugin : Plugin {
@@ -13,8 +14,8 @@ interface RatingPlugin : Plugin {
     suspend fun allocateRatingRemovedFlow(): Flow<RatingPair>
     suspend fun allocateRatingAddedFlow(): Flow<PostIdRatingIdPair>
 
-    suspend fun getRatingById(ratingId: RatingId): Int?
-    suspend fun resolvePostId(ratingId: RatingId): Int?
+    suspend fun getRatingById(ratingId: RatingId): Rating?
+    suspend fun resolvePostId(ratingId: RatingId): PostId?
 
     suspend fun getPostRatings(postId: PostId): List<RatingPair>
     suspend fun getRegisteredPosts(): List<PostId>

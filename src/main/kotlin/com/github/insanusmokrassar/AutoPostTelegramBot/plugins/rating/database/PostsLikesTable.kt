@@ -102,7 +102,7 @@ class PostsLikesTable : Table() {
     fun getMostRated(): List<Int> {
         return transaction {
             postsLikesMessagesTable.getEnabledPostsIdAndRatings().let {
-                var maxRating = Int.MIN_VALUE
+                var maxRating = Float.MIN_VALUE
                 ArrayList<Int>().apply {
                     it.forEach {
                         val currentRating = it.second
@@ -174,7 +174,7 @@ class PostsLikesTable : Table() {
         }
         PostsLikesTableScope.launch {
             ratingsChannel.send(
-                RatingPair(postId.toLong(), getPostRating(postId))
+                RatingPair(postId.toLong(), getPostRating(postId).toFloat())
             )
         }
     }

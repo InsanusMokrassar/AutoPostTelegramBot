@@ -109,7 +109,7 @@ class RatingPlugin : MutableRatingPlugin {
         .ratingMessageUnregisteredChannel
         .asFlow()
         .map {
-            it.toLong() to postsLikesTable.getPostRating(it)
+            it.toLong() to postsLikesTable.getPostRating(it).toFloat()
         }
 
     override suspend fun allocateRatingAddedFlow(): Flow<PostIdRatingIdPair> = postsLikesMessagesTable
@@ -119,8 +119,8 @@ class RatingPlugin : MutableRatingPlugin {
             it.first to it.first.toLong()
         }
 
-    override suspend fun getRatingById(ratingId: RatingId): Int? = if (postsLikesMessagesTable.messageIdByPostId(ratingId.toInt()) != null) {
-        postsLikesTable.getPostRating(ratingId.toInt())
+    override suspend fun getRatingById(ratingId: RatingId): Rating? = if (postsLikesMessagesTable.messageIdByPostId(ratingId.toInt()) != null) {
+        postsLikesTable.getPostRating(ratingId.toInt()).toFloat()
     } else {
         null
     }
