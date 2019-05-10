@@ -361,3 +361,4 @@ with new `PluginSerializer`
 * In `Launch` added `flowFilter` and updates collecting rewritten on flows
 * `RatingPlugin` abstraction was added
 * `Chooser` now use suspend function instead of common
+* Old `RatingPlugin` is deprecated for now

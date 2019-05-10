@@ -19,6 +19,7 @@ import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.lang.ref.WeakReference
 
+@Deprecated("Deprecated for the reason of extending by outside library")
 @Serializable
 class RatingPlugin : MutableRatingPlugin {
     @Transient
