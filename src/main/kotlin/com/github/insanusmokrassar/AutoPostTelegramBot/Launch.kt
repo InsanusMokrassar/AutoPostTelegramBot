@@ -17,12 +17,11 @@ import com.github.insanusmokrassar.TelegramBotAPI.types.update.MessageUpdate
 import com.github.insanusmokrassar.TelegramBotAPI.types.update.abstracts.BaseMessageUpdate
 import com.github.insanusmokrassar.TelegramBotAPI.updateshandlers.FlowsUpdatesFilter
 import com.github.insanusmokrassar.TelegramBotAPI.utils.extensions.UpdateReceiver
+import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.broadcastIn
 import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.transactions.transaction
 
@@ -46,12 +45,10 @@ const val commonListenersCapacity = mediumBroadcastCapacity
 
 val flowFilter = FlowsUpdatesFilter()
 
-private val broadcastsCoroutineScope = NewDefaultCoroutineScope(1)
-
 @Deprecated("Solved to use flows in the future. Use \"flowFilter\" instead")
 val allMessagesListener = BroadcastChannel<BaseMessageUpdate>(Channel.CONFLATED)
 @Deprecated("Solved to use flows in the future. Use \"flowFilter\" instead")
-val allCallbackQueryListener = flowFilter.callbackQueryFlow.broadcastIn(broadcastsCoroutineScope, Channel.CONFLATED)
+val allCallbackQueryListener = BroadcastChannel<CallbackQueryUpdate>(Channel.CONFLATED)
 @Deprecated("Solved to use flows in the future. Use \"flowFilter\" instead")
 val allMediaGroupsListener = BroadcastChannel<MediaGroupUpdate>(Channel.CONFLATED)
 
