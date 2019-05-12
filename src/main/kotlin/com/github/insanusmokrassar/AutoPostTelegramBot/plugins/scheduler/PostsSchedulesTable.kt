@@ -66,6 +66,8 @@ class PostsSchedulesTable : Table() {
     }
 
     fun registerPostTime(postId: Int, postTime: DateTime) {
+        var updated = false
+        var registered = false
         transaction {
             postTime(postId) ?.also {
                 update(
@@ -75,17 +77,21 @@ class PostsSchedulesTable : Table() {
                 ) {
                     it[this@PostsSchedulesTable.postTime] = postTime
                 }
-                PostsSchedulesTableScope.launch {
-                    postTimeChangedChannel.send(postId to postTime)
-                }
+                updated = true
             } ?:also {
                 insert {
                     it[this@PostsSchedulesTable.postId] = postId
                     it[this@PostsSchedulesTable.postTime] = postTime
                 }
-                PostsSchedulesTableScope.launch {
-                    postTimeRegisteredChannel.send(postId to postTime)
-                }
+                registered = true
+            }
+        }
+        when {
+            updated -> PostsSchedulesTableScope.launch {
+                postTimeChangedChannel.send(postId to postTime)
+            }
+            registered -> PostsSchedulesTableScope.launch {
+                postTimeRegisteredChannel.send(postId to postTime)
             }
         }
     }
