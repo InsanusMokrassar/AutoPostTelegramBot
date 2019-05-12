@@ -5,11 +5,12 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.publishers.Publis
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.NewDefaultCoroutineScope
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.schedule
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscribe
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.launch
 
 private typealias PostTimeToJob = Pair<PostIdPostTime, Job>
+
+private val cancelledException = CancellationException()
 
 class Scheduler(
     private val schedulesTable: PostsSchedulesTable,
@@ -18,7 +19,7 @@ class Scheduler(
     private val scope = NewDefaultCoroutineScope(8)
     private var currentPlannedPostTimeAndJob: PostTimeToJob? = null
 
-    private val updateJobChannel = Channel<Unit>(Channel.UNLIMITED)
+    private val updateJobChannel = Channel<Unit>(Channel.CONFLATED)
 
     private val updateJob: Job = scope.launch {
         for (event in updateJobChannel) {
@@ -26,7 +27,7 @@ class Scheduler(
                 schedulesTable.nearPost() ?.let { nearEvent ->
                     val scheduleNew = currentPlannedPostTimeAndJob ?.let { (currentTime, currentJob) ->
                         if (currentTime.second.millis != nearEvent.second.millis) {
-                            currentJob.cancel()
+                            currentJob.cancel(cancelledException)
                             true
                         } else {
                             false
@@ -70,8 +71,10 @@ class Scheduler(
             publisher.publishPost(by.first)
             schedulesTable.unregisterPost(by.first)
         }.also {
-            it.invokeOnCompletion {
-                updateJobChannel.offer(Unit)
+            it.invokeOnCompletion { cause ->
+                if (cause != cancelledException) {
+                    updateJobChannel.offer(Unit)
+                }
             }
         }
     }
