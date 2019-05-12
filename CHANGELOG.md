@@ -364,3 +364,4 @@ with new `PluginSerializer`
 * Old `RatingPlugin` is deprecated for now
 * Checked flows for listeners added
 * `buildCommandFlow` function added - it will create flow with checked command from `checkedMessagesFlow`
+* Was added `collectWithErrors` function
