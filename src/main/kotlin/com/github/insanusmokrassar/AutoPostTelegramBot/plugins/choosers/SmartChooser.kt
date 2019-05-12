@@ -178,6 +178,8 @@ class SmartChooser(
                             null
                         }
                     }
+                }.distinctBy { (postId, _) ->
+                    postId
                 }.let { chosenList ->
                     val resultChosen = item.chooser.invoke(
                         chosenList,
