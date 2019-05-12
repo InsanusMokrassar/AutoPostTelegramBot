@@ -24,21 +24,19 @@ class Scheduler(
     private val updateJob: Job = scope.launch {
         for (event in updateJobChannel) {
             try {
-                schedulesTable.nearPost() ?.let { nearEvent ->
-                    val scheduleNew = currentPlannedPostTimeAndJob ?.let { (currentTime, currentJob) ->
+                val replaceBy: PostTimeToJob? = schedulesTable.nearPost() ?.let { nearEvent ->
+                    currentPlannedPostTimeAndJob ?.let { (currentTime, _) ->
                         if (currentTime.second.millis != nearEvent.second.millis) {
-                            currentJob.cancel(cancelledException)
-                            true
+                            nearEvent to createScheduledJob(nearEvent)
                         } else {
-                            false
+                            currentPlannedPostTimeAndJob
                         }
-                    } ?: true
-                    if (scheduleNew) {
-                        currentPlannedPostTimeAndJob = nearEvent to createScheduledJob(nearEvent)
                     }
-                } ?: (currentPlannedPostTimeAndJob ?.second ?.cancel() ?.also {
-                    currentPlannedPostTimeAndJob = null
-                })
+                }
+                if (replaceBy != currentPlannedPostTimeAndJob) {
+                    currentPlannedPostTimeAndJob ?.second ?.cancel(cancelledException)
+                    currentPlannedPostTimeAndJob = replaceBy
+                }
             } catch (e: Exception) {
                 commonLogger.throwing(
                     Scheduler::class.java.simpleName,
@@ -59,9 +57,7 @@ class Scheduler(
         schedulesTable.postTimeRemovedChannel.subscribe {
             updateJobChannel.send(Unit)
         }
-        schedulesTable.nearPost() ?.also {
-            updateJobChannel.offer(Unit)
-        }
+        updateJobChannel.offer(Unit)
     }
 
     private fun createScheduledJob(by: PostIdPostTime): Job {
