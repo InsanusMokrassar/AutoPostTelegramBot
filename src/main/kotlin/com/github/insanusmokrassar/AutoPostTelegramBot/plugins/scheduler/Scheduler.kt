@@ -69,7 +69,10 @@ class Scheduler(
         ) {
             publisher.publishPost(by.first)
             schedulesTable.unregisterPost(by.first)
-            updateJobChannel.send(Unit)
+        }.also {
+            it.invokeOnCompletion {
+                updateJobChannel.offer(Unit)
+            }
         }
     }
 }
