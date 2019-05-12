@@ -12,6 +12,8 @@ private typealias PostTimeToJob = Pair<PostIdPostTime, Job>
 
 private val cancelledException = CancellationException()
 
+private typealias EventLambda = suspend () -> Unit
+
 class Scheduler(
     private val schedulesTable: PostsSchedulesTable,
     private val publisher: Publisher
@@ -19,28 +21,31 @@ class Scheduler(
     private val scope = NewDefaultCoroutineScope(8)
     private var currentPlannedPostTimeAndJob: PostTimeToJob? = null
 
-    private val updateJobChannel = Channel<Unit>(Channel.CONFLATED)
+    private val updateJobChannel = Channel<EventLambda>(Channel.CONFLATED)
+
+    private val updateLambda: EventLambda = {
+        val replaceBy: PostTimeToJob? = schedulesTable.nearPost() ?.let { nearEvent ->
+            val current = currentPlannedPostTimeAndJob
+            if (current == null || current.first.second.millis != nearEvent.second.millis) {
+                nearEvent to createScheduledJob(nearEvent)
+            } else {
+                current
+            }
+        }
+        if (replaceBy != currentPlannedPostTimeAndJob) {
+            currentPlannedPostTimeAndJob ?.second ?.cancel(cancelledException)
+            currentPlannedPostTimeAndJob = replaceBy
+        }
+    }
 
     private val updateJob: Job = scope.launch {
         for (event in updateJobChannel) {
             try {
-                val replaceBy: PostTimeToJob? = schedulesTable.nearPost() ?.let { nearEvent ->
-                    currentPlannedPostTimeAndJob ?.let { (currentTime, _) ->
-                        if (currentTime.second.millis != nearEvent.second.millis) {
-                            nearEvent to createScheduledJob(nearEvent)
-                        } else {
-                            currentPlannedPostTimeAndJob
-                        }
-                    }
-                }
-                if (replaceBy != currentPlannedPostTimeAndJob) {
-                    currentPlannedPostTimeAndJob ?.second ?.cancel(cancelledException)
-                    currentPlannedPostTimeAndJob = replaceBy
-                }
+                event()
             } catch (e: Exception) {
                 commonLogger.throwing(
                     Scheduler::class.java.simpleName,
-                    "update job",
+                    "Update job event handling",
                     e
                 )
             }
@@ -49,28 +54,24 @@ class Scheduler(
 
     init {
         schedulesTable.postTimeRegisteredChannel.subscribe {
-            updateJobChannel.send(Unit)
+            updateJobChannel.send(updateLambda)
         }
         schedulesTable.postTimeChangedChannel.subscribe {
-            updateJobChannel.send(Unit)
+            updateJobChannel.send(updateLambda)
         }
         schedulesTable.postTimeRemovedChannel.subscribe {
-            updateJobChannel.send(Unit)
+            updateJobChannel.send(updateLambda)
         }
-        updateJobChannel.offer(Unit)
+        updateJobChannel.offer(updateLambda)
     }
 
     private fun createScheduledJob(by: PostIdPostTime): Job {
         return scope.schedule(
             by.second.millis
         ) {
-            publisher.publishPost(by.first)
-            schedulesTable.unregisterPost(by.first)
-        }.also {
-            it.invokeOnCompletion { cause ->
-                if (cause != cancelledException) {
-                    updateJobChannel.offer(Unit)
-                }
+            updateJobChannel.send {
+                publisher.publishPost(by.first)
+                schedulesTable.unregisterPost(by.first)
             }
         }
     }
