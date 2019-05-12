@@ -18,6 +18,7 @@ import com.github.insanusmokrassar.TelegramBotAPI.updateshandlers.FlowsUpdatesFi
 import com.github.insanusmokrassar.TelegramBotAPI.utils.extensions.UpdateReceiver
 import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -54,6 +55,10 @@ val allMediaGroupsListener = BroadcastChannel<MediaGroupUpdate>(Channel.CONFLATE
 val messagesListener = BroadcastChannel<BaseMessageUpdate>(Channel.CONFLATED)
 val callbackQueryListener = BroadcastChannel<CallbackQueryUpdate>(Channel.CONFLATED)
 val mediaGroupsListener = BroadcastChannel<MediaGroupUpdate>(Channel.CONFLATED)
+
+val checkedMessagesFlow = messagesListener.asFlow()
+val checkedCallbacksQueriesFlow = callbackQueryListener.asFlow()
+val checkedMediaGroupsFlow = mediaGroupsListener.asFlow()
 
 fun main(args: Array<String>) {
     val config: FinalConfig = load(args[0], Config.serializer()).finalConfig
