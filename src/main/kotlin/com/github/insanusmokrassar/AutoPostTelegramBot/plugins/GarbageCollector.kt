@@ -4,14 +4,15 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.Post
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.FinalConfig
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.*
+import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.abstractions.RatingPair
+import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.abstractions.RatingPlugin
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.base.commands.deletePost
-import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.RatingPlugin
-import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.database.PostIdRatingPair
-import com.github.insanusmokrassar.AutoPostTelegramBot.utils.CalculatedDateTime
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.*
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.*
-import com.github.insanusmokrassar.AutoPostTelegramBot.utils.parseDateTimes
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.flow.collectWithErrors
 import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
-import kotlinx.coroutines.*
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import org.joda.time.DateTime
@@ -28,6 +29,9 @@ class GarbageCollector(
     private val skipTime: String? = null,
     private val manualCheckTime: String? = null
 ) : Plugin {
+    @Transient
+    private lateinit var ratingPlugin: RatingPlugin
+
     @Transient
     val skipDateTime: List<Pair<Long, Long>> by lazy {
         skipTime ?.parseDateTimes() ?.let {
@@ -65,7 +69,7 @@ class GarbageCollector(
     ) {
         val botWR = WeakReference(executor)
 
-        val ratingPlugin = (pluginManager.plugins.firstOrNull {
+        ratingPlugin = (pluginManager.plugins.firstOrNull {
             it is RatingPlugin
         } as? RatingPlugin) ?:let {
             commonLogger.warning(
@@ -74,60 +78,61 @@ class GarbageCollector(
             return
         }
 
-        val postsLikesTable = ratingPlugin.postsLikesTable
-        val postsLikesMessagesTable = ratingPlugin.postsLikesMessagesTable
+        NewDefaultCoroutineScope(3).apply {
+            launch {
+                ratingPlugin.allocateRatingChangedFlow().collectWithErrors {
+                    check(it, executor, baseConfig)
+                }
+            }
 
-        postsLikesTable.ratingsChannel.subscribeChecking {
-            botWR.get() ?.let {
-                bot ->
-                check(it, bot, baseConfig)
-                true
-            } ?: false
-        }
-
-        manualCheckDateTimes ?.let {
-            GlobalScope.launch {
-                while (isActive) {
-                    it.executeNearFuture {
-                        val botSR = botWR.get() ?: return@executeNearFuture null
-                        val now = DateTime.now()
-                        postsLikesMessagesTable.getEnabledPostsIdAndRatings().forEach {
-                            pair ->
-                            check(pair, botSR, baseConfig, now)
-                        }
-                    } ?.await() ?: break
+            manualCheckDateTimes ?.let {
+                launch {
+                    while (isActive) {
+                        it.executeNearFuture {
+                            val botSR = botWR.get() ?: return@executeNearFuture null
+                            val now = DateTime.now()
+                            ratingPlugin.getRegisteredPosts().flatMap {
+                                ratingPlugin.getPostRatings(it)
+                            }.forEach { pair ->
+                                check(pair, botSR, baseConfig, now)
+                            }
+                        } ?.await() ?: break
+                    }
                 }
             }
         }
     }
 
     private suspend fun check(
-        dataPair: PostIdRatingPair,
+        dataPair: RatingPair,
         executor: RequestsExecutor,
         baseConfig: FinalConfig,
         now: DateTime = DateTime.now()
-    ) = PostsTable.getPostCreationDateTime(dataPair.first) ?.also {
-        creatingDate ->
-        check(dataPair, creatingDate, executor, baseConfig, now)
+    ) = ratingPlugin.resolvePostId(dataPair.first) ?.let {
+        PostsTable.getPostCreationDateTime(it) ?.also {
+                creatingDate ->
+            check(dataPair, creatingDate, executor, baseConfig, now)
+        }
     }
 
     private suspend fun check(
-        dataPair: PostIdRatingPair,
+        dataPair: RatingPair,
         creatingDate: DateTime,
         executor: RequestsExecutor,
         baseConfig: FinalConfig,
         now: DateTime = DateTime.now()
     ) {
+        val postId = ratingPlugin.resolvePostId(dataPair.first) ?: return
         for (period in skipDateTime) {
             if (creatingDate.plus(period.second).isAfter(now) && creatingDate.plus(period.first).isBefore(now)) {
                 return
             }
         }
-        if (dataPair.second < minimalRate || PostsMessagesTable.getMessagesOfPost(dataPair.first).isEmpty()) {
+        if (dataPair.second < minimalRate || PostsMessagesTable.getMessagesOfPost(postId).isEmpty()) {
             deletePost(
                 executor,
                 baseConfig.sourceChatId,
-                dataPair.first
+                postId
             )
         }
     }

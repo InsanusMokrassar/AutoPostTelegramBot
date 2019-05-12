@@ -1,5 +1,6 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.utils.commands
 
+import com.github.insanusmokrassar.AutoPostTelegramBot.checkedMessagesFlow
 import com.github.insanusmokrassar.AutoPostTelegramBot.messagesListener
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscribe
 import com.github.insanusmokrassar.TelegramBotAPI.types.MessageEntity.BotCommandMessageEntity
@@ -8,6 +9,9 @@ import com.github.insanusmokrassar.TelegramBotAPI.types.message.abstracts.Common
 import com.github.insanusmokrassar.TelegramBotAPI.types.message.content.TextContent
 import com.github.insanusmokrassar.TelegramBotAPI.types.update.abstracts.BaseMessageUpdate
 import com.github.insanusmokrassar.TelegramBotAPI.utils.extensions.UpdateReceiver
+import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.ReceiveChannel
+import kotlinx.coroutines.flow.*
 import java.util.logging.Logger
 
 private val logger = Logger.getLogger(Command::class.java.simpleName)
@@ -38,4 +42,20 @@ abstract class Command {
     }
 
     abstract suspend fun onCommand(updateId: UpdateIdentifier, message: CommonMessage<*>)
+}
+
+fun buildCommandFlow(
+    commandRegex: Regex
+): Flow<CommonMessage<TextContent>> = checkedMessagesFlow.mapNotNull {
+    val data = it.data
+    if (data is CommonMessage<*>) {
+        val contentAsText = data.content as? TextContent ?: return@mapNotNull null
+        val contentEntities = contentAsText.entities
+        contentEntities.firstOrNull { entity ->
+            entity is BotCommandMessageEntity && commandRegex.matches(entity.command)
+        } ?.let {
+            return@mapNotNull data as CommonMessage<TextContent>
+        }
+    }
+    null
 }

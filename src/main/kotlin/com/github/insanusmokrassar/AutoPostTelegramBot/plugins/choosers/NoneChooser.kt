@@ -7,7 +7,7 @@ import org.joda.time.DateTime
 
 @Serializable
 class NoneChooser : Chooser {
-    override fun triggerChoose(time: DateTime, exceptions: List<PostId>): Collection<Int> {
+    override suspend fun triggerChoose(time: DateTime, exceptions: List<PostId>): Collection<Int> {
         return emptyList()
     }
 }

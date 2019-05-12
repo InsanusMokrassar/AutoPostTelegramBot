@@ -2,22 +2,21 @@ package com.github.insanusmokrassar.AutoPostTelegramBot.plugins
 
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.FinalConfig
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.*
-import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.RatingPlugin
+import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.abstractions.MutableRatingPlugin
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.disableLikesForPost
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.scheduler.SchedulerPlugin
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscribe
-import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscribeChecking
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.flow.collectWithErrors
 import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
+import kotlinx.coroutines.*
 import kotlinx.serialization.Serializable
-
-import java.lang.ref.WeakReference
 
 @Serializable
 class RatingTimerAutoDisablePlugin : Plugin {
     override suspend fun onInit(executor: RequestsExecutor, baseConfig: FinalConfig, pluginManager: PluginManager) {
-        val ratingPlugin: RatingPlugin = pluginManager.plugins.firstOrNull {
-            it is RatingPlugin
-        } as? RatingPlugin ?:let {
+        val ratingPlugin: MutableRatingPlugin = pluginManager.plugins.firstOrNull {
+            it is MutableRatingPlugin
+        } as? MutableRatingPlugin ?:let {
             commonLogger.warning("Plugin $name was not load for the reason that rating plugin was not found")
             return
         }
@@ -29,10 +28,7 @@ class RatingTimerAutoDisablePlugin : Plugin {
             return
         }
 
-        val botWR = WeakReference(executor)
-        val sourceChatId = baseConfig.sourceChatId
-
-        schedulerPlugin.timerSchedulesTable.postTimeRegisteredChannel.subscribeChecking(
+        schedulerPlugin.timerSchedulesTable.postTimeRegisteredChannel.subscribe(
             {
                 commonLogger.throwing(
                     name,
@@ -42,31 +38,16 @@ class RatingTimerAutoDisablePlugin : Plugin {
                 true
             }
         ) {
-            botWR.get() ?.let {
-                bot ->
-
-                disableLikesForPost(
-                    it.first,
-                    bot,
-                    sourceChatId,
-                    ratingPlugin.postsLikesMessagesTable
-                )
-
-                true
-            } ?: false
+            disableLikesForPost(
+                it.first,
+                ratingPlugin
+            )
         }
 
-        ratingPlugin.postsLikesMessagesTable.ratingMessageRegisteredChannel.subscribe(
-            {
-                commonLogger.throwing(
-                    name,
-                    "register post rating enabled",
-                    it
-                )
-                true
+        CoroutineScope(Dispatchers.Default).launch {
+            ratingPlugin.allocateRatingAddedFlow().collectWithErrors {
+                schedulerPlugin.timerSchedulesTable.unregisterPost(it.first)
             }
-        ) {
-            schedulerPlugin.timerSchedulesTable.unregisterPost(it.first)
         }
     }
 }

@@ -1,6 +1,8 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.database
 
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsTable
+import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.PostId
+import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.abstractions.RatingPair
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.commonLogger
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.NewDefaultCoroutineScope
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscribe
@@ -13,7 +15,6 @@ import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.transactions.transaction
 
-typealias PostIdRatingPair = Pair<Int, Int>
 typealias PostIdUserId = Pair<Int, ChatId>
 
 private const val resultColumnName = "result"
@@ -23,7 +24,7 @@ private val PostsLikesTableScope = NewDefaultCoroutineScope()
 class PostsLikesTable : Table() {
     val likesChannel = BroadcastChannel<PostIdUserId>(Channel.CONFLATED)
     val dislikesChannel = BroadcastChannel<PostIdUserId>(Channel.CONFLATED)
-    val ratingsChannel = BroadcastChannel<PostIdRatingPair>(Channel.CONFLATED)
+    val ratingsChannel = BroadcastChannel<RatingPair>(Channel.CONFLATED)
 
     private val userId = long("userId").primaryKey()
     private val postId = integer("postId").primaryKey()
@@ -72,11 +73,11 @@ class PostsLikesTable : Table() {
         }
     }
 
-    fun postLikes(postId: Int): Int = postLikeCount(postId, true)
+    fun postLikes(postId: PostId): Int = postLikeCount(postId, true)
 
-    fun postDislikes(postId: Int): Int = postLikeCount(postId, false)
+    fun postDislikes(postId: PostId): Int = postLikeCount(postId, false)
 
-    fun getPostRating(postId: Int): Int {
+    fun getPostRating(postId: PostId): Int {
         return transaction {
             try {
                 exec("SELECT (likes-dislikes) as $resultColumnName FROM " +
@@ -101,7 +102,7 @@ class PostsLikesTable : Table() {
     fun getMostRated(): List<Int> {
         return transaction {
             postsLikesMessagesTable.getEnabledPostsIdAndRatings().let {
-                var maxRating = Int.MIN_VALUE
+                var maxRating = Float.MIN_VALUE
                 ArrayList<Int>().apply {
                     it.forEach {
                         val currentRating = it.second
@@ -110,7 +111,7 @@ class PostsLikesTable : Table() {
                             clear()
                         }
                         if (currentRating == maxRating) {
-                            add(it.first)
+                            add(it.first.toInt())
                         }
                     }
                 }
@@ -124,12 +125,10 @@ class PostsLikesTable : Table() {
      *
      * @return Pairs with postId to Rate
      */
-    fun getRateRange(min: Int?, max: Int?): List<PostIdRatingPair> {
-        return postsLikesMessagesTable.getEnabledPostsIdAndRatings().sortedByDescending {
-            (_, rating) ->
+    fun getRateRange(min: Int?, max: Int?): List<RatingPair> {
+        return postsLikesMessagesTable.getEnabledPostsIdAndRatings().sortedByDescending { (_, rating) ->
             rating
-        }.filter {
-            (_, rating) ->
+        }.filter { (_, rating) ->
             min ?.let { it <= rating } != false && max ?.let { rating <= it } != false
         }
     }
@@ -175,7 +174,7 @@ class PostsLikesTable : Table() {
         }
         PostsLikesTableScope.launch {
             ratingsChannel.send(
-                PostIdRatingPair(postId, getPostRating(postId))
+                RatingPair(postId.toLong(), getPostRating(postId).toFloat())
             )
         }
     }

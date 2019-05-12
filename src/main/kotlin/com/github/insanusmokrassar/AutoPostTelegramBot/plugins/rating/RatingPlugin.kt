@@ -1,8 +1,9 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating
 
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.FinalConfig
-import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.Plugin
+import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.PostId
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.PluginManager
+import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.abstractions.*
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.base.BasePlugin
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.commands.*
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.database.PostsLikesMessagesTable
@@ -10,14 +11,17 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.database.P
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.receivers.DislikeReceiver
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.receivers.LikeReceiver
 import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
+import com.github.insanusmokrassar.TelegramBotAPI.types.ChatId
+import kotlinx.coroutines.flow.*
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.lang.ref.WeakReference
 
+@Deprecated("Deprecated for the reason of extending by outside library")
 @Serializable
-class RatingPlugin : Plugin {
+class RatingPlugin : MutableRatingPlugin {
     @Transient
     private var likeReceiver: LikeReceiver? = null
     @Transient
@@ -42,6 +46,11 @@ class RatingPlugin : Plugin {
         postsLikesTable.postsLikesMessagesTable = it
     }
 
+    @Transient
+    private lateinit var chatId: ChatId
+    @Transient
+    private lateinit var executor: WeakReference<RequestsExecutor>
+
     init {
         transaction {
             SchemaUtils.createMissingTablesAndColumns(postsLikesTable, postsLikesMessagesTable)
@@ -53,7 +62,8 @@ class RatingPlugin : Plugin {
         baseConfig: FinalConfig,
         pluginManager: PluginManager
     ) {
-        val botWR = WeakReference(executor)
+        this.executor = WeakReference(executor)
+        chatId = baseConfig.sourceChatId
 
         (pluginManager.plugins.firstOrNull { it is BasePlugin } as? BasePlugin)?.also {
             postsLikesMessagesTable.postsUsedTablePluginName = it.postsUsedTable to name
@@ -66,25 +76,87 @@ class RatingPlugin : Plugin {
             dislikeReceiver = DislikeReceiver(executor, baseConfig.sourceChatId, postsLikesTable, postsLikesMessagesTable)
         }
         disableRating ?: let {
-            disableRating = DisableRating(executor, postsLikesMessagesTable)
+            disableRating = DisableRating(executor, this)
         }
         enableRating ?: let {
             enableRating = EnableRating(executor, postsLikesMessagesTable, postsLikesTable)
         }
 
         mostRated ?:let {
-            mostRated = MostRated(botWR, postsLikesTable)
+            mostRated = MostRated(this.executor, postsLikesTable)
         }
         availableRates ?:let {
-            availableRates = AvailableRates(botWR, postsLikesMessagesTable)
+            availableRates = AvailableRates(this.executor, postsLikesMessagesTable)
         }
 
         registeredRefresher = RegisteredRefresher(
             baseConfig.sourceChatId,
             executor,
+            this,
             postsLikesTable,
             postsLikesMessagesTable
         )
     }
 
+    override suspend fun allocateRatingChangedFlow(): Flow<RatingPair> = postsLikesTable
+        .ratingsChannel
+        .asFlow()
+        .map {
+            it.first to it.second
+        }
+
+    override suspend fun allocateRatingRemovedFlow(): Flow<RatingPair> = postsLikesMessagesTable
+        .ratingMessageUnregisteredChannel
+        .asFlow()
+        .map {
+            it.toLong() to postsLikesTable.getPostRating(it).toFloat()
+        }
+
+    override suspend fun allocateRatingAddedFlow(): Flow<PostIdRatingIdPair> = postsLikesMessagesTable
+        .ratingMessageRegisteredChannel
+        .asFlow()
+        .map {
+            it.first to it.first.toLong()
+        }
+
+    override suspend fun getRatingById(ratingId: RatingId): Rating? = if (postsLikesMessagesTable.messageIdByPostId(ratingId.toInt()) != null) {
+        postsLikesTable.getPostRating(ratingId.toInt()).toFloat()
+    } else {
+        null
+    }
+
+    override suspend fun resolvePostId(ratingId: RatingId): Int? = ratingId.toInt().let {
+        if (postsLikesMessagesTable.messageIdByPostId(it) != null) {
+            it
+        } else {
+            null
+        }
+    }
+
+    override suspend fun getPostRatings(postId: PostId): List<RatingPair> = listOfNotNull(
+        getRatingById(postId.toLong()) ?.let { postId.toLong() to it }
+    )
+
+    override suspend fun getRegisteredPosts(): List<PostId> = postsLikesMessagesTable.getEnabledPostsIdAndRatings().map {
+        it.first.toInt()
+    }
+
+    override suspend fun deleteRating(ratingId: RatingId) {
+        resolvePostId(ratingId) ?.let {
+            postsLikesMessagesTable.disableLikes(it)
+        }
+    }
+
+    override suspend fun addRatingFor(postId: PostId): RatingId? {
+        if (postsLikesMessagesTable.messageIdByPostId(postId) == null) {
+            refreshRegisteredMessage(
+                chatId,
+                executor.get() ?: return null,
+                postId,
+                postsLikesTable,
+                postsLikesMessagesTable
+            )
+        }
+        return getPostRatings(postId).firstOrNull() ?.first
+    }
 }

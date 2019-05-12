@@ -8,5 +8,5 @@ interface Chooser : Plugin {
     /**
      * Must return postIds for posting
      */
-    fun triggerChoose(time: DateTime = DateTime.now(), exceptions: List<PostId> = emptyList()): Collection<Int>
+    suspend fun triggerChoose(time: DateTime = DateTime.now(), exceptions: List<PostId> = emptyList()): Collection<Int>
 }

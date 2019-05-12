@@ -1,5 +1,6 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.commands
 
+import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.abstractions.Rating
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.database.PostsLikesMessagesTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.commands.Command
 import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
@@ -21,13 +22,11 @@ class AvailableRates(
         var maxCountLength = 0
         val commonCount: Int
 
-        val ratingCountMap = mutableMapOf<Int, Int>()
+        val ratingCountMap = mutableMapOf<Rating, Int>()
         postsLikesMessagesTable.getEnabledPostsIdAndRatings().map { (_, rating) -> rating }.also {
             commonCount = it.size
-            maxRatingLength = it.maxBy {
-                    rating ->
-                ratingCountMap[rating] ?.let {
-                        num ->
+            maxRatingLength = it.maxBy { rating ->
+                ratingCountMap[rating] ?.let { num ->
                     ratingCountMap[rating] = num + 1
                 } ?:let {
                     ratingCountMap[rating] = 1

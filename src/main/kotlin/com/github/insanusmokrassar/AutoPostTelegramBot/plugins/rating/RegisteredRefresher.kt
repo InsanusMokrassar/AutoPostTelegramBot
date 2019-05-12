@@ -3,6 +3,9 @@ package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsMessagesTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.transactionCompletedChannel
+import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.PostId
+import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.abstractions.MutableRatingPlugin
+import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.abstractions.Rating
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.commonLogger
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.database.PostsLikesMessagesTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.database.PostsLikesTable
@@ -15,7 +18,6 @@ import com.github.insanusmokrassar.TelegramBotAPI.requests.DeleteMessage
 import com.github.insanusmokrassar.TelegramBotAPI.requests.edit.text.EditChatMessageText
 import com.github.insanusmokrassar.TelegramBotAPI.requests.send.SendMessage
 import com.github.insanusmokrassar.TelegramBotAPI.types.ChatId
-import com.github.insanusmokrassar.TelegramBotAPI.types.ChatIdentifier
 import com.github.insanusmokrassar.TelegramBotAPI.types.ParseMode.MarkdownParseMode
 import com.github.insanusmokrassar.TelegramBotAPI.types.buttons.InlineKeyboardButtons.*
 import com.github.insanusmokrassar.TelegramBotAPI.types.buttons.InlineKeyboardMarkup
@@ -25,28 +27,18 @@ import com.github.insanusmokrassar.TelegramBotAPI.utils.row
 import java.lang.ref.WeakReference
 
 suspend fun disableLikesForPost(
-    postId: Int,
-    executor: RequestsExecutor,
-    sourceChatId: ChatIdentifier,
-    postsLikesMessagesTable: PostsLikesMessagesTable
+    postId: PostId,
+    ratingPlugin: MutableRatingPlugin
 ) {
-    postsLikesMessagesTable.messageIdByPostId(postId) ?.let {
-        messageId ->
-
-        executor.executeUnsafe(
-            DeleteMessage(
-                sourceChatId,
-                messageId
-            )
-        )
-
-        postsLikesMessagesTable.disableLikes(postId)
+    ratingPlugin.getPostRatings(postId).forEach {
+        ratingPlugin.deleteRating(it.first)
     }
 }
 
 class RegisteredRefresher(
     sourceChatId: ChatId,
     executor: RequestsExecutor,
+    ratingPlugin: MutableRatingPlugin,
     postsLikesTable: PostsLikesTable,
     postsLikesMessagesTable: PostsLikesMessagesTable
 ) {
@@ -66,7 +58,7 @@ class RegisteredRefresher(
             refreshRegisteredMessage(
                 sourceChatId,
                 botWR.get() ?: return@subscribe,
-                it.first,
+                it.first.toInt(),
                 postsLikesTable,
                 postsLikesMessagesTable,
                 it.second
@@ -91,9 +83,7 @@ class RegisteredRefresher(
         ) {
             disableLikesForPost(
                 it,
-                botWR.get() ?: return@subscribe,
-                sourceChatId,
-                postsLikesMessagesTable
+                ratingPlugin
             )
         }
     }
@@ -105,7 +95,7 @@ internal suspend fun refreshRegisteredMessage(
     postId: Int,
     postsLikesTable: PostsLikesTable,
     postsLikesMessagesTable: PostsLikesMessagesTable,
-    postRating: Int = postsLikesTable.getPostRating(postId),
+    postRating: Rating = postsLikesTable.getPostRating(postId).toFloat(),
     username: String? = null
 ) {
     val dislikeButton = CallbackDataInlineKeyboardButton(

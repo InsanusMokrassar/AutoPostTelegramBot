@@ -354,3 +354,14 @@ with new `PluginSerializer`
 * Added dependencies for server (`CIO`) and client (`OkHttp`) ktor engines
 * Added `CoroutineScope` helper functions
 * Rewritten logic of scheduler work
+
+### 1.3.1
+
+* Update `TelegramBotAPI` version `0.14.0` -> `0.14.1`
+* In `Launch` added `flowFilter` and updates collecting rewritten on flows
+* `RatingPlugin` abstraction was added
+* `Chooser` now use suspend function instead of common
+* Old `RatingPlugin` is deprecated for now
+* Checked flows for listeners added
+* `buildCommandFlow` function added - it will create flow with checked command from `checkedMessagesFlow`
+* Was added `collectWithErrors` function

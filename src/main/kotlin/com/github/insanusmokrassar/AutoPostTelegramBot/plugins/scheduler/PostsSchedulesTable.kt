@@ -16,8 +16,8 @@ typealias PostIdPostTime = Pair<Int, DateTime>
 private val PostsSchedulesTableScope = NewDefaultCoroutineScope(4)
 
 class PostsSchedulesTable : Table() {
-    private val postId = integer("postId").primaryKey()
-    private val postTime = datetime("postTime")
+    private val postIdColumn = integer("postId").primaryKey()
+    private val postTimeColumn = datetime("postTime")
 
     val postTimeRegisteredChannel = BroadcastChannel<PostIdPostTime>(Channel.CONFLATED)
     val postTimeChangedChannel = BroadcastChannel<PostIdPostTime>(Channel.CONFLATED)
@@ -40,8 +40,7 @@ class PostsSchedulesTable : Table() {
             }
             field = value
             value ?.also {
-                registeredPostsTimes().map {
-                    (postId, _) ->
+                registeredPostsTimes().map { (postId, _) ->
                     postId
                 }.minus(
                     value.first.getPluginLinks(value.second)
@@ -60,32 +59,38 @@ class PostsSchedulesTable : Table() {
     fun postTime(postId: Int): DateTime? {
         return transaction {
             select {
-                this@PostsSchedulesTable.postId.eq(postId)
-            }.firstOrNull() ?.get(postTime)
+                postIdColumn.eq(postId)
+            }.firstOrNull() ?.get(postTimeColumn)
         }
     }
 
     fun registerPostTime(postId: Int, postTime: DateTime) {
+        var updated = false
+        var registered = false
         transaction {
             postTime(postId) ?.also {
                 update(
                     {
-                        this@PostsSchedulesTable.postId.eq(postId)
+                        postIdColumn.eq(postId)
                     }
                 ) {
-                    it[this@PostsSchedulesTable.postTime] = postTime
+                    it[postTimeColumn] = postTime
                 }
-                PostsSchedulesTableScope.launch {
-                    postTimeChangedChannel.send(postId to postTime)
-                }
+                updated = true
             } ?:also {
                 insert {
-                    it[this@PostsSchedulesTable.postId] = postId
-                    it[this@PostsSchedulesTable.postTime] = postTime
+                    it[postIdColumn] = postId
+                    it[postTimeColumn] = postTime
                 }
-                PostsSchedulesTableScope.launch {
-                    postTimeRegisteredChannel.send(postId to postTime)
-                }
+                registered = true
+            }
+        }
+        when {
+            updated -> PostsSchedulesTableScope.launch {
+                postTimeChangedChannel.send(postId to postTime)
+            }
+            registered -> PostsSchedulesTableScope.launch {
+                postTimeRegisteredChannel.send(postId to postTime)
             }
         }
     }
@@ -93,7 +98,7 @@ class PostsSchedulesTable : Table() {
     fun unregisterPost(postId: Int) {
         transaction {
             deleteWhere {
-                this@PostsSchedulesTable.postId.eq(postId)
+                postIdColumn.eq(postId)
             } > 0
         }.also {
             if (it) {
@@ -105,25 +110,25 @@ class PostsSchedulesTable : Table() {
     }
 
     fun registeredPostsTimes(): List<PostIdPostTime> {
-        return transaction { selectAll().map { it[postId] to it[postTime] } }
+        return transaction { selectAll().map { it[postIdColumn] to it[postTimeColumn] } }
     }
 
     fun registeredPostsTimes(period: Pair<DateTime, DateTime>): List<PostIdPostTime> {
         return transaction {
             select {
-                postTime.between(period.first, period.second)
+                postTimeColumn.between(period.first, period.second)
             }.map {
-                it[postId] to it[postTime]
+                it[postIdColumn] to it[postTimeColumn]
             }
         }
     }
 
     fun nearPost(): PostIdPostTime? {
         return transaction {
-            selectAll().sortedBy {
-                it[postTime]
-            }.firstOrNull() ?.let {
-                it[postId] to it[postTime]
+            selectAll().minBy {
+                it[postTimeColumn]
+            } ?.let {
+                it[postIdColumn] to it[postTimeColumn]
             }
         }
     }
