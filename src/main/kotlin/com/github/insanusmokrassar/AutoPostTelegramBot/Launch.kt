@@ -7,6 +7,7 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.FinalConfig
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.DefaultPluginManager
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.commonLogger
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.NewDefaultCoroutineScope
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.flow.collectWithErrors
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.load
 import com.github.insanusmokrassar.TelegramBotAPI.requests.chat.get.GetChat
 import com.github.insanusmokrassar.TelegramBotAPI.types.CallbackQuery.MessageDataCallbackQuery
@@ -19,7 +20,6 @@ import com.github.insanusmokrassar.TelegramBotAPI.utils.extensions.UpdateReceive
 import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.asFlow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.exposed.sql.SchemaUtils
@@ -94,20 +94,20 @@ fun main(args: Array<String>) {
                 }
             }
             launch {
-                flowFilter.messageFlow.collect(messageUpdatesCollector)
+                flowFilter.messageFlow.collectWithErrors(messageUpdatesCollector)
             }
             launch {
-                flowFilter.editedMessageFlow.collect(messageUpdatesCollector)
+                flowFilter.editedMessageFlow.collectWithErrors(messageUpdatesCollector)
             }
             launch {
-                flowFilter.channelPostFlow.collect(messageUpdatesCollector)
+                flowFilter.channelPostFlow.collectWithErrors(messageUpdatesCollector)
             }
             launch {
-                flowFilter.editedChannelPostFlow.collect(messageUpdatesCollector)
+                flowFilter.editedChannelPostFlow.collectWithErrors(messageUpdatesCollector)
             }
 
             launch {
-                flowFilter.callbackQueryFlow.collect {
+                flowFilter.callbackQueryFlow.collectWithErrors {
                     allCallbackQueryListener.offer(it)
                     (it.data as? MessageDataCallbackQuery) ?.also { query ->
                         if (query.message.chat.id == config.sourceChatId) {
@@ -125,10 +125,10 @@ fun main(args: Array<String>) {
                 }
             }
             launch {
-                flowFilter.messageMediaGroupFlow.collect(mediaGroupUpdatesCollector)
+                flowFilter.messageMediaGroupFlow.collectWithErrors(mediaGroupUpdatesCollector)
             }
             launch {
-                flowFilter.channelPostMediaGroupFlow.collect(mediaGroupUpdatesCollector)
+                flowFilter.channelPostMediaGroupFlow.collectWithErrors(mediaGroupUpdatesCollector)
             }
 
             config.subscribe(

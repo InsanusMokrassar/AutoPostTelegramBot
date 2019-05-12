@@ -6,9 +6,9 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.abstractions
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.disableLikesForPost
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.scheduler.SchedulerPlugin
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscribe
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.flow.collectWithErrors
 import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.collect
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -45,7 +45,7 @@ class RatingTimerAutoDisablePlugin : Plugin {
         }
 
         CoroutineScope(Dispatchers.Default).launch {
-            ratingPlugin.allocateRatingAddedFlow().collect {
+            ratingPlugin.allocateRatingAddedFlow().collectWithErrors {
                 schedulerPlugin.timerSchedulesTable.unregisterPost(it.first)
             }
         }

@@ -9,8 +9,8 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.abstractions
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.base.commands.deletePost
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.*
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.*
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.flow.collectWithErrors
 import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
@@ -80,7 +80,7 @@ class GarbageCollector(
 
         NewDefaultCoroutineScope(3).apply {
             launch {
-                ratingPlugin.allocateRatingChangedFlow().collect {
+                ratingPlugin.allocateRatingChangedFlow().collectWithErrors {
                     check(it, executor, baseConfig)
                 }
             }
