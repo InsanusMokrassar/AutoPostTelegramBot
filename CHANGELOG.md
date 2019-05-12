@@ -362,3 +362,5 @@ with new `PluginSerializer`
 * `RatingPlugin` abstraction was added
 * `Chooser` now use suspend function instead of common
 * Old `RatingPlugin` is deprecated for now
+* Checked flows for listeners added
+* `buildCommandFlow` function added - it will create flow with checked command from `checkedMessagesFlow`
