@@ -181,10 +181,7 @@ class SmartChooser(
                 }.distinctBy { (postId, _) ->
                     postId
                 }.let { chosenList ->
-                    val resultChosen = item.chooser.invoke(
-                        chosenList,
-                        item.count
-                    ).map { it.first }
+                    val resultChosen = item.chooser.invoke(chosenList, item.count).map { it.first }
                     if (resultChosen.isNotEmpty()) {
                         return resultChosen
                     }

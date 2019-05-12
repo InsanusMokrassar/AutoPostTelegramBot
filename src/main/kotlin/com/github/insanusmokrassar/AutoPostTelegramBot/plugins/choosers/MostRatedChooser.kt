@@ -24,8 +24,10 @@ class MostRatedChooser : RateChooser() {
                 }
             } ?: mostRated.add(it)
         }
-        return mostRated.mapNotNull {
-            ratingPlugin.resolvePostId(it.first)
-        }.toSet()
+        return mostRated.minBy { (ratingId, _) -> ratingId } ?.let { (ratingId, _) ->
+            ratingPlugin.resolvePostId(ratingId) ?.let {
+                listOf(it)
+            }
+        } ?: emptyList()
     }
 }
