@@ -12,7 +12,7 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.utils.load
 import com.github.insanusmokrassar.TelegramBotAPI.requests.chat.get.GetChat
 import com.github.insanusmokrassar.TelegramBotAPI.types.CallbackQuery.MessageDataCallbackQuery
 import com.github.insanusmokrassar.TelegramBotAPI.types.message.abstracts.MediaGroupMessage
-import com.github.insanusmokrassar.TelegramBotAPI.types.update.CallbackQueryUpdate
+import com.github.insanusmokrassar.TelegramBotAPI.types.update.*
 import com.github.insanusmokrassar.TelegramBotAPI.types.update.MediaGroupUpdates.MediaGroupUpdate
 import com.github.insanusmokrassar.TelegramBotAPI.types.update.abstracts.BaseMessageUpdate
 import com.github.insanusmokrassar.TelegramBotAPI.updateshandlers.FlowsUpdatesFilter
@@ -53,10 +53,12 @@ val allCallbackQueryListener = BroadcastChannel<CallbackQueryUpdate>(Channel.CON
 val allMediaGroupsListener = BroadcastChannel<MediaGroupUpdate>(Channel.CONFLATED)
 
 val messagesListener = BroadcastChannel<BaseMessageUpdate>(Channel.CONFLATED)
+private val editedMessagesListener = BroadcastChannel<BaseMessageUpdate>(Channel.CONFLATED)
 val callbackQueryListener = BroadcastChannel<CallbackQueryUpdate>(Channel.CONFLATED)
 val mediaGroupsListener = BroadcastChannel<MediaGroupUpdate>(Channel.CONFLATED)
 
 val checkedMessagesFlow = messagesListener.asFlow()
+val checkedEditedMessagesFlow = editedMessagesListener.asFlow()
 val checkedCallbacksQueriesFlow = callbackQueryListener.asFlow()
 val checkedMediaGroupsFlow = mediaGroupsListener.asFlow()
 
@@ -93,17 +95,22 @@ fun main(args: Array<String>) {
                     messagesListener.send(it)
                 }
             }
+            val editMessageUpdatesCollector: UpdateReceiver<BaseMessageUpdate> = {
+                if (it.data.chat.id == config.sourceChatId && it.data !is MediaGroupMessage) {
+                    editedMessagesListener.send(it)
+                }
+            }
             launch {
                 flowFilter.messageFlow.collectWithErrors(messageUpdatesCollector)
             }
             launch {
-                flowFilter.editedMessageFlow.collectWithErrors(messageUpdatesCollector)
+                flowFilter.editedMessageFlow.collectWithErrors(editMessageUpdatesCollector)
             }
             launch {
                 flowFilter.channelPostFlow.collectWithErrors(messageUpdatesCollector)
             }
             launch {
-                flowFilter.editedChannelPostFlow.collectWithErrors(messageUpdatesCollector)
+                flowFilter.editedChannelPostFlow.collectWithErrors(editMessageUpdatesCollector)
             }
 
             launch {

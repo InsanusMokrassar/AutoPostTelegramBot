@@ -365,3 +365,8 @@ with new `PluginSerializer`
 * Checked flows for listeners added
 * `buildCommandFlow` function added - it will create flow with checked command from `checkedMessagesFlow`
 * Was added `collectWithErrors` function
+
+### 1.3.2
+
+* Added `checkedEditedMessagesFlow`
+* `messagesListener` will not broadcast edited events
