@@ -370,3 +370,5 @@ with new `PluginSerializer`
 
 * Added `checkedEditedMessagesFlow`
 * `messagesListener` will not broadcast edited events
+
+### 1.3.3
