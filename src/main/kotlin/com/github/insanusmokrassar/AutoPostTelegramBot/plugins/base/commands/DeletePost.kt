@@ -3,7 +3,9 @@ package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.base.commands
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsMessagesTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.commands.Command
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.commands.buildCommandFlow
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.sendToLogger
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.flow.collectWithErrors
 import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
 import com.github.insanusmokrassar.TelegramBotAPI.requests.DeleteMessage
 import com.github.insanusmokrassar.TelegramBotAPI.requests.send.SendMessage
@@ -11,6 +13,7 @@ import com.github.insanusmokrassar.TelegramBotAPI.types.*
 import com.github.insanusmokrassar.TelegramBotAPI.types.ParseMode.MarkdownParseMode
 import com.github.insanusmokrassar.TelegramBotAPI.types.message.abstracts.AbleToReplyMessage
 import com.github.insanusmokrassar.TelegramBotAPI.types.message.abstracts.CommonMessage
+import kotlinx.coroutines.*
 import kotlinx.io.IOException
 import java.lang.ref.WeakReference
 
@@ -45,16 +48,16 @@ suspend fun deletePost(
     }
 }
 
-val deletePostRegex: Regex = Regex("^/deletePost$")
+val deletePostRegex: Regex = Regex("^deletePost$")
 
-class DeletePost(
-    private val botWR: WeakReference<RequestsExecutor>
-) : Command() {
-    override val commandRegex: Regex = deletePostRegex
-
-    override suspend fun onCommand(updateId: UpdateIdentifier, message: CommonMessage<*>) {
-        val bot = botWR.get() ?: return
-        (message as? AbleToReplyMessage) ?.replyTo ?.also {
+internal fun CoroutineScope.enableDeletingOfPostsCommand(
+    botWR: WeakReference<RequestsExecutor>
+): Job = launch {
+    buildCommandFlow(
+        deletePostRegex
+    ).collectWithErrors { message ->
+        val bot = botWR.get() ?: return@collectWithErrors
+        message.replyTo ?.also {
             val messageId = it.messageId
             try {
                 val postId = PostsTable.findPost(messageId)

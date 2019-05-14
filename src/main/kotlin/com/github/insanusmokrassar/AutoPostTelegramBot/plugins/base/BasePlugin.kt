@@ -6,7 +6,9 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.PluginManage
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.base.callbacks.OnMediaGroup
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.base.callbacks.OnMessage
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.base.commands.*
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.NewDefaultCoroutineScope
 import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
+import kotlinx.coroutines.Job
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 
@@ -15,11 +17,11 @@ import java.lang.ref.WeakReference
 @Serializable
 class BasePlugin : Plugin {
     @Transient
-    private var deletePost: DeletePost? = null
+    private var deleteCommandJob: Job? = null
     @Transient
-    private var startPost: StartPost? = null
+    private var startPostJob: Job? = null
     @Transient
-    private var fixPost: FixPost? = null
+    private var fixPostJob: Job? = null
 
     @Transient
     private var onMediaGroup: OnMediaGroup? = null
@@ -38,11 +40,12 @@ class BasePlugin : Plugin {
     override suspend fun onInit(executor: RequestsExecutor, baseConfig: FinalConfig, pluginManager: PluginManager) {
         val botWR = WeakReference(executor)
 
-        deletePost = DeletePost(
-            botWR
-        )
-        startPost = StartPost()
-        fixPost = FixPost()
+        val scope = NewDefaultCoroutineScope(3)
+
+        deleteCommandJob = deleteCommandJob ?: scope.enableDeletingOfPostsCommand(botWR)
+
+        startPostJob = startPostJob ?: scope.enableStartPostCommand()
+        fixPostJob = fixPostJob ?: scope.enableFixPostCommand()
 
         onMediaGroup = OnMediaGroup(baseConfig.sourceChatId)
         onMessage = OnMessage(baseConfig.sourceChatId)
