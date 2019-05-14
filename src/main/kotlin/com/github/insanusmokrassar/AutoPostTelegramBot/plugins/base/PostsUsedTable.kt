@@ -14,6 +14,7 @@ typealias PostIdToPluginName = Pair<Int, PluginName>
 
 private val PostsUsedTableScope = NewDefaultCoroutineScope()
 
+@Deprecated("Will be removed for the reason of unnecessarily")
 class PostsUsedTable internal constructor() : Table() {
     val registeredLinkChannel = BroadcastChannel<PostIdToPluginName>(Channel.CONFLATED)
     val unregisteredLinkChannel = BroadcastChannel<PostIdToPluginName>(Channel.CONFLATED)

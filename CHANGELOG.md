@@ -372,3 +372,5 @@ with new `PluginSerializer`
 * `messagesListener` will not broadcast edited events
 
 ### 1.3.3
+
+* `PostsUsedTable` now is deprecated
