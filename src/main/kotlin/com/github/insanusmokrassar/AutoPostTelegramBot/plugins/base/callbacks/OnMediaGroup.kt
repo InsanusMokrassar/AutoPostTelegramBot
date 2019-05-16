@@ -10,9 +10,7 @@ import com.github.insanusmokrassar.TelegramBotAPI.types.ChatIdentifier
 import com.github.insanusmokrassar.TelegramBotAPI.types.message.abstracts.FromUserMessage
 import kotlinx.coroutines.*
 
-internal fun CoroutineScope.enableOnMediaGroupsCallback(
-    sourceChatId: ChatIdentifier
-): Job = launch {
+internal fun CoroutineScope.enableOnMediaGroupsCallback(): Job = launch {
     checkedMediaGroupsFlow.collectWithErrors(
         { update, e ->
             commonLogger.throwing(
@@ -23,23 +21,16 @@ internal fun CoroutineScope.enableOnMediaGroupsCallback(
         }
     ) {
         val messages = it.data
-        val first = messages.first()
-        if (first.chat.id == sourceChatId) {
-            val id = when(first) {
-                is FromUserMessage -> first.user.id
-                else -> first.chat.id
+        val id = messages.first().chat.id
+        CommonKnownPostsTransactions[id] ?.also {
+            messages.forEach { message ->
+                it.addMessageId(PostMessage(message))
             }
-            CommonKnownPostsTransactions[id] ?.also {
-                messages.forEach {
-                        message ->
-                    it.addMessageId(PostMessage(message))
-                }
-            } ?:also {
-                PostTransaction().use { transaction ->
-                    messages.forEach {
-                            message ->
-                        transaction.addMessageId(PostMessage(message))
-                    }
+            return@collectWithErrors
+        } ?:also {
+            PostTransaction().use { transaction ->
+                messages.forEach { message ->
+                    transaction.addMessageId(PostMessage(message))
                 }
             }
         }

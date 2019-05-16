@@ -47,8 +47,8 @@ class BasePlugin : Plugin {
         startPostJob = startPostJob ?: scope.enableStartPostCommand()
         fixPostJob = fixPostJob ?: scope.enableFixPostCommand()
 
-        onMediaGroupJob = onMediaGroupJob ?: scope.enableOnMediaGroupsCallback(baseConfig.sourceChatId)
-        onMessageJob = onMessageJob ?: scope.enableOnMessageCallback(baseConfig.sourceChatId)
+        onMediaGroupJob = onMediaGroupJob ?: scope.enableOnMediaGroupsCallback()
+        onMessageJob = onMessageJob ?: scope.enableOnMessageCallback()
 
         postMessagesRegistrant = PostMessagesRegistrant(
             executor,

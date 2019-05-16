@@ -10,7 +10,7 @@ object CommonKnownPostsTransactions {
     @Synchronized
     operator fun contains(chatIdentifier: ChatIdentifier): Boolean = usersTransactions[chatIdentifier] ?.let {
         !it.completed
-    } ?: true
+    } ?: false
 
     @Synchronized
     fun startTransaction(chatIdentifier: ChatIdentifier): PostTransaction? = if (chatIdentifier in this) {
@@ -22,7 +22,14 @@ object CommonKnownPostsTransactions {
     }
 
     @Synchronized
-    operator fun get(chatIdentifier: ChatIdentifier): PostTransaction? = usersTransactions[chatIdentifier]
+    operator fun get(chatIdentifier: ChatIdentifier): PostTransaction? = usersTransactions[chatIdentifier] ?.let {
+        if (it.completed) {
+            usersTransactions.remove(chatIdentifier)
+            null
+        } else {
+            it
+        }
+    }
 
     @Synchronized
     fun getOrStart(chatIdentifier: ChatIdentifier): PostTransaction? = if (chatIdentifier in this) {

@@ -12,9 +12,7 @@ import com.github.insanusmokrassar.TelegramBotAPI.types.message.abstracts.Conten
 import com.github.insanusmokrassar.TelegramBotAPI.types.message.content.TextContent
 import kotlinx.coroutines.*
 
-internal fun CoroutineScope.enableOnMessageCallback(
-    sourceChatId: ChatIdentifier
-): Job = launch {
+internal fun CoroutineScope.enableOnMessageCallback(): Job = launch {
     checkedMessagesFlow.collectWithErrors(
         { message, e ->
             commonLogger.throwing(
@@ -25,24 +23,21 @@ internal fun CoroutineScope.enableOnMessageCallback(
         }
     ) {
         val message = it.data
-        if (message.chat.id == sourceChatId) {
-            if (message is ContentMessage<*>) {
-                (message.content as? TextContent) ?.also { content ->
-                    if (content.entities.firstOrNull { it is BotCommandMessageEntity } != null) {
-                        return@collectWithErrors
-                    }
+        if (message is ContentMessage<*>) {
+            (message.content as? TextContent) ?.also { content ->
+                if (content.entities.firstOrNull { it is BotCommandMessageEntity } != null) {
+                    return@collectWithErrors
                 }
             }
+        }
 
-            val userId: ChatIdentifier? = message.chat.id
-            userId ?.let {
-                CommonKnownPostsTransactions[userId] ?.also { transaction ->
-                    transaction.addMessageId(PostMessage(message))
-                } ?: also {
-                    PostTransaction().use { transaction ->
-                        transaction.addMessageId(PostMessage(message))
-                    }
-                }
+        val chatId: ChatIdentifier = message.chat.id
+        CommonKnownPostsTransactions[chatId] ?.also { transaction ->
+            transaction.addMessageId(PostMessage(message))
+            return@collectWithErrors
+        } ?: also {
+            PostTransaction().use { transaction ->
+                transaction.addMessageId(PostMessage(message))
             }
         }
     }
