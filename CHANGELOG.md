@@ -374,3 +374,4 @@ with new `PluginSerializer`
 * `FixPost` will remove transaction only in case of availability of it
 * `BasePlugin` now work with internal lambdas and coroutine jobs
 * `CommonKnownPostsTransactions` was created
+* `TelegramBotAPI` version `0.14.1` -> `0.14.2`

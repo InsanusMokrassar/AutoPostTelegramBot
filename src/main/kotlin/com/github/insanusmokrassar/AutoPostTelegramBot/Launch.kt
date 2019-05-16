@@ -14,6 +14,7 @@ import com.github.insanusmokrassar.TelegramBotAPI.types.CallbackQuery.MessageDat
 import com.github.insanusmokrassar.TelegramBotAPI.types.message.abstracts.MediaGroupMessage
 import com.github.insanusmokrassar.TelegramBotAPI.types.update.*
 import com.github.insanusmokrassar.TelegramBotAPI.types.update.MediaGroupUpdates.MediaGroupUpdate
+import com.github.insanusmokrassar.TelegramBotAPI.types.update.MediaGroupUpdates.SentMediaGroupUpdate
 import com.github.insanusmokrassar.TelegramBotAPI.types.update.abstracts.BaseMessageUpdate
 import com.github.insanusmokrassar.TelegramBotAPI.updateshandlers.FlowsUpdatesFilter
 import com.github.insanusmokrassar.TelegramBotAPI.utils.extensions.UpdateReceiver
@@ -55,7 +56,7 @@ val allMediaGroupsListener = BroadcastChannel<MediaGroupUpdate>(Channel.CONFLATE
 val messagesListener = BroadcastChannel<BaseMessageUpdate>(Channel.CONFLATED)
 private val editedMessagesListener = BroadcastChannel<BaseMessageUpdate>(Channel.CONFLATED)
 val callbackQueryListener = BroadcastChannel<CallbackQueryUpdate>(Channel.CONFLATED)
-val mediaGroupsListener = BroadcastChannel<MediaGroupUpdate>(Channel.CONFLATED)
+val mediaGroupsListener = BroadcastChannel<SentMediaGroupUpdate>(Channel.CONFLATED)
 
 val checkedMessagesFlow = messagesListener.asFlow()
 val checkedEditedMessagesFlow = editedMessagesListener.asFlow()
@@ -124,7 +125,7 @@ fun main(args: Array<String>) {
                 }
             }
 
-            val mediaGroupUpdatesCollector: UpdateReceiver<MediaGroupUpdate> = { mediaGroup ->
+            val mediaGroupUpdatesCollector: UpdateReceiver<SentMediaGroupUpdate> = { mediaGroup ->
                 allMediaGroupsListener.offer(mediaGroup)
                 val mediaGroupChatId = mediaGroup.data.first().chat.id
                 if (mediaGroupChatId == config.sourceChatId) {
