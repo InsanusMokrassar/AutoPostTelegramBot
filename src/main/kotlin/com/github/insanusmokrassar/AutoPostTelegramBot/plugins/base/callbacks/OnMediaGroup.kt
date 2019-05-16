@@ -3,6 +3,7 @@ package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.base.callbacks
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.PostTransaction
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.PostMessage
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.Plugin
+import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.commonLogger
 import com.github.insanusmokrassar.AutoPostTelegramBot.checkedMediaGroupsFlow
 import com.github.insanusmokrassar.AutoPostTelegramBot.mediaGroupsListener
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.base.commands.usersTransactions
@@ -14,14 +15,12 @@ import com.github.insanusmokrassar.TelegramBotAPI.types.message.abstracts.MediaG
 import kotlinx.coroutines.*
 import java.util.logging.Logger
 
-private val logger = Logger.getLogger(Plugin::class.java.simpleName)
-
 internal fun CoroutineScope.enableOnMediaGroupsCallback(
     sourceChatId: ChatIdentifier
 ): Job = launch {
     checkedMediaGroupsFlow.collectWithErrors(
         { update, e ->
-            logger.throwing(
+            commonLogger.throwing(
                 "Media groups AutoPost callback",
                 "Perform update: $update",
                 e
