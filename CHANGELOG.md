@@ -374,3 +374,4 @@ with new `PluginSerializer`
 ### 1.3.3
 
 * `PostsUsedTable` now is deprecated
+* `FixPost` will remove transaction only in case of availability of it

@@ -18,8 +18,9 @@ internal fun CoroutineScope.enableFixPostCommand(): Job = launch {
         try {
             val userId: ChatIdentifier? = (message as? FromUserMessage) ?.user ?.id ?: message.chat.id
             userId ?.let {
-                usersTransactions[it] ?.saveNewPost() ?: throw NothingToSaveException("Transaction was not started")
-                usersTransactions.remove(it)
+                usersTransactions[it] ?.saveNewPost() ?.also { _ ->
+                    usersTransactions.remove(it)
+                } ?: throw NothingToSaveException("Transaction was not started")
             }
         } catch (e: NothingToSaveException) {
             commonLogger.warning("Nothing to save: ${e.message}")
