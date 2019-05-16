@@ -23,4 +23,11 @@ object CommonKnownPostsTransactions {
 
     @Synchronized
     operator fun get(chatIdentifier: ChatIdentifier): PostTransaction? = usersTransactions[chatIdentifier]
+
+    @Synchronized
+    fun getOrStart(chatIdentifier: ChatIdentifier): PostTransaction? = if (chatIdentifier in this) {
+        usersTransactions[chatIdentifier]
+    } else {
+        startTransaction(chatIdentifier)
+    }
 }
