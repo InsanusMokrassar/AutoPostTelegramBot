@@ -370,9 +370,6 @@ with new `PluginSerializer`
 
 * Added `checkedEditedMessagesFlow`
 * `messagesListener` will not broadcast edited events
-
-### 1.3.3
-
 * `PostsUsedTable` now is deprecated
 * `FixPost` will remove transaction only in case of availability of it
 * `BasePlugin` now work with internal lambdas and coroutine jobs
