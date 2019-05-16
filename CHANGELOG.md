@@ -375,3 +375,4 @@ with new `PluginSerializer`
 
 * `PostsUsedTable` now is deprecated
 * `FixPost` will remove transaction only in case of availability of it
+* `BasePlugin` now work with internal lambdas and coroutine jobs

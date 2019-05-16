@@ -3,59 +3,49 @@ package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.base.callbacks
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.PostTransaction
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.PostMessage
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.Plugin
+import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.commonLogger
+import com.github.insanusmokrassar.AutoPostTelegramBot.checkedMessagesFlow
 import com.github.insanusmokrassar.AutoPostTelegramBot.messagesListener
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.base.commands.usersTransactions
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscribe
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.flow.collectWithErrors
 import com.github.insanusmokrassar.TelegramBotAPI.types.ChatIdentifier
 import com.github.insanusmokrassar.TelegramBotAPI.types.MessageEntity.BotCommandMessageEntity
 import com.github.insanusmokrassar.TelegramBotAPI.types.message.abstracts.ContentMessage
 import com.github.insanusmokrassar.TelegramBotAPI.types.message.abstracts.Message
 import com.github.insanusmokrassar.TelegramBotAPI.types.message.content.TextContent
+import kotlinx.coroutines.*
 import java.util.logging.Logger
 
-private val logger = Logger.getLogger(Plugin::class.java.simpleName)
-
-class OnMessage(
+internal fun CoroutineScope.enableOnMessageCallback(
     sourceChatId: ChatIdentifier
-) {
-    init {
-        messagesListener.subscribe(
-            {
-                logger.throwing(
-                    OnMessage::class.java.canonicalName,
-                    "Perform message",
-                    it
-                )
-                true
-            }
-        ) {
-            invoke(
-                it.data,
-                sourceChatId
+): Job = launch {
+    checkedMessagesFlow.collectWithErrors(
+        { message, e ->
+            commonLogger.throwing(
+                "On message AutoPost callback",
+                "Perform message: $message",
+                e
             )
         }
-    }
-
-    private fun invoke(
-        message: Message,
-        sourceChatId: ChatIdentifier
     ) {
+        val message = it.data
         if (message.chat.id == sourceChatId) {
             if (message is ContentMessage<*>) {
                 (message.content as? TextContent) ?.also { content ->
                     if (content.entities.firstOrNull { it is BotCommandMessageEntity } != null) {
-                        return
+                        return@collectWithErrors
                     }
                 }
             }
 
             val userId: ChatIdentifier? = message.chat.id
             userId ?.let {
-                usersTransactions[userId] ?.also {
-                    it.addMessageId(PostMessage(message))
+                usersTransactions[userId] ?.also { transaction ->
+                    transaction.addMessageId(PostMessage(message))
                 } ?: also {
                     PostTransaction().use {
-                        transaction ->
+                            transaction ->
                         transaction.addMessageId(PostMessage(message))
                     }
                 }

@@ -3,8 +3,7 @@ package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.base
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.FinalConfig
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.Plugin
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.PluginManager
-import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.base.callbacks.OnMediaGroup
-import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.base.callbacks.OnMessage
+import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.base.callbacks.*
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.base.commands.*
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.NewDefaultCoroutineScope
 import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
@@ -24,9 +23,9 @@ class BasePlugin : Plugin {
     private var fixPostJob: Job? = null
 
     @Transient
-    private var onMediaGroup: OnMediaGroup? = null
+    private var onMediaGroupJob: Job? = null
     @Transient
-    private var onMessage: OnMessage? = null
+    private var onMessageJob: Job? = null
 
     @Transient
     private var postMessagesRegistrant: PostMessagesRegistrant? = null
@@ -35,6 +34,7 @@ class BasePlugin : Plugin {
     private var renewRegisteredMessage: RenewRegisteredMessage? = null
 
     @Transient
+    @Deprecated("Deprecated and will not be used in next updates")
     val postsUsedTable = PostsUsedTable()
 
     override suspend fun onInit(executor: RequestsExecutor, baseConfig: FinalConfig, pluginManager: PluginManager) {
@@ -47,8 +47,8 @@ class BasePlugin : Plugin {
         startPostJob = startPostJob ?: scope.enableStartPostCommand()
         fixPostJob = fixPostJob ?: scope.enableFixPostCommand()
 
-        onMediaGroup = OnMediaGroup(baseConfig.sourceChatId)
-        onMessage = OnMessage(baseConfig.sourceChatId)
+        onMediaGroupJob = onMediaGroupJob ?: scope.enableOnMediaGroupsCallback(baseConfig.sourceChatId)
+        onMessageJob = onMessageJob ?: scope.enableOnMessageCallback(baseConfig.sourceChatId)
 
         postMessagesRegistrant = PostMessagesRegistrant(
             executor,
