@@ -375,3 +375,8 @@ with new `PluginSerializer`
 * `BasePlugin` now work with internal lambdas and coroutine jobs
 * `CommonKnownPostsTransactions` was created
 * `TelegramBotAPI` version `0.14.1` -> `0.14.2`
+
+### 1.3.3
+
+* Hotfixes and refactoring in `PostPublisher`
+* `cacheMessages` is deprecated for now

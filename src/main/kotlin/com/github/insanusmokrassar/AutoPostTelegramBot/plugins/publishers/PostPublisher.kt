@@ -8,9 +8,8 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.PluginManage
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.abstractions.Chooser
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.commonLogger
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.base.commands.deletePost
-import com.github.insanusmokrassar.AutoPostTelegramBot.utils.cacheMessages
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.*
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.sendToLogger
-import com.github.insanusmokrassar.AutoPostTelegramBot.utils.resend
 import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
 import com.github.insanusmokrassar.TelegramBotAPI.requests.DeleteMessage
 import com.github.insanusmokrassar.TelegramBotAPI.requests.ForwardMessage
@@ -86,44 +85,34 @@ class PostPublisher : Publisher {
                 messagesToDelete.add(it.chat.id to it.messageId)
             }
 
-            val messagesOfPost = mutableListOf<PostMessage>().also {
-                it.addAll(PostsMessagesTable.getMessagesOfPost(postId))
-            }
+            val messagesOfPost = PostsMessagesTable.getMessagesOfPost(postId).asSequence().associate {
+                it.messageId to it
+            }.toMutableMap()
 
-            val messages = cacheMessages(
+            val messages = cacheMessagesToMap(
                 executor,
                 sourceChatId,
                 logsChatId,
-                PostsMessagesTable.getMessagesOfPost(postId).map { it.messageId }
-            ).associate {
-                it.messageId to it
+                messagesOfPost.keys
+            )
+
+            messages.forEach { (id, message) ->
+                messagesOfPost[id] ?.message = message
             }
 
-            messagesOfPost.associate {
-                it.messageId to it
-            }.also { associatedPostMessages ->
-                messages.forEach { (id, message) ->
-                    (message.forwarded as? ForwardedFromChannelMessage) ?.messageId ?.let { realId ->
-                        associatedPostMessages[realId] ?.message = message
-                    } ?: id.let {
-                        associatedPostMessages[id] ?.message = message
-                    }
-                }
-
-                messagesOfPost.filter {
-                    val message = it.message
-                    message == null || message !is ContentMessage<*>
-                }.forEach {
-                    val messageId = it.messageId
-                    commonLogger.warning(
-                        "Can't forward message with id: $messageId; it will be removed from post"
-                    )
-                    PostsMessagesTable.removePostMessage(postId, messageId)
-                    messagesOfPost.remove(it)
-                }
+            messagesOfPost.filter { (_, postMessage) ->
+                val message = postMessage.message
+                message == null || message !is ContentMessage<*>
+            }.forEach { (messageId, _) ->
+                commonLogger.warning(
+                    "Can't forward message with id: $messageId; it will be removed from post"
+                )
+                PostsMessagesTable.removePostMessage(postId, messageId)
+                messagesOfPost.remove(messageId)
             }
-            messagesOfPost.forEach {
-                messagesToDelete.add(sourceChatId to it.messageId)
+
+            messagesOfPost.forEach { (messageId, _) ->
+                messagesToDelete.add(sourceChatId to messageId)
             }
 
             val contentMessages = messages.asSequence().mapNotNull { it.value as? ContentMessage<*> }.associate { it.messageId to it }
@@ -134,11 +123,11 @@ class PostPublisher : Publisher {
             }
 
             val mediaGroups = mutableMapOf<MediaGroupIdentifier, MutableList<PostMessage>>()
-            messagesOfPost.forEach {
-                it.mediaGroupId ?.let { mediaGroupId ->
+            messagesOfPost.forEach { (_, postMessage) ->
+                postMessage.mediaGroupId ?.let { mediaGroupId ->
                     (mediaGroups[mediaGroupId] ?: mutableListOf<PostMessage>().also {
                         mediaGroups[mediaGroupId] = it
-                    }).add(it)
+                    }).add(postMessage)
                 }
             }
 
