@@ -66,6 +66,7 @@ object PostsTable : Table() {
         transaction {
             PostsMessagesTable.removePostMessages(postId)
             deleteWhere { id.eq(postId) }
+        }.also {
             PostsTableScope.launch {
                 postRemovedChannel.send(postId)
             }

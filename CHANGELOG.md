@@ -380,3 +380,7 @@ with new `PluginSerializer`
 
 * Hotfixes and refactoring in `PostPublisher`
 * `cacheMessages` is deprecated for now
+
+### 1.3.4
+
+* Fix problem of publishing info about removing of Post
