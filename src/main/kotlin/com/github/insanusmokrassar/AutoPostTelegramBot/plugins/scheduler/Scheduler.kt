@@ -23,7 +23,7 @@ class Scheduler(
     private val scope = NewDefaultCoroutineScope(8)
     private var currentPlannedPostTimeAndJob: PostTimeToJob? = null
 
-    private val updateJobChannel = Channel<EventLambda>(Channel.CONFLATED)
+    private val updateJobChannel = Channel<EventLambda>(1)
 
     private val updateLambda: EventLambda = {
         val replaceBy: PostTimeToJob? = schedulesTable.nearPost() ?.let { nearEvent ->
