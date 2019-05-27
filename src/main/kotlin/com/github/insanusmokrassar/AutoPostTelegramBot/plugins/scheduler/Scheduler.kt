@@ -5,8 +5,10 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.publishers.Publis
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.NewDefaultCoroutineScope
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.schedule
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscribe
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.flow.collectWithErrors
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.asFlow
 
 private typealias PostTimeToJob = Pair<PostIdPostTime, Job>
 
@@ -53,16 +55,28 @@ class Scheduler(
     }
 
     init {
-        schedulesTable.postTimeRegisteredChannel.subscribe {
-            updateJobChannel.send(updateLambda)
+        val scope = NewDefaultCoroutineScope(1)
+
+        scope.apply {
+            launch {
+                updateJobChannel.send(updateLambda)
+            }
+            launch {
+                schedulesTable.postTimeRegisteredChannel.asFlow().collectWithErrors {
+                    updateJobChannel.send(updateLambda)
+                }
+            }
+            launch {
+                schedulesTable.postTimeChangedChannel.asFlow().collectWithErrors {
+                    updateJobChannel.send(updateLambda)
+                }
+            }
+            launch {
+                schedulesTable.postTimeRemovedChannel.asFlow().collectWithErrors {
+                    updateJobChannel.send(updateLambda)
+                }
+            }
         }
-        schedulesTable.postTimeChangedChannel.subscribe {
-            updateJobChannel.send(updateLambda)
-        }
-        schedulesTable.postTimeRemovedChannel.subscribe {
-            updateJobChannel.send(updateLambda)
-        }
-        updateJobChannel.offer(updateLambda)
     }
 
     private fun createScheduledJob(by: PostIdPostTime): Job {

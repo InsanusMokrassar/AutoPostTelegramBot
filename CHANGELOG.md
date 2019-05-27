@@ -388,3 +388,4 @@ with new `PluginSerializer`
 ### 1.3.5
 
 * Fixes in scheduler
+* `Scheduler` now is using the flows
