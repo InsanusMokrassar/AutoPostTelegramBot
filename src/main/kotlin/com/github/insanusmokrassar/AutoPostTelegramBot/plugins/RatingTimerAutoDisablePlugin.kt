@@ -28,25 +28,27 @@ class RatingTimerAutoDisablePlugin : Plugin {
             return
         }
 
-        schedulerPlugin.timerSchedulesTable.postTimeRegisteredChannel.subscribe(
-            {
-                commonLogger.throwing(
-                    name,
-                    "register post time scheduler registered",
-                    it
-                )
-                true
+        CoroutineScope(Dispatchers.Default).apply {
+            launch {
+                schedulerPlugin.timerSchedulesTable.postTimeRegisteredFlow.collectWithErrors(
+                    { _, error ->
+                        commonLogger.throwing(
+                            name,
+                            "register post time scheduler registered",
+                            error
+                        )
+                    }
+                ) {
+                    disableLikesForPost(
+                        it.first,
+                        ratingPlugin
+                    )
+                }
             }
-        ) {
-            disableLikesForPost(
-                it.first,
-                ratingPlugin
-            )
-        }
-
-        CoroutineScope(Dispatchers.Default).launch {
-            ratingPlugin.allocateRatingAddedFlow().collectWithErrors {
-                schedulerPlugin.timerSchedulesTable.unregisterPost(it.first)
+            launch {
+                ratingPlugin.allocateRatingAddedFlow().collectWithErrors {
+                    schedulerPlugin.timerSchedulesTable.unregisterPost(it.first)
+                }
             }
         }
     }
