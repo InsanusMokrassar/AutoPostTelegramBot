@@ -79,7 +79,9 @@ class GetSchedulesCommand(
                 }
             } ?: postsSchedulesTable.registeredPostsTimes()
 
-            posts.let {
+            posts.sortedBy {
+                it.second
+            }.let {
                 if (it.isEmpty()) {
                     executor.executeAsync(
                         SendMessage(

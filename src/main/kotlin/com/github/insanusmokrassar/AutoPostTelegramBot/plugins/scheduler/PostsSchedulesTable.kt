@@ -29,33 +29,6 @@ class PostsSchedulesTable : Table() {
         }
     }
 
-    private lateinit var lastEnableSubscription: ReceiveChannel<PostIdPostTime>
-    private lateinit var lastDisableSubscription: ReceiveChannel<Int>
-
-    internal var postsUsedTablePluginName: Pair<PostsUsedTable, PluginName>? = null
-        set(value) {
-            field ?.also {
-                lastEnableSubscription.cancel()
-                lastDisableSubscription.cancel()
-            }
-            field = value
-            value ?.also {
-                registeredPostsTimes().map { (postId, _) ->
-                    postId
-                }.minus(
-                    value.first.getPluginLinks(value.second)
-                ).forEach {
-                    value.first.registerLink(it, value.second)
-                }
-                lastEnableSubscription = postTimeRegisteredChannel.subscribe {
-                    value.first.registerLink(it.first, value.second)
-                }
-                lastDisableSubscription = postTimeRemovedChannel.subscribe {
-                    value.first.unregisterLink(it, value.second)
-                }
-            }
-        }
-
     fun postTime(postId: Int): DateTime? {
         return transaction {
             select {
@@ -110,7 +83,7 @@ class PostsSchedulesTable : Table() {
     }
 
     fun registeredPostsTimes(): List<PostIdPostTime> {
-        return transaction { selectAll().map { it[postIdColumn] to it[postTimeColumn] } }
+        return transaction { selectAll().map { it[postIdColumn] to it[postTimeColumn] }.sortedBy { (_, time) -> time.millis } }
     }
 
     fun registeredPostsTimes(period: Pair<DateTime, DateTime>): List<PostIdPostTime> {
@@ -119,16 +92,16 @@ class PostsSchedulesTable : Table() {
                 postTimeColumn.between(period.first, period.second)
             }.map {
                 it[postIdColumn] to it[postTimeColumn]
+            }.sortedBy { (_, time) ->
+                time.millis
             }
         }
     }
 
     fun nearPost(): PostIdPostTime? {
         return transaction {
-            selectAll().minBy {
-                it[postTimeColumn]
-            } ?.let {
-                it[postIdColumn] to it[postTimeColumn]
+            registeredPostsTimes().minBy { (_, time) ->
+                time.millis
             }
         }
     }

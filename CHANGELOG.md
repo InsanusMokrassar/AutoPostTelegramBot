@@ -384,3 +384,7 @@ with new `PluginSerializer`
 ### 1.3.4
 
 * Fix problem of publishing info about removing of Post
+
+### 1.3.5
+
+* Fixes in scheduler

@@ -36,10 +36,6 @@ class SchedulerPlugin : Plugin {
     }
 
     override suspend fun onInit(executor: RequestsExecutor, baseConfig: FinalConfig, pluginManager: PluginManager) {
-        (pluginManager.plugins.firstOrNull { it is BasePlugin } as? BasePlugin)?.also {
-            timerSchedulesTable.postsUsedTablePluginName = it.postsUsedTable to name
-        }
-
         scheduler = Scheduler(
             timerSchedulesTable,
             pluginManager.plugins.firstOrNull { it is Publisher } as? Publisher ?: return
