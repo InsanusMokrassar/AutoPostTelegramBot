@@ -400,3 +400,5 @@ with new `PluginSerializer`
 * Actualizing `WebhookConfig`
 * `PostsLikesMessagesTable` now is not using deprecated `PostsUsedTable`
 * `BasePlugin` now is not using deprecated `PostsUsedTable`
+* `RatingCommand` was removed
+* `Command` now have no its own logger

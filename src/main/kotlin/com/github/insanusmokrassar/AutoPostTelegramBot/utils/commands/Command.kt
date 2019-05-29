@@ -14,8 +14,6 @@ import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.flow.*
 import java.util.logging.Logger
 
-private val logger = Logger.getLogger(Command::class.java.simpleName)
-
 abstract class Command {
     val callback: UpdateReceiver<BaseMessageUpdate>
         get() = this::invoke
