@@ -55,7 +55,8 @@ class Config (
             botConfig.createBot(),
             databaseConfig,
             plugins,
-            botConfig
+            botConfig.webhookConfig,
+            botConfig.longPollingConfig
         )
 }
 
@@ -66,15 +67,16 @@ data class FinalConfig (
     val bot: RequestsExecutor,
     val databaseConfig: DatabaseConfig,
     val pluginsConfigs: List<Plugin> = emptyList(),
-    private val botConfig: BotConfig
+    private val webhookConfig: WebhookConfig? = null,
+    private val longPollingConfig: LongPollingConfig? = null
 ) {
     suspend fun subscribe(filter: UpdatesFilter, scope: CoroutineScope = NewDefaultCoroutineScope(4)) {
-        botConfig.webhookConfig ?.setWebhook(
+        webhookConfig ?.setWebhook(
             bot,
             filter,
             scope
-        ) ?: botConfig.longPollingConfig ?.applyTo(
-            botConfig,
+        ) ?: longPollingConfig ?.applyTo(
+            bot,
             filter.asUpdateReceiver,
             filter.allowedUpdates
         ) ?.start(scope)
