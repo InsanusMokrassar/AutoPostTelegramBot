@@ -2,13 +2,10 @@ package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.scheduler
 
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.FinalConfig
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.*
-import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.base.BasePlugin
-import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.publishers.Publisher
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.scheduler.commands.*
 import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
-
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.lang.ref.WeakReference

@@ -5,7 +5,7 @@ import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
 import com.github.insanusmokrassar.TelegramBotAPI.requests.abstracts.toInputFile
 import com.github.insanusmokrassar.TelegramBotAPI.updateshandlers.UpdatesFilter
 import com.github.insanusmokrassar.TelegramBotAPI.updateshandlers.webhook.WebhookPrivateKeyConfig
-import com.github.insanusmokrassar.TelegramBotAPI.utils.extensions.*
+import com.github.insanusmokrassar.TelegramBotAPI.utils.extensions.setWebhook
 import io.ktor.server.cio.CIO
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
