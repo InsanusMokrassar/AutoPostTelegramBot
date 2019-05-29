@@ -390,3 +390,5 @@ with new `PluginSerializer`
 * Fixes in scheduler
 * `Scheduler` now is using the flows
 * `PostsSchedulesTable` now prefer to use flows for output broadcasting
+
+## 1.4.0
