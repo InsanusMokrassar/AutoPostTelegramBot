@@ -23,34 +23,6 @@ class PostsLikesMessagesTable(
     private val postId = integer("postId").primaryKey()
     private val messageId = long("messageId")
 
-    private lateinit var lastEnableSubscription: ReceiveChannel<PostIdMessageId>
-    private lateinit var lastDisableSubscription: ReceiveChannel<Int>
-
-    internal var postsUsedTablePluginName: Pair<PostsUsedTable, PluginName>? = null
-        set(value) {
-            field ?.also {
-                lastEnableSubscription.cancel()
-                lastDisableSubscription.cancel()
-            }
-            field = value
-            value ?.also {
-                getEnabledPostsIdAndRatings().map {
-                    (postId, _) ->
-                    postId.toInt()
-                }.minus(
-                    value.first.getPluginLinks(value.second)
-                ).forEach {
-                    value.first.registerLink(it, value.second)
-                }
-                lastEnableSubscription = ratingMessageRegisteredChannel.subscribe {
-                    value.first.registerLink(it.first, value.second)
-                }
-                lastDisableSubscription = ratingMessageUnregisteredChannel.subscribe {
-                    value.first.unregisterLink(it, value.second)
-                }
-            }
-        }
-
     fun messageIdByPostId(postId: Int): MessageIdentifier? {
         return transaction {
             select {

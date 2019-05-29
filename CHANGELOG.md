@@ -398,3 +398,4 @@ with new `PluginSerializer`
 * Remove `Launch` deprecations
 * Actualize `Config`
 * Actualizing `WebhookConfig`
+* `PostsLikesMessagesTable` now is not using deprecated `PostsUsedTable`

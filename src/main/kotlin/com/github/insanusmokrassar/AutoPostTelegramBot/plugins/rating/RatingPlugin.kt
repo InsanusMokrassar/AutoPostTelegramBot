@@ -65,10 +65,6 @@ class RatingPlugin : MutableRatingPlugin {
         this.executor = WeakReference(executor)
         chatId = baseConfig.sourceChatId
 
-        (pluginManager.plugins.firstOrNull { it is BasePlugin } as? BasePlugin)?.also {
-            postsLikesMessagesTable.postsUsedTablePluginName = it.postsUsedTable to name
-        }
-
         likeReceiver ?: let {
             likeReceiver = LikeReceiver(executor, baseConfig.sourceChatId, postsLikesTable, postsLikesMessagesTable)
         }
