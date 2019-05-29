@@ -20,12 +20,9 @@ class PostsSchedulesTable : Table() {
     private val postIdColumn = integer("postId").primaryKey()
     private val postTimeColumn = datetime("postTime")
 
-    @Deprecated("Will be set up as private", ReplaceWith("postTimeRegisteredFlow"))
-    val postTimeRegisteredChannel = BroadcastChannel<PostIdPostTime>(Channel.CONFLATED)
-    @Deprecated("Will be set up as private", ReplaceWith("postTimeRegisteredFlow"))
-    val postTimeChangedChannel = BroadcastChannel<PostIdPostTime>(Channel.CONFLATED)
-    @Deprecated("Will be set up as private", ReplaceWith("postTimeRegisteredFlow"))
-    val postTimeRemovedChannel = BroadcastChannel<Int>(Channel.CONFLATED)
+    private val postTimeRegisteredChannel = BroadcastChannel<PostIdPostTime>(Channel.CONFLATED)
+    private val postTimeChangedChannel = BroadcastChannel<PostIdPostTime>(Channel.CONFLATED)
+    private val postTimeRemovedChannel = BroadcastChannel<Int>(Channel.CONFLATED)
 
     val postTimeRegisteredFlow = postTimeRegisteredChannel.asFlow()
     val postTimeChangedFlow = postTimeChangedChannel.asFlow()

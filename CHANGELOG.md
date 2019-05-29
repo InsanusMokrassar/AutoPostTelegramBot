@@ -392,3 +392,5 @@ with new `PluginSerializer`
 * `PostsSchedulesTable` now prefer to use flows for output broadcasting
 
 ## 1.4.0
+
+* `PostsSchedulesTable` channels now are private and has no longer accessible
