@@ -26,16 +26,6 @@ import kotlinx.coroutines.runBlocking
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.transactions.transaction
 
-@Deprecated("Old naming of vairable", ReplaceWith("allMessagesListener"))
-val realMessagesListener
-    get() = allMessagesListener
-@Deprecated("Old naming of vairable", ReplaceWith("allCallbackQueryListener"))
-val realCallbackQueryListener
-    get() = allCallbackQueryListener
-@Deprecated("Old naming of vairable", ReplaceWith("allMediaGroupsListener"))
-val realMediaGroupsListener
-    get() = allMediaGroupsListener
-
 const val extraSmallBroadcastCapacity = 4
 const val smallBroadcastCapacity = 8
 const val mediumBroadcastCapacity = 16
@@ -45,13 +35,6 @@ const val extraLargeBroadcastCapacity = 64
 const val commonListenersCapacity = mediumBroadcastCapacity
 
 val flowFilter = FlowsUpdatesFilter()
-
-@Deprecated("Solved to use flows in the future. Use \"flowFilter\" instead")
-val allMessagesListener = BroadcastChannel<BaseMessageUpdate>(Channel.CONFLATED)
-@Deprecated("Solved to use flows in the future. Use \"flowFilter\" instead")
-val allCallbackQueryListener = BroadcastChannel<CallbackQueryUpdate>(Channel.CONFLATED)
-@Deprecated("Solved to use flows in the future. Use \"flowFilter\" instead")
-val allMediaGroupsListener = BroadcastChannel<MediaGroupUpdate>(Channel.CONFLATED)
 
 val messagesListener = BroadcastChannel<BaseMessageUpdate>(Channel.CONFLATED)
 private val editedMessagesListener = BroadcastChannel<BaseMessageUpdate>(Channel.CONFLATED)
@@ -91,7 +74,6 @@ fun main(args: Array<String>) {
 
         NewDefaultCoroutineScope(8).apply {
             val messageUpdatesCollector: UpdateReceiver<BaseMessageUpdate> = {
-                allMessagesListener.offer(it)
                 if (it.data.chat.id == config.sourceChatId && it.data !is MediaGroupMessage) {
                     messagesListener.send(it)
                 }
@@ -116,7 +98,6 @@ fun main(args: Array<String>) {
 
             launch {
                 flowFilter.callbackQueryFlow.collectWithErrors {
-                    allCallbackQueryListener.offer(it)
                     (it.data as? MessageDataCallbackQuery) ?.also { query ->
                         if (query.message.chat.id == config.sourceChatId) {
                             callbackQueryListener.send(it)
@@ -126,7 +107,6 @@ fun main(args: Array<String>) {
             }
 
             val mediaGroupUpdatesCollector: UpdateReceiver<SentMediaGroupUpdate> = { mediaGroup ->
-                allMediaGroupsListener.offer(mediaGroup)
                 val mediaGroupChatId = mediaGroup.data.first().chat.id
                 if (mediaGroupChatId == config.sourceChatId) {
                     mediaGroupsListener.send(mediaGroup)
