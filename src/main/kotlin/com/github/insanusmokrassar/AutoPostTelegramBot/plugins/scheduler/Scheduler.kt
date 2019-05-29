@@ -62,17 +62,17 @@ class Scheduler(
                 updateJobChannel.send(updateLambda)
             }
             launch {
-                schedulesTable.postTimeRegisteredChannel.asFlow().collectWithErrors {
+                schedulesTable.postTimeRegisteredFlow.collectWithErrors {
                     updateJobChannel.send(updateLambda)
                 }
             }
             launch {
-                schedulesTable.postTimeChangedChannel.asFlow().collectWithErrors {
+                schedulesTable.postTimeChangedFlow.collectWithErrors {
                     updateJobChannel.send(updateLambda)
                 }
             }
             launch {
-                schedulesTable.postTimeRemovedChannel.asFlow().collectWithErrors {
+                schedulesTable.postTimeRemovedFlow.collectWithErrors {
                     updateJobChannel.send(updateLambda)
                 }
             }
