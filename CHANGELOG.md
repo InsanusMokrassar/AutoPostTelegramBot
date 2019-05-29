@@ -397,3 +397,4 @@ with new `PluginSerializer`
 * `PostsMessagesTable` now is using flows for output broadcasting and non-conflated broadcast channels inside
 * Remove `Launch` deprecations
 * Actualize `Config`
+* Actualizing `WebhookConfig`
