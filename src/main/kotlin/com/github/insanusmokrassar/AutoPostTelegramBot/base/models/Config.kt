@@ -77,6 +77,6 @@ data class FinalConfig (
             botConfig,
             filter.asUpdateReceiver,
             filter.allowedUpdates
-        )
+        ) ?.start(scope)
     }
 }
