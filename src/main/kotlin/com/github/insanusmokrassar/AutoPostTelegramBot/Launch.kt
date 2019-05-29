@@ -35,10 +35,10 @@ const val commonListenersCapacity = mediumBroadcastCapacity
 
 val flowFilter = FlowsUpdatesFilter()
 
-val messagesListener = BroadcastChannel<BaseMessageUpdate>(Channel.CONFLATED)
+private val messagesListener = BroadcastChannel<BaseMessageUpdate>(Channel.CONFLATED)
 private val editedMessagesListener = BroadcastChannel<BaseMessageUpdate>(Channel.CONFLATED)
-val callbackQueryListener = BroadcastChannel<CallbackQueryUpdate>(Channel.CONFLATED)
-val mediaGroupsListener = BroadcastChannel<SentMediaGroupUpdate>(Channel.CONFLATED)
+private val callbackQueryListener = BroadcastChannel<CallbackQueryUpdate>(Channel.CONFLATED)
+private val mediaGroupsListener = BroadcastChannel<SentMediaGroupUpdate>(Channel.CONFLATED)
 
 val checkedMessagesFlow = messagesListener.asFlow()
 val checkedEditedMessagesFlow = editedMessagesListener.asFlow()

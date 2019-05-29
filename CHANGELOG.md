@@ -403,3 +403,4 @@ with new `PluginSerializer`
 * `RatingCommand` was removed
 * `Command` now have no its own logger
 * `PluginManager#findFirstPlugin` extension was added
+* `Launch` listeners now are private
