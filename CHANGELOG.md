@@ -404,3 +404,6 @@ with new `PluginSerializer`
 * `Command` now have no its own logger
 * `PluginManager#findFirstPlugin` extension was added
 * `Launch` listeners now are private
+* `LongPollingConfig` was added
+* `BotConfig` now have an additional field: `longPollingConfig`
+* `FinalConfig` have no `createFilter` method for now and use `longPollingConfig`

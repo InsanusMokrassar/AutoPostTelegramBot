@@ -55,7 +55,7 @@ class Config (
             botConfig.createBot(),
             databaseConfig,
             plugins,
-            botConfig.webhookConfig
+            botConfig
         )
 }
 
@@ -66,42 +66,17 @@ data class FinalConfig (
     val bot: RequestsExecutor,
     val databaseConfig: DatabaseConfig,
     val pluginsConfigs: List<Plugin> = emptyList(),
-    private val webhookConfig: WebhookConfig?
+    private val botConfig: BotConfig
 ) {
-    fun createFilter(
-        messagesChannel: SendChannel<MessageUpdate>,
-        channelPostChannel: SendChannel<ChannelPostUpdate>,
-        mediaGroupChannel: SendChannel<MediaGroupUpdate>,
-        callbackQueryChannel: SendChannel<CallbackQueryUpdate>
-    ): UpdatesFilter = UpdatesFilter(
-        {
-            messagesChannel.send(it)
-        },
-        {
-            mediaGroupChannel.send(it)
-        },
-        channelPostCallback = {
-            channelPostChannel.send(it)
-        },
-        channelPostMediaGroupCallback = {
-            mediaGroupChannel.send(it)
-        },
-        callbackQueryCallback = {
-            callbackQueryChannel.send(it)
-        },
-        editedMessageMediaGroupCallback = null,
-        editedChannelPostMediaGroupCallback = null
-    )
-
     suspend fun subscribe(filter: UpdatesFilter, scope: CoroutineScope = NewDefaultCoroutineScope(4)) {
-        webhookConfig ?.setWebhook(
+        botConfig.webhookConfig ?.setWebhook(
             bot,
             filter,
             scope
-        ) ?: bot.startGettingOfUpdates(
-            scope = scope,
-            allowedUpdates = filter.allowedUpdates,
-            block = filter.asUpdateReceiver
+        ) ?: botConfig.longPollingConfig ?.applyTo(
+            botConfig,
+            filter.asUpdateReceiver,
+            filter.allowedUpdates
         )
     }
 }
