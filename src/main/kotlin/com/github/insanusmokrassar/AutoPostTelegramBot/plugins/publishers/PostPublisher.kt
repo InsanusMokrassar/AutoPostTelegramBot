@@ -4,9 +4,8 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.Post
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.FinalConfig
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.PostMessage
-import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.PluginManager
+import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.*
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.abstractions.Chooser
-import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.commonLogger
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.base.commands.deletePost
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.*
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.sendToLogger
@@ -55,8 +54,8 @@ class PostPublisher : Publisher {
     ) {
         botWR = WeakReference(executor).also {
             publishPostCommand = PublishPost(
-                pluginManager.plugins.firstOrNull { it is Chooser } as? Chooser,
-                pluginManager.plugins.firstOrNull { it is Publisher } as Publisher,
+                pluginManager.findFirstPlugin(),
+                pluginManager.findFirstPlugin() ?: throw IllegalStateException("Plugin `PostPublisher` can't be inited: there is no Publisher plugin"),
                 it,
                 baseConfig.logsChatId
             )

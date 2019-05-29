@@ -111,10 +111,8 @@ class TimerTriggerStrategy (
     private lateinit var timerScheduleCommand: TimerScheduleCommand
 
     override suspend fun onInit(executor: RequestsExecutor, baseConfig: FinalConfig, pluginManager: PluginManager) {
-        val publisher = pluginManager.plugins.firstOrNull { it is Publisher } as? Publisher
-            ?: return
-        val chooser: Chooser = pluginManager.plugins.firstOrNull { it is Chooser } as? Chooser
-            ?: return
+        val publisher: Publisher = pluginManager.findFirstPlugin() ?: return
+        val chooser: Chooser = pluginManager.findFirstPlugin() ?: return
 
         timerScheduleCommand = TimerScheduleCommand(
             baseConfig.sourceChatId,
