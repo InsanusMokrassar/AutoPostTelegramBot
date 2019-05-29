@@ -402,3 +402,4 @@ with new `PluginSerializer`
 * `BasePlugin` now is not using deprecated `PostsUsedTable`
 * `RatingCommand` was removed
 * `Command` now have no its own logger
+* `PluginManager#findFirstPlugin` extension was added
