@@ -33,10 +33,6 @@ class BasePlugin : Plugin {
     @Transient
     private var renewRegisteredMessage: RenewRegisteredMessage? = null
 
-    @Transient
-    @Deprecated("Deprecated and will not be used in next updates")
-    val postsUsedTable = PostsUsedTable()
-
     override suspend fun onInit(executor: RequestsExecutor, baseConfig: FinalConfig, pluginManager: PluginManager) {
         val botWR = WeakReference(executor)
 

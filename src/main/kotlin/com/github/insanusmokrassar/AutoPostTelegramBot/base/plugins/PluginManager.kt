@@ -15,3 +15,7 @@ interface PluginManager {
         baseConfig: FinalConfig
     )
 }
+
+inline fun <reified T: Plugin> PluginManager.findFirstPlugin(): T? = plugins.firstOrNull {
+    it is T
+} as? T

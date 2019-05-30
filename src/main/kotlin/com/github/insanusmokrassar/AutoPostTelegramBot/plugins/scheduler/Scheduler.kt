@@ -4,11 +4,9 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.commonLogger
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.publishers.Publisher
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.NewDefaultCoroutineScope
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.schedule
-import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscribe
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.flow.collectWithErrors
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.asFlow
 
 private typealias PostTimeToJob = Pair<PostIdPostTime, Job>
 
@@ -28,7 +26,7 @@ class Scheduler(
     private val updateLambda: EventLambda = {
         val replaceBy: PostTimeToJob? = schedulesTable.nearPost() ?.let { nearEvent ->
             val current = currentPlannedPostTimeAndJob
-            if (current == null || current.first.second.millis != nearEvent.second.millis) {
+            if (current == null || current.first.first != nearEvent.first) {
                 nearEvent to createScheduledJob(nearEvent)
             } else {
                 current
@@ -62,17 +60,17 @@ class Scheduler(
                 updateJobChannel.send(updateLambda)
             }
             launch {
-                schedulesTable.postTimeRegisteredChannel.asFlow().collectWithErrors {
+                schedulesTable.postTimeRegisteredFlow.collectWithErrors {
                     updateJobChannel.send(updateLambda)
                 }
             }
             launch {
-                schedulesTable.postTimeChangedChannel.asFlow().collectWithErrors {
+                schedulesTable.postTimeChangedFlow.collectWithErrors {
                     updateJobChannel.send(updateLambda)
                 }
             }
             launch {
-                schedulesTable.postTimeRemovedChannel.asFlow().collectWithErrors {
+                schedulesTable.postTimeRemovedFlow.collectWithErrors {
                     updateJobChannel.send(updateLambda)
                 }
             }

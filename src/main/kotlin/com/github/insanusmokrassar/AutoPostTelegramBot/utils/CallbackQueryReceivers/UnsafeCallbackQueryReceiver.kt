@@ -1,8 +1,9 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.utils.CallbackQueryReceivers
 
-import com.github.insanusmokrassar.AutoPostTelegramBot.callbackQueryListener
-import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscribeChecking
+import com.github.insanusmokrassar.AutoPostTelegramBot.flowFilter
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.flow.collectWithErrors
 import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
+import kotlinx.coroutines.*
 
 abstract class UnsafeCallbackQueryReceiver(
     executor: RequestsExecutor
@@ -10,9 +11,10 @@ abstract class UnsafeCallbackQueryReceiver(
     executor
 ) {
     init {
-        callbackQueryListener.subscribeChecking {
-            invoke(it)
-            true
+        CoroutineScope(Dispatchers.Default).launch {
+            flowFilter.callbackQueryFlow.collectWithErrors {
+                invoke(it)
+            }
         }
     }
 }

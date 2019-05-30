@@ -4,7 +4,6 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.FinalConfig
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.PostId
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.PluginManager
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.abstractions.*
-import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.base.BasePlugin
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.commands.*
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.database.PostsLikesMessagesTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.database.PostsLikesTable
@@ -64,10 +63,6 @@ class RatingPlugin : MutableRatingPlugin {
     ) {
         this.executor = WeakReference(executor)
         chatId = baseConfig.sourceChatId
-
-        (pluginManager.plugins.firstOrNull { it is BasePlugin } as? BasePlugin)?.also {
-            postsLikesMessagesTable.postsUsedTablePluginName = it.postsUsedTable to name
-        }
 
         likeReceiver ?: let {
             likeReceiver = LikeReceiver(executor, baseConfig.sourceChatId, postsLikesTable, postsLikesMessagesTable)

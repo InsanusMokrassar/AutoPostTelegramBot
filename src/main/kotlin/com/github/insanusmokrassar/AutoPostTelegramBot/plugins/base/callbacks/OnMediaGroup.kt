@@ -6,8 +6,6 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.commonLogger
 import com.github.insanusmokrassar.AutoPostTelegramBot.checkedMediaGroupsFlow
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.base.commands.CommonKnownPostsTransactions
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.flow.collectWithErrors
-import com.github.insanusmokrassar.TelegramBotAPI.types.ChatIdentifier
-import com.github.insanusmokrassar.TelegramBotAPI.types.message.abstracts.FromUserMessage
 import kotlinx.coroutines.*
 
 internal fun CoroutineScope.enableOnMediaGroupsCallback(): Job = launch {

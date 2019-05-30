@@ -1,8 +1,8 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.utils.commands
 
 import com.github.insanusmokrassar.AutoPostTelegramBot.checkedMessagesFlow
-import com.github.insanusmokrassar.AutoPostTelegramBot.messagesListener
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscribe
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.flow.collectWithErrors
 import com.github.insanusmokrassar.TelegramBotAPI.types.MessageEntity.BotCommandMessageEntity
 import com.github.insanusmokrassar.TelegramBotAPI.types.UpdateIdentifier
 import com.github.insanusmokrassar.TelegramBotAPI.types.message.abstracts.CommonMessage
@@ -10,11 +10,8 @@ import com.github.insanusmokrassar.TelegramBotAPI.types.message.content.TextCont
 import com.github.insanusmokrassar.TelegramBotAPI.types.update.abstracts.BaseMessageUpdate
 import com.github.insanusmokrassar.TelegramBotAPI.utils.extensions.UpdateReceiver
 import kotlinx.coroutines.*
-import kotlinx.coroutines.channels.ReceiveChannel
-import kotlinx.coroutines.flow.*
-import java.util.logging.Logger
-
-private val logger = Logger.getLogger(Command::class.java.simpleName)
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.mapNotNull
 
 abstract class Command {
     val callback: UpdateReceiver<BaseMessageUpdate>
@@ -22,8 +19,10 @@ abstract class Command {
     protected abstract val commandRegex: Regex
 
     init {
-        messagesListener.subscribe {
-            invoke(it)
+        CoroutineScope(Dispatchers.Default).launch {
+            checkedMessagesFlow.collectWithErrors {
+                invoke(it)
+            }
         }
     }
 

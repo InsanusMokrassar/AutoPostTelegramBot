@@ -8,7 +8,7 @@ import com.github.insanusmokrassar.TelegramBotAPI.types.ChatId
 import com.github.insanusmokrassar.TelegramBotAPI.types.toChatId
 import com.github.insanusmokrassar.TelegramBotAPI.types.update.*
 import com.github.insanusmokrassar.TelegramBotAPI.types.update.MediaGroupUpdates.MediaGroupUpdate
-import com.github.insanusmokrassar.TelegramBotAPI.utils.extensions.UpdatesFilter
+import com.github.insanusmokrassar.TelegramBotAPI.updateshandlers.UpdatesFilter
 import com.github.insanusmokrassar.TelegramBotAPI.utils.extensions.startGettingOfUpdates
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.SendChannel
@@ -55,7 +55,8 @@ class Config (
             botConfig.createBot(),
             databaseConfig,
             plugins,
-            botConfig.webhookConfig
+            botConfig.webhookConfig,
+            botConfig.longPollingConfig()
         )
 }
 
@@ -66,42 +67,18 @@ data class FinalConfig (
     val bot: RequestsExecutor,
     val databaseConfig: DatabaseConfig,
     val pluginsConfigs: List<Plugin> = emptyList(),
-    private val webhookConfig: WebhookConfig?
+    private val webhookConfig: WebhookConfig? = null,
+    private val longPollingConfig: LongPollingConfig? = null
 ) {
-    fun createFilter(
-        messagesChannel: SendChannel<MessageUpdate>,
-        channelPostChannel: SendChannel<ChannelPostUpdate>,
-        mediaGroupChannel: SendChannel<MediaGroupUpdate>,
-        callbackQueryChannel: SendChannel<CallbackQueryUpdate>
-    ): UpdatesFilter = UpdatesFilter(
-        {
-            messagesChannel.send(it)
-        },
-        {
-            mediaGroupChannel.send(it)
-        },
-        channelPostCallback = {
-            channelPostChannel.send(it)
-        },
-        channelPostMediaGroupCallback = {
-            mediaGroupChannel.send(it)
-        },
-        callbackQueryCallback = {
-            callbackQueryChannel.send(it)
-        },
-        editedMessageMediaGroupCallback = null,
-        editedChannelPostMediaGroupCallback = null
-    )
-
     suspend fun subscribe(filter: UpdatesFilter, scope: CoroutineScope = NewDefaultCoroutineScope(4)) {
         webhookConfig ?.setWebhook(
             bot,
             filter,
             scope
-        ) ?: bot.startGettingOfUpdates(
-            scope = scope,
-            allowedUpdates = filter.allowedUpdates,
-            block = filter.asUpdateReceiver
-        )
+        ) ?: longPollingConfig ?.applyTo(
+            bot,
+            filter.asUpdateReceiver,
+            filter.allowedUpdates
+        ) ?.start(scope)
     }
 }

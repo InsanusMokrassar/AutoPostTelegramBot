@@ -1,11 +1,10 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.scheduler
 
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsTable
-import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.PluginName
-import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.base.PostsUsedTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.NewDefaultCoroutineScope
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscribe
-import kotlinx.coroutines.channels.*
+import kotlinx.coroutines.channels.BroadcastChannel
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.launch
 import org.jetbrains.exposed.sql.*
@@ -20,12 +19,9 @@ class PostsSchedulesTable : Table() {
     private val postIdColumn = integer("postId").primaryKey()
     private val postTimeColumn = datetime("postTime")
 
-    @Deprecated("Will be set up as private", ReplaceWith("postTimeRegisteredFlow"))
-    val postTimeRegisteredChannel = BroadcastChannel<PostIdPostTime>(Channel.CONFLATED)
-    @Deprecated("Will be set up as private", ReplaceWith("postTimeRegisteredFlow"))
-    val postTimeChangedChannel = BroadcastChannel<PostIdPostTime>(Channel.CONFLATED)
-    @Deprecated("Will be set up as private", ReplaceWith("postTimeRegisteredFlow"))
-    val postTimeRemovedChannel = BroadcastChannel<Int>(Channel.CONFLATED)
+    private val postTimeRegisteredChannel = BroadcastChannel<PostIdPostTime>(Channel.CONFLATED)
+    private val postTimeChangedChannel = BroadcastChannel<PostIdPostTime>(Channel.CONFLATED)
+    private val postTimeRemovedChannel = BroadcastChannel<Int>(Channel.CONFLATED)
 
     val postTimeRegisteredFlow = postTimeRegisteredChannel.asFlow()
     val postTimeChangedFlow = postTimeChangedChannel.asFlow()

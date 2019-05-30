@@ -9,8 +9,20 @@ import kotlinx.serialization.Serializable
 data class BotConfig(
     val botToken: String,
     val clientConfig: HttpClientConfig? = null,
-    val webhookConfig: WebhookConfig? = null
+    val webhookConfig: WebhookConfig? = null,
+    private var longPollingConfig: LongPollingConfig? = null
 ) {
+    fun longPollingConfig(): LongPollingConfig = longPollingConfig ?.let {
+        it.copy(
+            responseAwaitMillis = it.responseAwaitMillis ?: clientConfig ?.readTimeout
+        )
+    } ?: LongPollingConfig(
+        null,
+        clientConfig ?.readTimeout
+    ).also {
+        longPollingConfig = it
+    }
+
     fun createBot(): RequestsExecutor = KtorRequestsExecutor(
         botToken,
         OkHttp.create(clientConfig ?.builder ?: {})
