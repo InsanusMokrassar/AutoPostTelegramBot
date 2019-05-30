@@ -1,223 +1,129 @@
 # Auto Post Telegram Bot Changelog
 
-## 0.3.2
+## 1.4.0
 
-* Deprecate old remove post messages mechanism and add more informative mechanism
-of notifying about removed messages
-* Add extension for `BroadcaseChannel` subscribing for more comfortable interact
-with events channels
+* `PostsSchedulesTable` channels now are private and has no longer accessible
+* `PostsMessagesTable` now is using flows for output broadcasting and non-conflated broadcast channels inside
+* Remove `Launch` deprecations
+* Actualize `Config`
+* Actualizing `WebhookConfig`
+* `PostsLikesMessagesTable` now is not using deprecated `PostsUsedTable`
+* `BasePlugin` now is not using deprecated `PostsUsedTable`
+* `RatingCommand` was removed
+* `Command` now have no its own logger
+* `PluginManager#findFirstPlugin` extension was added
+* `Launch` listeners now are private
+* `LongPollingConfig` was added
+* `BotConfig` now have an additional field: `longPollingConfig`
+* `FinalConfig` have no `createFilter` method for now and use `longPollingConfig`
+* Fixes in `Scheduler` task update
 
-## 0.3.3
+## 1.3.0
 
-* Hotfix for problem with new extension for BroadcastChannels
+* `TelegramBotAPI` version `0.12.7` -> `0.14.0`
+* Added dependencies for server (`CIO`) and client (`OkHttp`) ktor engines
+* Added `CoroutineScope` helper functions
+* Rewritten logic of scheduler work
 
-## 0.3.4
+### 1.3.1
 
-* Changed return type of forwarders
-* Now you can subscribe onto post published events
+* Update `TelegramBotAPI` version `0.14.0` -> `0.14.1`
+* In `Launch` added `flowFilter` and updates collecting rewritten on flows
+* `RatingPlugin` abstraction was added
+* `Chooser` now use suspend function instead of common
+* Old `RatingPlugin` is deprecated for now
+* Checked flows for listeners added
+* `buildCommandFlow` function added - it will create flow with checked command from `checkedMessagesFlow`
+* Was added `collectWithErrors` function
 
-## 0.3.5
+### 1.3.2
 
-* Fixed problem with scheduler on initialization (without any event scheduler
-will not update job, but now fixed)
+* Added `checkedEditedMessagesFlow`
+* `messagesListener` will not broadcast edited events
+* `PostsUsedTable` now is deprecated
+* `FixPost` will remove transaction only in case of availability of it
+* `BasePlugin` now work with internal lambdas and coroutine jobs
+* `CommonKnownPostsTransactions` was created
+* `TelegramBotAPI` version `0.14.1` -> `0.14.2`
 
-## 0.3.6
+### 1.3.3
 
-* Add `BroadcastReceiver#debounce`
+* Hotfixes and refactoring in `PostPublisher`
+* `cacheMessages` is deprecated for now
 
-## 0.3.7
+### 1.3.4
 
-* Fix `TimerTriggerStrategy` calculating delay and put trigger work in
-different async block
+* Fix problem of publishing info about removing of Post
 
-## 0.3.8
+### 1.3.5
 
-**BREAK CHANGES**
+* Fixes in scheduler
+* `Scheduler` now is using the flows
+* `PostsSchedulesTable` now prefer to use flows for output broadcasting
 
-* Add `PostsUsedTable`, now any plugin or action which can potentially publish
-recommended to register/unregister in this table
-* Rename methods of `PostsLikesMessagesTable` to be consistent with their
-behaviours
-* ***Now plugins `HAVE NO VERSIONS` and must not implement `onInit` method***
+## 1.2.0
 
-## 0.3.9
+* Update version of `TelegramBotAPI` from `0.11.0` to `0.12.0`
+* Remove `CONFLATED_MODE_ON` environment variable checking. Now all channels by default conflated
+* Added section to bot config `webhookConfig`
+* `DisableRating` now have more obvious logging and behaviour
 
-* Added `Throwable#collectStackTrace` which return as string stacktrace of
-caller
-* Added `String#splitByStep`, `String#splitForMessage` and
-`String#splitForMessageWithAdditionalStep`
-* Added logger handler for all logger events which was created by bot by
-default
-* Added `commonLogger` and deprecated `pluginLogger`
+### 1.2.1
 
-## 0.4.0
+* `TelegramBotAPI` version `0.12.0` -> `0.12.1`
 
-* Updated dependencies
-    * `Kotlin` -> 1.2.61
-    * `Kotlin Coroutines` -> 0.25.0
-    * `TelegramBot` -> 4.1.0
-* Added `TelegramBot#executeSync` (as a replacement for `execute` of `TelegramBot`,
-which block all requests data thread)
-* Added `BotLogger` plugin and removed init by default of `LogHandler`
-* Small fixes
+### 1.2.2
 
-## 0.4.1
+* Adapt project tto new types of updates
 
-* Hotfixes for `0.4.0` version
-* Update `Kotlin Coroutines` -> 0.25.3
+### 1.2.3
 
-## 0.4.2
+* Update `TelegramBotAPI` version `0.12.2` -> `0.12.3`
 
-* Fixes in scheduler plugin
-* Added `/getPublishSchedule` command
-* Added `/disableSchedulePublish` command
-* Now publisher will automatically remove `/publishPost` message
+### 1.2.4 Hotfix
 
-## 0.4.3
+* Hotfix for `PostPublisher` behaviour - now it will remove posts without forwardable messages
 
-* **Now posts contain creation datetime** (look at `PostsTable#getPostCreationDateTime(Int)`)
-* Update `BotLogger` behaviour
-* Fix problem with canceling of next scheduled job for `SchedulerPlugin`
-* Fix behaviour of GetSchedulesCommand when queue is empty
-* Add for items of `SmartChooser` plugin config options `minAge` and `maxAge` for prefilter
-posts which too old or too young
+### 1.2.5 Better choosers
 
-## 0.4.4
+* `Chooser` abstraction was replaced to the base package
+* Add abstraction `PostId` which actually is `Int`
+* Now all choosers can accept exceptions for skip choosing of some posts
+* Added new command `getAutoPublications`
 
-**BREAK CHANGES**
+### 1.2.6
 
-* **Update Java version from `1.7` -> `1.8`**
-* Disabled availability to use infinity `executeSync` and `executeAsync`
-* `PostTransactionTable` now closeable - you can use `use` and other
-* Fix problem with forward posts which contain deleted posts
+* Update version of `TelegramBotAPI` from `0.12.3` to `0.12.5`
+* Add utility methods for messages resending
+* Extracted base commands regexps outside of classes
+* `PostPublisher` channel `postPublishedChannel` now have list of messages as value for notification
 
-## 0.4.5
+### 1.2.7
 
-**BREAK CHANGES**
+* `kotlin` version `1.3.21` -> `1.3.30`
+* `kotlin coroutines` version `1.1.1` -> `1.2.0`
+* `kotlin serialization` version `0.10.0` -> `0.11.0`
+* `TelegramBotAPI` version `0.12.5` -> `0.12.6`
+* `ListSerializer` renamed to `PluginsListSerializer` and now just delegated by `ArrayListSerializer`
+with new `PluginSerializer`
 
-* Added `SemaphoreK`
-* Add work with semaphore in execution bot extensions
-* Add availibility to set up requests regen settings
-* Add `PostTransaction`
-* **BREAK CHANGE**: `PostTransactionTable` was removed
-* **BREAK CHANGE**: Remove `executeSync`
-* Add `executeBlocking(T, TelegramBot, Int, Long)`
-    * Please, note that old methods as `executeAsync`
-    is not recommended to use
-* **ALL BROADCASTS NOW ARE CONFLATED**
-* `BotIncomeMessagesListener` version `0.9b` -> `0.9`
-* Fixes in Scheduler plugin
+### 1.2.8
 
-## 0.4.6
+* `TelegramBotAPI` version `0.12.6` -> `0.12.7`
 
-* Add handling of possible throws from `resume` in `Semaphore`
-* GarbageCollector can receive parameter `trackingDelay`
-* Removed redundant `PluginVersion` typealias
-* Fixes in `BotLogger`
-    * Note: temporary you will not be able to change log level
-    of `commonLogger` (now it is FINER)
+## 1.1.0
 
-## 0.4.7
+* Update version of libraries
+* Remove deprecations
+* Fix errors
 
-* Hotfix for `0.4.6`
-    * Fix of GarbageCollector
+### 1.1.1
 
-## 0.5.0
+* Fix publishing of media groups
+* Fix BotLogger scope
+* Fix problem with repeated media group triggering of posts
 
-**BREAK CHANGES**
-
-This update contains changes which related to behaviour of
-publishing of posts. If to be exactly - now you do not need
-to use raw markdown for posts
-
-* Now you can subscribe directly on `ReceiveChannel` updates
-* Rewrite `debounce`, now it is more compact and effective
-* Proxy settings was replaced into `clientConfig` settings
-* Add `Message#textOrCaptionToMarkdown()`, now you can use
-simple way to preformat messages
-* Forwarders now work with preformatted text (like
-[this](#0.5.0) or **this**)
-* Now `BotLogger` may have `params` section which look like
-`commonBot` section in general config for creating
-independent bot instance. It will be useful for free real
-bot
-* Added `BotConfig` and temporary keep old settings,
-but update instruction to use new config schema
-
-## 0.6.0
-
-* Changed version naming strategy: now it is `x.y.z` where:
-    * x - major version (release version)
-    * y - minor version (feature version)
-    * z - fix version
-* Add util for work with time
-(`String.parseDateTimes(): List<CalculatedDateTime>`)
-* Added extension for planning actions
-(`Iterable<CalculatedDateTime>.launchNearFuture(suspend () -> R): Deferred<R>`)
-* Added extension for pairs of dates and times
-(`Iterable<CalculatedDateTime>.asPairs(): List<CalculatedPeriod>`)
-* Rewrite plugins to use new dates utils:
-    * `SmartChooser`
-    * `Scheduler`
-
-### 0.6.1
-
-Fixed SmartChooser wrong time checker
-
-### 0.6.2
-
-* Add `CalculatedDateTime#nearInPast`
-* Add `CalculatedDateTime#asFor`
-* Add `CalculatedDateTime#asFutureFor`
-* Add `CalculatedDateTime#asPastFor`
-* Add `CalculatedDateTime#isBetween`
-* Rewrite `SmartTimer` item method `isActual` to use `isBetween` for pairs
-
-### 0.6.3
-
-* Optimise `CalculatedDateTime#isBetween`
-* Fix `CalculatedDateTime#asPartFor`
-
-### 0.6.4
-
-Fix of get scheduled posts command
-
-### 0.6.5
-
-Fix of recognising of get command argument
-
-### 0.6.6
-
-Fix of calculating of future and past
-
-### 0.6.7
-
-* Now `GarbageCollector` receive `skipTime` instead of `trackingDelay` in format of standard date time
-* Now `GarbageCollector` receive `manualCheckTime` instead of `manualCheckDelay` in format of standard date time
-* Renaming and improvement for `List<CalculatedDateTime>#executeNearFuture`
-
-### 0.6.8
-
-Fix of `CalculatedDateTime#asPastFor` - now it will decrease time even if source is equal
-
-### 0.6.9
-
-* Fix of `GarbageCollector#check`
-* Add extension `DateTime#withoutTimeZoneOffset`
-* Fix of `GarbageCollector` time detection
-* `CalculatedDateTime#asFutureFor` will guarantee return future datetime even if `source` is equal to generated `now`
-
-## 0.7.0
-
-* Add `CallbackQueryReceivers` package with receivers interface and implementations
-* Rewrite rating receivers to use `SafeCallbackQueryReceiver`
-* Now rating receivers will automatically register message for post as likes message if have no registered
-* `TimerTriggerStrategy` now do not using synchronisations
-* Add `Iterable<CalculatedDateTime>#nearDateTime`
-* `TimerTriggerStrategy` config now receive time as parameter
-* Now `DatabaseConfig` is independent class which can connect to Database
-
-# 1.0.0
+## 1.0.0
 
 * Rewrite to use new version of library for telegram bot API
 * Add automatic connect by after configuration into database
@@ -286,125 +192,219 @@ available messages for post
 * Enable and disable of ratings now are using with commands
 * Fixes in `RegisteredRefresher`
 
-## 1.1.0
+## 0.7.0
 
-* Update version of libraries
-* Remove deprecations
-* Fix errors
+* Add `CallbackQueryReceivers` package with receivers interface and implementations
+* Rewrite rating receivers to use `SafeCallbackQueryReceiver`
+* Now rating receivers will automatically register message for post as likes message if have no registered
+* `TimerTriggerStrategy` now do not using synchronisations
+* Add `Iterable<CalculatedDateTime>#nearDateTime`
+* `TimerTriggerStrategy` config now receive time as parameter
+* Now `DatabaseConfig` is independent class which can connect to Database
 
-### 1.1.1
+## 0.6.0
 
-* Fix publishing of media groups
-* Fix BotLogger scope
-* Fix problem with repeated media group triggering of posts
+* Changed version naming strategy: now it is `x.y.z` where:
+    * x - major version (release version)
+    * y - minor version (feature version)
+    * z - fix version
+* Add util for work with time
+(`String.parseDateTimes(): List<CalculatedDateTime>`)
+* Added extension for planning actions
+(`Iterable<CalculatedDateTime>.launchNearFuture(suspend () -> R): Deferred<R>`)
+* Added extension for pairs of dates and times
+(`Iterable<CalculatedDateTime>.asPairs(): List<CalculatedPeriod>`)
+* Rewrite plugins to use new dates utils:
+    * `SmartChooser`
+    * `Scheduler`
 
-## 1.2.0
+### 0.6.1
 
-* Update version of `TelegramBotAPI` from `0.11.0` to `0.12.0`
-* Remove `CONFLATED_MODE_ON` environment variable checking. Now all channels by default conflated
-* Added section to bot config `webhookConfig`
-* `DisableRating` now have more obvious logging and behaviour
+Fixed SmartChooser wrong time checker
 
-### 1.2.1
+### 0.6.2
 
-* `TelegramBotAPI` version `0.12.0` -> `0.12.1`
+* Add `CalculatedDateTime#nearInPast`
+* Add `CalculatedDateTime#asFor`
+* Add `CalculatedDateTime#asFutureFor`
+* Add `CalculatedDateTime#asPastFor`
+* Add `CalculatedDateTime#isBetween`
+* Rewrite `SmartTimer` item method `isActual` to use `isBetween` for pairs
 
-### 1.2.2
+### 0.6.3
 
-* Adapt project tto new types of updates
+* Optimise `CalculatedDateTime#isBetween`
+* Fix `CalculatedDateTime#asPartFor`
 
-### 1.2.3
+### 0.6.4
 
-* Update `TelegramBotAPI` version `0.12.2` -> `0.12.3`
+Fix of get scheduled posts command
 
-### 1.2.4 Hotfix
+### 0.6.5
 
-* Hotfix for `PostPublisher` behaviour - now it will remove posts without forwardable messages
+Fix of recognising of get command argument
 
-### 1.2.5 Better choosers
+### 0.6.6
 
-* `Chooser` abstraction was replaced to the base package
-* Add abstraction `PostId` which actually is `Int`
-* Now all choosers can accept exceptions for skip choosing of some posts
-* Added new command `getAutoPublications`
+Fix of calculating of future and past
 
-### 1.2.6
+### 0.6.7
 
-* Update version of `TelegramBotAPI` from `0.12.3` to `0.12.5`
-* Add utility methods for messages resending
-* Extracted base commands regexps outside of classes
-* `PostPublisher` channel `postPublishedChannel` now have list of messages as value for notification
+* Now `GarbageCollector` receive `skipTime` instead of `trackingDelay` in format of standard date time
+* Now `GarbageCollector` receive `manualCheckTime` instead of `manualCheckDelay` in format of standard date time
+* Renaming and improvement for `List<CalculatedDateTime>#executeNearFuture`
 
-### 1.2.7
+### 0.6.8
 
-* `kotlin` version `1.3.21` -> `1.3.30`
-* `kotlin coroutines` version `1.1.1` -> `1.2.0`
-* `kotlin serialization` version `0.10.0` -> `0.11.0`
-* `TelegramBotAPI` version `0.12.5` -> `0.12.6`
-* `ListSerializer` renamed to `PluginsListSerializer` and now just delegated by `ArrayListSerializer`
-with new `PluginSerializer`
+Fix of `CalculatedDateTime#asPastFor` - now it will decrease time even if source is equal
 
-### 1.2.8
+### 0.6.9
 
-* `TelegramBotAPI` version `0.12.6` -> `0.12.7`
+* Fix of `GarbageCollector#check`
+* Add extension `DateTime#withoutTimeZoneOffset`
+* Fix of `GarbageCollector` time detection
+* `CalculatedDateTime#asFutureFor` will guarantee return future datetime even if `source` is equal to generated `now`
 
-## 1.3.0
+## 0.5.0
 
-* `TelegramBotAPI` version `0.12.7` -> `0.14.0`
-* Added dependencies for server (`CIO`) and client (`OkHttp`) ktor engines
-* Added `CoroutineScope` helper functions
-* Rewritten logic of scheduler work
+**BREAK CHANGES**
 
-### 1.3.1
+This update contains changes which related to behaviour of
+publishing of posts. If to be exactly - now you do not need
+to use raw markdown for posts
 
-* Update `TelegramBotAPI` version `0.14.0` -> `0.14.1`
-* In `Launch` added `flowFilter` and updates collecting rewritten on flows
-* `RatingPlugin` abstraction was added
-* `Chooser` now use suspend function instead of common
-* Old `RatingPlugin` is deprecated for now
-* Checked flows for listeners added
-* `buildCommandFlow` function added - it will create flow with checked command from `checkedMessagesFlow`
-* Was added `collectWithErrors` function
+* Now you can subscribe directly on `ReceiveChannel` updates
+* Rewrite `debounce`, now it is more compact and effective
+* Proxy settings was replaced into `clientConfig` settings
+* Add `Message#textOrCaptionToMarkdown()`, now you can use
+simple way to preformat messages
+* Forwarders now work with preformatted text (like
+[this](#0.5.0) or **this**)
+* Now `BotLogger` may have `params` section which look like
+`commonBot` section in general config for creating
+independent bot instance. It will be useful for free real
+bot
+* Added `BotConfig` and temporary keep old settings,
+but update instruction to use new config schema
 
-### 1.3.2
+## 0.4.0
 
-* Added `checkedEditedMessagesFlow`
-* `messagesListener` will not broadcast edited events
-* `PostsUsedTable` now is deprecated
-* `FixPost` will remove transaction only in case of availability of it
-* `BasePlugin` now work with internal lambdas and coroutine jobs
-* `CommonKnownPostsTransactions` was created
-* `TelegramBotAPI` version `0.14.1` -> `0.14.2`
+* Updated dependencies
+    * `Kotlin` -> 1.2.61
+    * `Kotlin Coroutines` -> 0.25.0
+    * `TelegramBot` -> 4.1.0
+* Added `TelegramBot#executeSync` (as a replacement for `execute` of `TelegramBot`,
+which block all requests data thread)
+* Added `BotLogger` plugin and removed init by default of `LogHandler`
+* Small fixes
 
-### 1.3.3
+### 0.4.1
 
-* Hotfixes and refactoring in `PostPublisher`
-* `cacheMessages` is deprecated for now
+* Hotfixes for `0.4.0` version
+* Update `Kotlin Coroutines` -> 0.25.3
 
-### 1.3.4
+### 0.4.2
 
-* Fix problem of publishing info about removing of Post
+* Fixes in scheduler plugin
+* Added `/getPublishSchedule` command
+* Added `/disableSchedulePublish` command
+* Now publisher will automatically remove `/publishPost` message
 
-### 1.3.5
+### 0.4.3
 
-* Fixes in scheduler
-* `Scheduler` now is using the flows
-* `PostsSchedulesTable` now prefer to use flows for output broadcasting
+* **Now posts contain creation datetime** (look at `PostsTable#getPostCreationDateTime(Int)`)
+* Update `BotLogger` behaviour
+* Fix problem with canceling of next scheduled job for `SchedulerPlugin`
+* Fix behaviour of GetSchedulesCommand when queue is empty
+* Add for items of `SmartChooser` plugin config options `minAge` and `maxAge` for prefilter
+posts which too old or too young
 
-## 1.4.0
+### 0.4.4
 
-* `PostsSchedulesTable` channels now are private and has no longer accessible
-* `PostsMessagesTable` now is using flows for output broadcasting and non-conflated broadcast channels inside
-* Remove `Launch` deprecations
-* Actualize `Config`
-* Actualizing `WebhookConfig`
-* `PostsLikesMessagesTable` now is not using deprecated `PostsUsedTable`
-* `BasePlugin` now is not using deprecated `PostsUsedTable`
-* `RatingCommand` was removed
-* `Command` now have no its own logger
-* `PluginManager#findFirstPlugin` extension was added
-* `Launch` listeners now are private
-* `LongPollingConfig` was added
-* `BotConfig` now have an additional field: `longPollingConfig`
-* `FinalConfig` have no `createFilter` method for now and use `longPollingConfig`
-* Fixes in `Scheduler` task update
+**BREAK CHANGES**
+
+* **Update Java version from `1.7` -> `1.8`**
+* Disabled availability to use infinity `executeSync` and `executeAsync`
+* `PostTransactionTable` now closeable - you can use `use` and other
+* Fix problem with forward posts which contain deleted posts
+
+### 0.4.5
+
+**BREAK CHANGES**
+
+* Added `SemaphoreK`
+* Add work with semaphore in execution bot extensions
+* Add availibility to set up requests regen settings
+* Add `PostTransaction`
+* **BREAK CHANGE**: `PostTransactionTable` was removed
+* **BREAK CHANGE**: Remove `executeSync`
+* Add `executeBlocking(T, TelegramBot, Int, Long)`
+    * Please, note that old methods as `executeAsync`
+    is not recommended to use
+* **ALL BROADCASTS NOW ARE CONFLATED**
+* `BotIncomeMessagesListener` version `0.9b` -> `0.9`
+* Fixes in Scheduler plugin
+
+### 0.4.6
+
+* Add handling of possible throws from `resume` in `Semaphore`
+* GarbageCollector can receive parameter `trackingDelay`
+* Removed redundant `PluginVersion` typealias
+* Fixes in `BotLogger`
+    * Note: temporary you will not be able to change log level
+    of `commonLogger` (now it is FINER)
+
+### 0.4.7
+
+* Hotfix for `0.4.6`
+    * Fix of GarbageCollector
+
+## 0.3.2
+
+* Deprecate old remove post messages mechanism and add more informative mechanism
+of notifying about removed messages
+* Add extension for `BroadcaseChannel` subscribing for more comfortable interact
+with events channels
+
+### 0.3.3
+
+* Hotfix for problem with new extension for BroadcastChannels
+
+### 0.3.4
+
+* Changed return type of forwarders
+* Now you can subscribe onto post published events
+
+### 0.3.5
+
+* Fixed problem with scheduler on initialization (without any event scheduler
+will not update job, but now fixed)
+
+### 0.3.6
+
+* Add `BroadcastReceiver#debounce`
+
+### 0.3.7
+
+* Fix `TimerTriggerStrategy` calculating delay and put trigger work in
+different async block
+
+### 0.3.8
+
+**BREAK CHANGES**
+
+* Add `PostsUsedTable`, now any plugin or action which can potentially publish
+recommended to register/unregister in this table
+* Rename methods of `PostsLikesMessagesTable` to be consistent with their
+behaviours
+* ***Now plugins `HAVE NO VERSIONS` and must not implement `onInit` method***
+
+### 0.3.9
+
+* Added `Throwable#collectStackTrace` which return as string stacktrace of
+caller
+* Added `String#splitByStep`, `String#splitForMessage` and
+`String#splitForMessageWithAdditionalStep`
+* Added logger handler for all logger events which was created by bot by
+default
+* Added `commonLogger` and deprecated `pluginLogger`
