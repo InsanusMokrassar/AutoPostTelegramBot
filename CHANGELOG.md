@@ -407,3 +407,4 @@ with new `PluginSerializer`
 * `LongPollingConfig` was added
 * `BotConfig` now have an additional field: `longPollingConfig`
 * `FinalConfig` have no `createFilter` method for now and use `longPollingConfig`
+* Fixes in `Scheduler` task update

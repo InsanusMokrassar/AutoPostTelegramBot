@@ -26,7 +26,7 @@ class Scheduler(
     private val updateLambda: EventLambda = {
         val replaceBy: PostTimeToJob? = schedulesTable.nearPost() ?.let { nearEvent ->
             val current = currentPlannedPostTimeAndJob
-            if (current == null || current.first.second.millis != nearEvent.second.millis) {
+            if (current == null || current.first.first != nearEvent.first) {
                 nearEvent to createScheduledJob(nearEvent)
             } else {
                 current
