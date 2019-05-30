@@ -10,8 +10,15 @@ data class BotConfig(
     val botToken: String,
     val clientConfig: HttpClientConfig? = null,
     val webhookConfig: WebhookConfig? = null,
-    val longPollingConfig: LongPollingConfig? = null
+    private var longPollingConfig: LongPollingConfig? = null
 ) {
+    fun longPollingConfig(): LongPollingConfig = longPollingConfig ?: LongPollingConfig(
+        null,
+        clientConfig ?.readTimeout
+    ).also {
+        longPollingConfig = it
+    }
+
     fun createBot(): RequestsExecutor = KtorRequestsExecutor(
         botToken,
         OkHttp.create(clientConfig ?.builder ?: {})

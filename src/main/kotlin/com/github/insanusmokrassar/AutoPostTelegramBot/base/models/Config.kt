@@ -56,7 +56,7 @@ class Config (
             databaseConfig,
             plugins,
             botConfig.webhookConfig,
-            botConfig.longPollingConfig
+            botConfig.longPollingConfig()
         )
 }
 
