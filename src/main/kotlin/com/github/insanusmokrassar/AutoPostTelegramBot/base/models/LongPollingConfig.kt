@@ -11,7 +11,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class LongPollingConfig(
     val oneTimeLimit: Byte? = null,
-    val responseAwaitMillis: Long? = 30 * 1000
+    val responseAwaitMillis: Long? = null
 ) {
     fun applyTo(
         bot: RequestsExecutor,
@@ -21,7 +21,7 @@ data class LongPollingConfig(
     ): UpdatesPoller {
         return KtorUpdatesPoller(
             bot,
-            (responseAwaitMillis ?.div(1000)) ?.toInt(),
+            (responseAwaitMillis ?.div(1000)) ?.toInt() ?: 30,
             oneTimeLimit ?.toInt(),
             allowedUpdates,
             exceptionsReceiver,

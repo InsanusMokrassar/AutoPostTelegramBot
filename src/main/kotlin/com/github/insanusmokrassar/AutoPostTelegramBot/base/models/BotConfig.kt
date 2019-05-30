@@ -12,7 +12,11 @@ data class BotConfig(
     val webhookConfig: WebhookConfig? = null,
     private var longPollingConfig: LongPollingConfig? = null
 ) {
-    fun longPollingConfig(): LongPollingConfig = longPollingConfig ?: LongPollingConfig(
+    fun longPollingConfig(): LongPollingConfig = longPollingConfig ?.let {
+        it.copy(
+            responseAwaitMillis = it.responseAwaitMillis ?: clientConfig ?.readTimeout
+        )
+    } ?: LongPollingConfig(
         null,
         clientConfig ?.readTimeout
     ).also {
