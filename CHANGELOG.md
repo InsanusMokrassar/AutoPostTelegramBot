@@ -8,6 +8,8 @@
 * Telegram Bot API `0.15.0` -> `0.17.0`
 * ktor version `1.1.4` -> `1.2.3`
 
+* New field in `BotConfig` - `telegramAPIUrlsKeeper`
+
 ## 1.4.0
 
 * `PostsSchedulesTable` channels now are private and has no longer accessible

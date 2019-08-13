@@ -2,8 +2,11 @@ package com.github.insanusmokrassar.AutoPostTelegramBot.base.models
 
 import com.github.insanusmokrassar.TelegramBotAPI.bot.Ktor.KtorRequestsExecutor
 import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
+import com.github.insanusmokrassar.TelegramBotAPI.utils.TelegramAPIUrlsKeeper
+import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 
 @Serializable
 data class BotConfig(
@@ -12,6 +15,9 @@ data class BotConfig(
     val webhookConfig: WebhookConfig? = null,
     private var longPollingConfig: LongPollingConfig? = null
 ) {
+    @Transient
+    val telegramAPIUrlsKeeper = TelegramAPIUrlsKeeper(botToken)
+
     fun longPollingConfig(): LongPollingConfig = longPollingConfig ?.let {
         it.copy(
             responseAwaitMillis = it.responseAwaitMillis ?: clientConfig ?.readTimeout
@@ -24,7 +30,7 @@ data class BotConfig(
     }
 
     fun createBot(): RequestsExecutor = KtorRequestsExecutor(
-        botToken,
-        OkHttp.create(clientConfig ?.builder ?: {})
+        telegramAPIUrlsKeeper,
+        HttpClient(OkHttp.create(clientConfig ?.builder ?: {}))
     )
 }
