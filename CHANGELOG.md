@@ -1,5 +1,7 @@
 # Auto Post Telegram Bot Changelog
 
+## 1.5.0
+
 ## 1.4.0
 
 * `PostsSchedulesTable` channels now are private and has no longer accessible
