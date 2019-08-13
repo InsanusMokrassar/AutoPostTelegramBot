@@ -2,6 +2,8 @@
 
 ## 1.5.0
 
+
+
 ## 1.4.0
 
 * `PostsSchedulesTable` channels now are private and has no longer accessible

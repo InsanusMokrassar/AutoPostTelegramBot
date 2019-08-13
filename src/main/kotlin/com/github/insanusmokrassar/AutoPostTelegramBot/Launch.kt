@@ -59,8 +59,8 @@ fun main(args: Array<String>) {
     }
 
     runBlocking {
-        commonLogger.info("Source chat: ${bot.execute(GetChat(config.sourceChatId)).extractChat()}")
-        commonLogger.info("Target chat: ${bot.execute(GetChat(config.targetChatId)).extractChat()}")
+        commonLogger.info("Source chat: ${bot.execute(GetChat(config.sourceChatId))}")
+        commonLogger.info("Target chat: ${bot.execute(GetChat(config.targetChatId))}")
 
         val pluginManager = DefaultPluginManager(
             config.pluginsConfigs
