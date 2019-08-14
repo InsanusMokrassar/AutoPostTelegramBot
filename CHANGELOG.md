@@ -1,5 +1,15 @@
 # Auto Post Telegram Bot Changelog
 
+## 1.5.0
+
+* Kotlin version `1.3.31` -> `1.3.41`
+* Kotlin coroutines `1.2.1` -> `1.2.2`
+* Kotlin seriaization `0.11.0` -> `0.11.1`
+* Telegram Bot API `0.15.0` -> `0.17.0`
+* ktor version `1.1.4` -> `1.2.3`
+
+* New field in `BotConfig` - `telegramAPIUrlsKeeper`
+
 ## 1.4.0
 
 * `PostsSchedulesTable` channels now are private and has no longer accessible
