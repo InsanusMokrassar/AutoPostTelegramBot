@@ -10,6 +10,10 @@
 
 * New field in `BotConfig` - `telegramAPIUrlsKeeper`
 
+### 1.5.1
+
+* Fix for `SmartChooser` item age checker
+
 ## 1.4.0
 
 * `PostsSchedulesTable` channels now are private and has no longer accessible

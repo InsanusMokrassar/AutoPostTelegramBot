@@ -73,32 +73,16 @@ interface SmartChooserBaseConfigItem {
 
 abstract class AbstractSmartChooserBaseConfigItem : SmartChooserBaseConfigItem {
     @Transient
-    private val minAgeAsDateTime: DateTime? by lazy {
-        minAge ?.let {
-            DateTime.now().withZone(DateTimeZone.UTC).withMillis(it).withZone(DateTimeZone.getDefault())
-        }
-    }
-
-    @Transient
-    private val maxAgeAsDateTime: DateTime? by lazy {
-        maxAge ?.let {
-            DateTime.now().withZone(DateTimeZone.UTC).withMillis(it).withZone(DateTimeZone.getDefault())
-        }
-    }
-
-    @Transient
     val chooser: InnerChooser
         get() = commonInnerChoosers[sort] ?: randomSorter
 
     fun checkPostAge(postId: Int): Boolean {
         val postDateTime: DateTime = PostsTable.getPostCreationDateTime(postId) ?: return false
-        val minIsOk = minAgeAsDateTime ?.let {
-                minDateTime ->
-            postDateTime.plus(minDateTime.millis).isBeforeNow
+        val minIsOk = minAge ?.let { minAge ->
+            postDateTime.plus(minAge).isBeforeNow
         } ?: true
-        val maxIsOk = maxAgeAsDateTime ?.let {
-                minDateTime ->
-            postDateTime.plus(minDateTime.millis).isAfterNow
+        val maxIsOk = maxAge ?.let { maxAge ->
+            postDateTime.plus(maxAge).isAfterNow
         } ?: true
         return minIsOk && maxIsOk
     }
@@ -172,10 +156,9 @@ class SmartChooser(
                     item.maxRate
                 ).mapNotNull {
                     ratingPlugin.resolvePostId(it.first) ?.let { postId ->
-                        if (postId !in exceptions && item.checkPostAge(postId)) {
-                            postId to it
-                        } else {
-                            null
+                        when {
+                            postId in exceptions || !item.checkPostAge(postId) -> null
+                            else -> postId to it
                         }
                     }
                 }.distinctBy { (postId, _) ->
