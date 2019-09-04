@@ -35,7 +35,7 @@ object PostsMessagesTable : Table() {
                 PostsMessagesTable.postId.eq(postId)
             }.map {
                 PostMessage(
-                    it[messageId].toLong(),
+                    it[messageId],
                     it[mediaGroupId]
                 )
             }
