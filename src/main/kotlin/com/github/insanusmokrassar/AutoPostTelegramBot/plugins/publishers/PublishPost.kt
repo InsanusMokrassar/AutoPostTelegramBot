@@ -87,7 +87,7 @@ class PublishPost(
                         "Was chosen to publish: ${choosen.size}. (Repeats of choosing was excluded)",
                         parseMode = MarkdownParseMode
                     )
-                ).asMessage.let {
+                ).let {
                     choosen.forEach {
                         publisher.publishPost(
                             it

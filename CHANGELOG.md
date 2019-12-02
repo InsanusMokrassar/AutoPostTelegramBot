@@ -1,5 +1,16 @@
 # Auto Post Telegram Bot Changelog
 
+## 1.6.0
+
+* Version updates:
+    * Kotlin version `1.3.41` -> `1.3.61`
+    * Kotlin coroutines `1.2.2` -> `1.3.2`
+    * Kotlin seriaization `0.11.1` -> `0.14.0`
+    * Telegram Bot API `0.17.0` -> `0.19.0`
+    * ktor version `1.2.3` -> `1.2.6`
+    * h2 database version `1.4.196` -> `1.4.200`
+* `PluginSerializer` now is internal
+
 ## 1.5.0
 
 * Kotlin version `1.3.31` -> `1.3.41`

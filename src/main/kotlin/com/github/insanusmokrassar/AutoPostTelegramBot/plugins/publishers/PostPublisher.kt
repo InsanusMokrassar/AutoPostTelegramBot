@@ -79,7 +79,7 @@ class PostPublisher : Publisher {
                     logsChatId,
                     "Start post"
                 )
-            ).asMessage.let {
+            ).let {
                 messagesToDelete.add(it.chat.id to it.messageId)
             }
 

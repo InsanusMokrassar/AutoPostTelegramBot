@@ -7,7 +7,6 @@ import com.github.insanusmokrassar.TelegramBotAPI.requests.abstracts.Request
 import com.github.insanusmokrassar.TelegramBotAPI.requests.send.media.SendMediaGroup
 import com.github.insanusmokrassar.TelegramBotAPI.requests.send.media.membersCountInMediaGroup
 import com.github.insanusmokrassar.TelegramBotAPI.types.*
-import com.github.insanusmokrassar.TelegramBotAPI.types.message.RawMessage
 import com.github.insanusmokrassar.TelegramBotAPI.types.message.abstracts.*
 import com.github.insanusmokrassar.TelegramBotAPI.types.message.content.abstracts.MediaGroupContent
 import com.github.insanusmokrassar.TelegramBotAPI.utils.extensions.executeAsync
@@ -34,7 +33,7 @@ suspend fun cacheMessages(
                 disableNotification = true
             ),
             retries = 3
-        ) ?.asMessage ?.also {
+        ) ?.also {
             messagesToDelete.add(it.chat.id to it.messageId)
         } as? AbleToBeForwardedMessage
     }.also {
@@ -69,7 +68,7 @@ suspend fun cacheMessagesToMap(
                 disableNotification = true
             ),
             retries = 3
-        ) ?.asMessage  ?.let {
+        ) ?.let {
             messagesToDelete.add(it.chat.id to it.messageId)
             id to it as AbleToBeForwardedMessage
         }
@@ -142,7 +141,7 @@ suspend fun resend(
                 when (it) {
                     // media group
                     is List<*> -> it.mapNotNull {
-                        (it as? RawMessage) ?.asMessage as? MediaGroupMessage
+                        it as? MediaGroupMessage
                     }.mapNotNull { responseMessage ->
                         val fileId = responseMessage.content.media.fileId
                         sourceMessages.firstOrNull { sourceMessage ->
@@ -150,8 +149,8 @@ suspend fun resend(
                         } ?.to(responseMessage)
                     }
                     // common message
-                    is RawMessage -> sourceMessages.map { source ->
-                        source to it.asMessage
+                    is Message -> sourceMessages.map { source ->
+                        source to it
                     }
                     // something other
                     else -> emptyList()

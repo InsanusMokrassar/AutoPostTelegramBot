@@ -29,7 +29,6 @@ class Config (
     ),
     val clientConfig: HttpClientConfig? = null,
     val botToken: String? = null,
-    @Serializable(PluginsListSerializer::class)
     val plugins: List<Plugin> = emptyList(),
     val commonBot: BotConfig? = null
 ) {

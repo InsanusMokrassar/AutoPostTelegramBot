@@ -7,7 +7,8 @@ import kotlinx.serialization.internal.ArrayListSerializer
 import kotlinx.serialization.internal.StringDescriptor
 import kotlinx.serialization.json.*
 
-object PluginSerializer : KSerializer<Plugin> {
+@Serializer(Plugin::class)
+internal object PluginSerializer : KSerializer<Plugin> {
     override val descriptor: SerialDescriptor = StringDescriptor.withName(Plugin::class.simpleName ?: "Plugin")
 
     override fun serialize(encoder: Encoder, obj: Plugin) {
@@ -23,6 +24,7 @@ object PluginSerializer : KSerializer<Plugin> {
         )
     }
 
+    @ImplicitReflectionSerializer
     override fun deserialize(decoder: Decoder): Plugin {
         val decoded = decoder.decode(JsonArraySerializer)
         val expectedClass = decoded.getPrimitive(0).content

@@ -1,4 +1,4 @@
-project.version = "1.5.1"
+project.version = "1.6.0"
 project.group = "com.github.insanusmokrassar"
 
 buildscript {
@@ -46,10 +46,4 @@ dependencies {
 
     // Use JUnit test framework
     testImplementation 'junit:junit:4.12'
-}
-
-compileKotlin {
-    kotlinOptions {
-        freeCompilerArgs += [ disableImplicitReflectionSerializerAnnotation ]
-    }
 }
