@@ -28,20 +28,12 @@ class Config (
         ""
     ),
     val clientConfig: HttpClientConfig? = null,
-    val botToken: String? = null,
     val plugins: List<Plugin> = emptyList(),
     val commonBot: BotConfig? = null
 ) {
     @Transient
     private val botConfig: BotConfig by lazy {
-        commonBot ?: botToken ?.let { token ->
-            clientConfig ?.let { _ ->
-                BotConfig(
-                    token,
-                    clientConfig
-                )
-            }
-        } ?: throw IllegalStateException("You must set up \"commonBot\" or \"botToken\" field (remember that \"botToken\" is deprecated and will be replaced in future)")
+        commonBot ?: throw IllegalStateException("You must set up \"commonBot\" field")
     }
 
     @Transient

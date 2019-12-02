@@ -14,42 +14,6 @@ import com.github.insanusmokrassar.TelegramBotAPI.utils.extensions.executeUnsafe
 
 private typealias ChatIdMessageIdPair = Pair<ChatId, MessageIdentifier>
 
-@Deprecated("Deprecated for the reason of less obviously of which forwarded message where from forwarded")
-suspend fun cacheMessages(
-    executor: RequestsExecutor,
-    sourceChatId: ChatId,
-    cacheChatId: ChatId,
-    messagesIds: Iterable<MessageIdentifier>,
-    clear: Boolean = true
-): List<AbleToBeForwardedMessage> {
-    val messagesToDelete = mutableListOf<ChatIdMessageIdPair>()
-
-    return messagesIds.mapNotNull { message ->
-        executor.executeUnsafe(
-            ForwardMessage(
-                sourceChatId,
-                cacheChatId,
-                message,
-                disableNotification = true
-            ),
-            retries = 3
-        ) ?.also {
-            messagesToDelete.add(it.chat.id to it.messageId)
-        } as? AbleToBeForwardedMessage
-    }.also {
-        if (clear) {
-            messagesToDelete.forEach {
-                executor.executeAsync(
-                    DeleteMessage(
-                        it.first,
-                        it.second
-                    )
-                )
-            }
-        }
-    }
-}
-
 suspend fun cacheMessagesToMap(
     executor: RequestsExecutor,
     sourceChatId: ChatId,

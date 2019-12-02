@@ -15,6 +15,13 @@
     * Serialization
     * TelegramBotAPI
     * Kotlin Exposed
+* Deprecations clean up:
+    * `com.github.insanusmokrassar.AutoPostTelegramBot.plugins.choosers.Chooser`
+    * `com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.RatingPlugin`. WARNING: WAS REMOVED WHOLE CONTENT
+    OF RATING API PLUGIN
+    * `com.github.insanusmokrassar.AutoPostTelegramBot.plugins.base.PostsUsedTable`
+    * `com.github.insanusmokrassar.AutoPostTelegramBot.utils.MessagesResendingKt.cacheMessages`
+    * `com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsMessagesTable#removeMessageOfPost`
 
 ## 1.5.0
 
