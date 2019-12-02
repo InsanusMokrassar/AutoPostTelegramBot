@@ -10,6 +10,11 @@
     * ktor version `1.2.3` -> `1.2.6`
     * h2 database version `1.4.196` -> `1.4.200`
 * `PluginSerializer` now is internal
+* Now some part of dependencies are included by `api` and must not be included in dependent projects directly:
+    * Coroutines
+    * Serialization
+    * TelegramBotAPI
+    * Kotlin Exposed
 
 ## 1.5.0
 
