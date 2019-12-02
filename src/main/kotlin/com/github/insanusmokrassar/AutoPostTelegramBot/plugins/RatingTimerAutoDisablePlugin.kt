@@ -3,7 +3,6 @@ package com.github.insanusmokrassar.AutoPostTelegramBot.plugins
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.FinalConfig
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.*
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.abstractions.MutableRatingPlugin
-import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.disableLikesForPost
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.scheduler.SchedulerPlugin
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.flow.collectWithErrors
 import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
@@ -33,11 +32,10 @@ class RatingTimerAutoDisablePlugin : Plugin {
                             error
                         )
                     }
-                ) {
-                    disableLikesForPost(
-                        it.first,
-                        ratingPlugin
-                    )
+                ) { (postId, _) ->
+                    ratingPlugin.getPostRatings(postId).forEach { (ratingId, _) ->
+                        ratingPlugin.deleteRating(ratingId)
+                    }
                 }
             }
             launch {

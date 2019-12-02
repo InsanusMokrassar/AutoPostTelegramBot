@@ -7,49 +7,12 @@ import com.github.insanusmokrassar.TelegramBotAPI.requests.abstracts.Request
 import com.github.insanusmokrassar.TelegramBotAPI.requests.send.media.SendMediaGroup
 import com.github.insanusmokrassar.TelegramBotAPI.requests.send.media.membersCountInMediaGroup
 import com.github.insanusmokrassar.TelegramBotAPI.types.*
-import com.github.insanusmokrassar.TelegramBotAPI.types.message.RawMessage
 import com.github.insanusmokrassar.TelegramBotAPI.types.message.abstracts.*
 import com.github.insanusmokrassar.TelegramBotAPI.types.message.content.abstracts.MediaGroupContent
 import com.github.insanusmokrassar.TelegramBotAPI.utils.extensions.executeAsync
 import com.github.insanusmokrassar.TelegramBotAPI.utils.extensions.executeUnsafe
 
 private typealias ChatIdMessageIdPair = Pair<ChatId, MessageIdentifier>
-
-@Deprecated("Deprecated for the reason of less obviously of which forwarded message where from forwarded")
-suspend fun cacheMessages(
-    executor: RequestsExecutor,
-    sourceChatId: ChatId,
-    cacheChatId: ChatId,
-    messagesIds: Iterable<MessageIdentifier>,
-    clear: Boolean = true
-): List<AbleToBeForwardedMessage> {
-    val messagesToDelete = mutableListOf<ChatIdMessageIdPair>()
-
-    return messagesIds.mapNotNull { message ->
-        executor.executeUnsafe(
-            ForwardMessage(
-                sourceChatId,
-                cacheChatId,
-                message,
-                disableNotification = true
-            ),
-            retries = 3
-        ) ?.asMessage ?.also {
-            messagesToDelete.add(it.chat.id to it.messageId)
-        } as? AbleToBeForwardedMessage
-    }.also {
-        if (clear) {
-            messagesToDelete.forEach {
-                executor.executeAsync(
-                    DeleteMessage(
-                        it.first,
-                        it.second
-                    )
-                )
-            }
-        }
-    }
-}
 
 suspend fun cacheMessagesToMap(
     executor: RequestsExecutor,
@@ -69,7 +32,7 @@ suspend fun cacheMessagesToMap(
                 disableNotification = true
             ),
             retries = 3
-        ) ?.asMessage  ?.let {
+        ) ?.let {
             messagesToDelete.add(it.chat.id to it.messageId)
             id to it as AbleToBeForwardedMessage
         }
@@ -142,7 +105,7 @@ suspend fun resend(
                 when (it) {
                     // media group
                     is List<*> -> it.mapNotNull {
-                        (it as? RawMessage) ?.asMessage as? MediaGroupMessage
+                        it as? MediaGroupMessage
                     }.mapNotNull { responseMessage ->
                         val fileId = responseMessage.content.media.fileId
                         sourceMessages.firstOrNull { sourceMessage ->
@@ -150,8 +113,8 @@ suspend fun resend(
                         } ?.to(responseMessage)
                     }
                     // common message
-                    is RawMessage -> sourceMessages.map { source ->
-                        source to it.asMessage
+                    is Message -> sourceMessages.map { source ->
+                        source to it
                     }
                     // something other
                     else -> emptyList()

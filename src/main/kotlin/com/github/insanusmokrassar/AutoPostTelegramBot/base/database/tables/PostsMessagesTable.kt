@@ -68,19 +68,6 @@ object PostsMessagesTable : Table() {
         }
     }
 
-    @Deprecated("This method will be deprecated in near releases", ReplaceWith("removePostMessage"))
-    fun removeMessageOfPost(messageId: MessageIdentifier) {
-        transaction {
-            select {
-                this@PostsMessagesTable.messageId.eq(messageId)
-            }.firstOrNull() ?.get(postId) ?.also { _ ->
-                deleteWhere { PostsMessagesTable.messageId.eq(messageId) } > 0
-            } ?: return@transaction null
-        } ?.also { postId ->
-            notifyMessagesRemoved(postId, listOf(messageId))
-        }
-    }
-
     fun removePostMessages(postId: PostId) {
         getMessagesOfPost(postId).let {
             transaction {

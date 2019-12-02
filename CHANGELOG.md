@@ -1,5 +1,27 @@
 # Auto Post Telegram Bot Changelog
 
+## 1.6.0
+
+* Version updates:
+    * Kotlin version `1.3.41` -> `1.3.61`
+    * Kotlin coroutines `1.2.2` -> `1.3.2`
+    * Kotlin seriaization `0.11.1` -> `0.14.0`
+    * Telegram Bot API `0.17.0` -> `0.19.0`
+    * ktor version `1.2.3` -> `1.2.6`
+* `PluginSerializer` now is internal
+* Now some part of dependencies are included by `api` and must not be included in dependent projects directly:
+    * Coroutines
+    * Serialization
+    * TelegramBotAPI
+    * Kotlin Exposed
+* Deprecations clean up:
+    * `com.github.insanusmokrassar.AutoPostTelegramBot.plugins.choosers.Chooser`
+    * `com.github.insanusmokrassar.AutoPostTelegramBot.plugins.rating.RatingPlugin`. WARNING: WAS REMOVED WHOLE CONTENT
+    OF RATING API PLUGIN
+    * `com.github.insanusmokrassar.AutoPostTelegramBot.plugins.base.PostsUsedTable`
+    * `com.github.insanusmokrassar.AutoPostTelegramBot.utils.MessagesResendingKt.cacheMessages`
+    * `com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsMessagesTable#removeMessageOfPost`
+
 ## 1.5.0
 
 * Kotlin version `1.3.31` -> `1.3.41`
