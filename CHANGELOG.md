@@ -22,6 +22,10 @@
     * `com.github.insanusmokrassar.AutoPostTelegramBot.utils.MessagesResendingKt.cacheMessages`
     * `com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsMessagesTable#removeMessageOfPost`
 
+### 1.6.1 Dependencies update
+
+* `TelegramBotAPI` version `0.19.0` -> `0.20.1`
+
 ## 1.5.0
 
 * Kotlin version `1.3.31` -> `1.3.41`
