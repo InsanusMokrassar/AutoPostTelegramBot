@@ -26,6 +26,10 @@
 
 * `TelegramBotAPI` version `0.19.0` -> `0.20.1`
 
+### 1.6.2
+
+* `TelegramBotAPI` version `0.20.1` -> `0.20.3`
+
 ## 1.5.0
 
 * Kotlin version `1.3.31` -> `1.3.41`
