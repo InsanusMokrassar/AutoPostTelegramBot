@@ -1,5 +1,5 @@
 apply plugin: 'maven-publish'
-apply plugin: 'signing'
+//apply plugin: 'signing'
 
 def pomConfig = {
     licenses {
@@ -77,7 +77,7 @@ publishing {
     }
 }
 
-signing {
-    useGpgCmd()
-    sign publishing.publications.maven
-}
+//signing {
+//    useGpgCmd()
+//    sign publishing.publications.maven
+//}
