@@ -1,5 +1,12 @@
 # Auto Post Telegram Bot Changelog
 
+## 1.7.0
+
+* Version updates:
+    * Kotlin coroutines `1.3.2` -> `1.3.3`
+    * Telegram Bot API `0.20.3` -> `0.21.0`
+* Now it is not recommended to use `/` in commands notations when use `buildCommandFlow` or 
+
 ## 1.6.0
 
 * Version updates:
