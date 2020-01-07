@@ -13,7 +13,7 @@ import com.github.insanusmokrassar.TelegramBotAPI.types.message.abstracts.Common
 import com.github.insanusmokrassar.TelegramBotAPI.utils.extensions.executeAsync
 import java.lang.ref.WeakReference
 
-private const val disableSchedulePublishCommand = "/disableSchedulePublish"
+private const val disableSchedulePublishCommand = "disableSchedulePublish"
 
 private fun sendHelpForUsage(
     executor: RequestsExecutor,
@@ -22,7 +22,7 @@ private fun sendHelpForUsage(
     executor.executeAsync(
         SendMessage(
             chatId,
-            "Usage: `$disableSchedulePublishCommand`.\n" +
+            "Usage: `/$disableSchedulePublishCommand`.\n" +
                 "Reply post registered message and write command",
             parseMode = MarkdownParseMode
         )
