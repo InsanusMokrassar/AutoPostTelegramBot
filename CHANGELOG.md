@@ -5,7 +5,7 @@
 * Version updates:
     * Kotlin coroutines `1.3.2` -> `1.3.3`
     * Telegram Bot API `0.20.3` -> `0.21.0`
-* Now it is not recommended to use `/` in commands notations when use `buildCommandFlow` or 
+* Now it is not recommended to use `/` in commands notations when use `buildCommandFlow` or `Command` extenders
 
 ## 1.6.0
 
