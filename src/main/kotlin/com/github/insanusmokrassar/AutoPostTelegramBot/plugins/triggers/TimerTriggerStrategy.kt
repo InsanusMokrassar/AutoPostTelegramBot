@@ -30,7 +30,7 @@ import kotlin.collections.set
 
 private val TimerTriggerStrategyScope = NewDefaultCoroutineScope(1)
 
-private val timerScheduleCommandRegex = Regex("/?((getA)|(a))utoPublication(s [\\d]+)?$")
+private val timerScheduleCommandRegex = Regex("((getA)|(a))utoPublication(s [\\d]+)?$")
 private val numberRegex: Regex = Regex("[\\d]+$")
 private class TimerScheduleCommand(
     private val sourceChatId: ChatId,

@@ -3,7 +3,7 @@ package com.github.insanusmokrassar.AutoPostTelegramBot.utils.commands
 import com.github.insanusmokrassar.AutoPostTelegramBot.checkedMessagesFlow
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscribe
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.flow.collectWithErrors
-import com.github.insanusmokrassar.TelegramBotAPI.types.MessageEntity.BotCommandMessageEntity
+import com.github.insanusmokrassar.TelegramBotAPI.types.MessageEntity.textsources.BotCommandTextSource
 import com.github.insanusmokrassar.TelegramBotAPI.types.UpdateIdentifier
 import com.github.insanusmokrassar.TelegramBotAPI.types.message.abstracts.CommonMessage
 import com.github.insanusmokrassar.TelegramBotAPI.types.message.content.TextContent
@@ -29,8 +29,9 @@ abstract class Command {
     suspend fun invoke(p1: BaseMessageUpdate) {
         (p1.data as? CommonMessage<*>) ?.let { message ->
             (message.content as? TextContent) ?.also {
-                it.entities.firstOrNull {
-                    it is BotCommandMessageEntity && (commandRegex.matches(it.command) || commandRegex.matches(it.sourceString))
+                it.entities.firstOrNull { textPart ->
+                    val source = textPart.source
+                    source is BotCommandTextSource && (commandRegex.matches(source.command))
                 } ?.also {
                     onCommand(p1.updateId, message)
                 } ?: if (commandRegex.matches(it.text)) {
@@ -50,8 +51,9 @@ fun buildCommandFlow(
     if (data is CommonMessage<*>) {
         val contentAsText = data.content as? TextContent ?: return@mapNotNull null
         val contentEntities = contentAsText.entities
-        contentEntities.firstOrNull { entity ->
-            entity is BotCommandMessageEntity && commandRegex.matches(entity.command)
+        contentEntities.firstOrNull { textPart ->
+            val source = textPart.source
+            source is BotCommandTextSource && commandRegex.matches(source.command)
         } ?.let {
             return@mapNotNull data as CommonMessage<TextContent>
         }
