@@ -5,6 +5,7 @@
 * Version updates:
     * Ktor version `1.2.6` -> `1.3.0`
     * Telegram Bot API `0.21.0` -> `0.22.0`
+* `TimerTriggerStrategy` now have new extension `getPostsInRange` and `getTriggersInRange`
 
 ## 1.7.0
 
