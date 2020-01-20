@@ -12,17 +12,20 @@ class MostRatedChooser : RateChooser() {
         ratingPlugin.getRegisteredPosts().flatMap {
             ratingPlugin.getPostRatings(it)
         }.forEach {
-            mostRated.firstOrNull() ?.also { (_, rating) ->
-                when {
-                    it.second > rating -> {
-                        mostRated.clear()
-                        mostRated.add(it)
+            val postId = ratingPlugin.resolvePostId(it.first) ?: return@forEach
+            if (postId !in exceptions) {
+                mostRated.firstOrNull() ?.also { (_, rating) ->
+                    when {
+                        it.second > rating -> {
+                            mostRated.clear()
+                            mostRated.add(it)
+                        }
+                        it.second == rating -> {
+                            mostRated.add(it)
+                        }
                     }
-                    it.second == rating -> {
-                        mostRated.add(it)
-                    }
-                }
-            } ?: mostRated.add(it)
+                } ?: mostRated.add(it)
+            }
         }
         return mostRated.minBy { (ratingId, _) -> ratingId } ?.let { (ratingId, _) ->
             ratingPlugin.resolvePostId(ratingId) ?.let {

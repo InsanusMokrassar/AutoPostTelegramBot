@@ -19,7 +19,7 @@ data class HttpClientConfig(
     @Transient
     val builder: OkHttpConfig.() -> Unit = {
         config {
-            proxy ?.let {
+            this@HttpClientConfig.proxy ?.let { proxy ->
                 proxy(
                     Proxy(
                         Proxy.Type.SOCKS,

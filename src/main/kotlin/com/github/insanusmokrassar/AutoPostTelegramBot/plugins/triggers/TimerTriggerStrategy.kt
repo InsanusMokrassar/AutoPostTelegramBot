@@ -23,7 +23,7 @@ import com.github.insanusmokrassar.TelegramBotAPI.utils.extensions.executeUnsafe
 import kotlinx.coroutines.*
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
-import org.joda.time.DateTime
+import org.joda.time.*
 import kotlin.collections.component1
 import kotlin.collections.component2
 import kotlin.collections.set
@@ -88,6 +88,9 @@ private class TimerScheduleCommand(
     }
 }
 
+private const val twentyFourHours = 1000L * 60 * 60 * 24L
+private fun getPlusTwentyFourHours() = System.currentTimeMillis() + twentyFourHours
+
 @Serializable
 class TimerTriggerStrategy (
     private val delay: Long? = null,
@@ -96,11 +99,9 @@ class TimerTriggerStrategy (
     @Transient
     private var lastTime = DateTime.now()
 
-    @Transient
     private val timesOfTriggering: List<CalculatedDateTime> by lazy {
         time.parseDateTimes()
     }
-    @Transient
     val nextTriggerTime: DateTime?
         get() = delay ?.let {
             lastTime = lastTime.plus(it)
@@ -138,4 +139,31 @@ class TimerTriggerStrategy (
             }
         }
     }
+
+    fun getTriggersInRange(from: DateTime = DateTime.now(), to: DateTime = DateTime(getPlusTwentyFourHours())): List<DateTime> {
+        val times = mutableListOf<DateTime>()
+        var current = timesOfTriggering.nearDateTime(from) ?: return times
+        val toMillis = to.millis
+        while (current.millis <= toMillis) {
+            times.add(current)
+            current = timesOfTriggering.nearDateTime(current + 1000L) ?: return times
+        }
+        return times
+    }
+}
+
+suspend fun TimerTriggerStrategy.getPostsInRange(
+    chooser: Chooser,
+    from: DateTime = DateTime.now(),
+    to: DateTime = DateTime(getPlusTwentyFourHours())
+): Map<DateTime, List<PostId>> {
+    val triggerTimes = getTriggersInRange(from, to)
+    val chosenPosts = mutableListOf<PostId>()
+    val timeToPostsMap = mutableMapOf<DateTime, List<PostId>>()
+    triggerTimes.forEach { currentDateTime ->
+        val toPostAtTheTime = chooser.triggerChoose(currentDateTime, chosenPosts)
+        chosenPosts.addAll(toPostAtTheTime)
+        timeToPostsMap[currentDateTime] = toPostAtTheTime.toList()
+    }
+    return timeToPostsMap
 }
