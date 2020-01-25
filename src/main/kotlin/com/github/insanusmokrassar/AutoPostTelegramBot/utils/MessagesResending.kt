@@ -105,12 +105,11 @@ suspend fun resend(
                 when (it) {
                     // media group
                     is List<*> -> it.mapNotNull {
-                        it as? MediaGroupMessage
-                    }.mapNotNull { responseMessage ->
-                        val fileId = responseMessage.content.media.fileId
+                        val asMediaGroupMessage = (it as MediaGroupMessage)
+                        val fileUniqueId = asMediaGroupMessage.content.media.fileUniqueId
                         sourceMessages.firstOrNull { sourceMessage ->
-                            (sourceMessage.content as? MediaGroupContent) ?.media ?.fileId == fileId
-                        } ?.to(responseMessage)
+                            (sourceMessage.content as? MediaGroupContent) ?.media ?.fileUniqueId == fileUniqueId
+                        } ?.to(asMediaGroupMessage)
                     }
                     // common message
                     is Message -> sourceMessages.map { source ->
