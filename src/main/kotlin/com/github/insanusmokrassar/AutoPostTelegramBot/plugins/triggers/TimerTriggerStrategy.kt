@@ -119,13 +119,14 @@ class TimerTriggerStrategy (
     fun getNextTime(after: DateTime = DateTime.now()): DateTime? {
         val near = timesOfTriggering.nearDateTime(after) ?: return null
         schedulerPluginToCheckCollision ?.let {
+            val afterNear = near + 1000L
             val thereIsScheduled = it.timerSchedulesTable.registeredPostsTimes(
-                near - 1000L to near + 1000L
+                near - 1000L to afterNear
             ).any { (_, dateTime) ->
                 dateTime == near
             }
             if (thereIsScheduled) {
-                return getNextTime(near)
+                return getNextTime(afterNear)
             }
         }
         return near
