@@ -10,6 +10,9 @@
 
 ## 1.8.1
 
+* `TimerTriggerStrategy` now have additional optional parameter `substitutedByScheduler` (boolean, default `false`).
+In case of setting up this parameter to `true`, plugin will skip times which was set in schedule plugin
+
 ## 1.7.0
 
 * Version updates:
