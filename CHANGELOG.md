@@ -8,6 +8,8 @@
 * `TimerTriggerStrategy` now have new extension `getPostsInRange` and `getTriggersInRange`
 * `MostRatedChooser` now correctly work with exceptions list
 
+## 1.8.1
+
 ## 1.7.0
 
 * Version updates:
