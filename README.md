@@ -1,6 +1,6 @@
 # Auto Post Telegram Bot
 
-[![Download](https://api.bintray.com/packages/insanusmokrassar/StandardRepository/AutoPostTelegramBot/images/download.svg)](https://bintray.com/insanusmokrassar/StandardRepository/AutoPostTelegramBot/_latestVersion) [![Build Status](https://jenkins.insanusmokrassar.space/job/AutoPostTelegramBot_master/badge/icon)](https://jenkins.insanusmokrassar.space/job/AutoPostTelegramBot_master/)
+[![Download](https://api.bintray.com/packages/insanusmokrassar/StandardRepository/AutoPostTelegramBot/images/download.svg)](https://bintray.com/insanusmokrassar/StandardRepository/AutoPostTelegramBot/_latestVersion) [![Build Status](https://jenkins.insanusmokrassar.com/job/AutoPostTelegramBot_master/badge/icon)](https://jenkins.insanusmokrassar.com/job/AutoPostTelegramBot_master/)
 
 [![Get automatic notifications about new "AutoPostTelegramBot" versions](https://www.bintray.com/docs/images/bintray_badge_color.png)](https://bintray.com/insanusmokrassar/StandardRepository/AutoPostTelegramBot?source=watch)
 
@@ -8,13 +8,13 @@
 
 Если необходимо самостоятельно собрать проект, можно воспользоваться простой инструкцией:
 
-1. Скачать проект с [Github](https://github.com/InsanusMokrassar/AutoPostTelegramBot/edit/master/README.md)
+1. Скачать проект с [Github](https://github.com/InsanusMokrassar/AutoPostTelegramBot/)
 2. Сделать `./gradlew` исполняемым (`chmod 455 ./gradlew` для `*nix`)
 3. Выполнить `./gradlew build`
 
 В зависимости от дистрибутива и целей, инструкция запуска будет несколько отличаться:
 
-* В случае самостоятельной сборки (а также в случае скачивания архива с [jenkins](https://jenkins.insanusmokrassar.space/job/AutoPostTelegramBot_master/) страницы)
+* В случае самостоятельной сборки (а также в случае скачивания архива с [jenkins](https://jenkins.insanusmokrassar.com/job/AutoPostTelegramBot_master/) страницы)
     1. Разархивировать в директорию, где будет находиться бот
     2. Найти исполнительный файл в папке `$WORK_DIRECTORY/AutoPostTelegramBot-$version/bin/` (для `Windows` файл имеет расширение `.bat`)
     3. Запустите из консоли соответствующий файл, передав первым аргументом путь до JSON конфига
