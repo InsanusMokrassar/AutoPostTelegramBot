@@ -8,6 +8,14 @@
 * `TimerTriggerStrategy` now have new extension `getPostsInRange` and `getTriggersInRange`
 * `MostRatedChooser` now correctly work with exceptions list
 
+### 1.8.1
+
+* `TimerTriggerStrategy` now have additional optional parameter `substitutedByScheduler` (boolean, default `false`).
+In case of setting up this parameter to `true`, plugin will skip times which was set in schedule plugin
+* Version updates:
+    * Ktor version `1.3.0` -> `1.3.1`
+    * Telegram Bot API `0.22.1` -> `0.23.2`
+
 ## 1.7.0
 
 * Version updates:
