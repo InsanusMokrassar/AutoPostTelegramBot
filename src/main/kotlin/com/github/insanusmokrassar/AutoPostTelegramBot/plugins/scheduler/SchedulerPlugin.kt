@@ -14,7 +14,8 @@ import java.lang.ref.WeakReference
 @Serializable
 class SchedulerPlugin : Plugin {
     @Transient
-    val timerSchedulesTable = PostsSchedulesTable()
+    lateinit var timerSchedulesTable: PostsSchedulesTable
+        private set
 
     @Transient
     private lateinit var enableTimerCommand: EnableTimerCommand
@@ -33,6 +34,7 @@ class SchedulerPlugin : Plugin {
     }
 
     override suspend fun onInit(executor: RequestsExecutor, baseConfig: FinalConfig, pluginManager: PluginManager) {
+        timerSchedulesTable = PostsSchedulesTable(baseConfig.databaseConfig.database)
         scheduler = Scheduler(
             timerSchedulesTable,
             pluginManager.findFirstPlugin() ?: return

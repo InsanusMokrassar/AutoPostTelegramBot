@@ -14,7 +14,7 @@ typealias PostIdPostTime = Pair<Int, DateTime>
 private val PostsSchedulesTableScope = NewDefaultCoroutineScope(4)
 
 class PostsSchedulesTable(
-    private val db: Database? = null
+    private val db: Database
 ) : Table() {
     private val postIdColumn = integer("postId").primaryKey()
     private val postTimeColumn = datetime("postTime")
