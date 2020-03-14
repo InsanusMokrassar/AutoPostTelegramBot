@@ -10,6 +10,8 @@
 
 ### 1.8.2
 
+* `DatabaseConfig#connect` now is deprecated. It is recommended to use `DatabaseConfig#database` property
+
 ### 1.8.1
 
 * `TimerTriggerStrategy` now have additional optional parameter `substitutedByScheduler` (boolean, default `false`).

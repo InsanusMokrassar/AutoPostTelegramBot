@@ -51,9 +51,7 @@ fun main(args: Array<String>) {
     val bot = config.bot
 
     config.databaseConfig.apply {
-        connect()
-
-        transaction {
+        transaction(database) {
             SchemaUtils.createMissingTablesAndColumns(PostsTable, PostsMessagesTable)
         }
     }
