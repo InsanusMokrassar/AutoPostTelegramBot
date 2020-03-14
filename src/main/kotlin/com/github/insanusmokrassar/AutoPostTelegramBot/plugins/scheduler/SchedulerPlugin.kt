@@ -27,12 +27,6 @@ class SchedulerPlugin : Plugin {
     @Transient
     private lateinit var scheduler: Scheduler
 
-    init {
-        transaction {
-            SchemaUtils.createMissingTablesAndColumns(timerSchedulesTable)
-        }
-    }
-
     override suspend fun onInit(executor: RequestsExecutor, baseConfig: FinalConfig, pluginManager: PluginManager) {
         timerSchedulesTable = PostsSchedulesTable(baseConfig.databaseConfig.database)
         scheduler = Scheduler(
