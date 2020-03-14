@@ -11,6 +11,7 @@
 ### 1.8.2
 
 * `DatabaseConfig#connect` now is deprecated. It is recommended to use `DatabaseConfig#database` property
+* Fixed issue with `PostsSchedulesTable`, when table was not created automatically
 
 ### 1.8.1
 
