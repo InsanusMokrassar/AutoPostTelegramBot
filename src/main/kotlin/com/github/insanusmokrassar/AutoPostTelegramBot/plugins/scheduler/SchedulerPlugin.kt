@@ -3,6 +3,7 @@ package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.scheduler
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.FinalConfig
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.*
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.scheduler.commands.*
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscribe
 import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
@@ -37,6 +38,10 @@ class SchedulerPlugin : Plugin {
             pluginManager.findFirstPlugin() ?: return
         )
         val executorWR = WeakReference(executor)
+
+        baseConfig.postsTable.postRemovedChannel.subscribe {
+            timerSchedulesTable.unregisterPost(it)
+        }
 
         enableTimerCommand = EnableTimerCommand(
             timerSchedulesTable,

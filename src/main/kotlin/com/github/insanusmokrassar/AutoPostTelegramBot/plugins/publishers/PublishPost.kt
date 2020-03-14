@@ -7,7 +7,7 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.utils.NewDefaultCoroutine
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.commands.Command
 import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
 import com.github.insanusmokrassar.TelegramBotAPI.requests.DeleteMessage
-import com.github.insanusmokrassar.TelegramBotAPI.requests.send.SendMessage
+import com.github.insanusmokrassar.TelegramBotAPI.requests.send.SendTextMessage
 import com.github.insanusmokrassar.TelegramBotAPI.types.ChatIdentifier
 import com.github.insanusmokrassar.TelegramBotAPI.types.ParseMode.MarkdownParseMode
 import com.github.insanusmokrassar.TelegramBotAPI.types.UpdateIdentifier
@@ -49,7 +49,7 @@ class PublishPost(
                 )
             } catch (e: NoRowFoundException) {
                 botWR.get() ?.execute(
-                    SendMessage(
+                    SendTextMessage(
                         message.chat.id,
                         "Message is not related to any post",
                         replyToMessageId = it.messageId
@@ -82,7 +82,7 @@ class PublishPost(
         botWR.get() ?.let { executor ->
             PublishPostScope.launch {
                 executor.execute(
-                    SendMessage(
+                    SendTextMessage(
                         logsChatId,
                         "Was chosen to publish: ${choosen.size}. (Repeats of choosing was excluded)",
                         parseMode = MarkdownParseMode

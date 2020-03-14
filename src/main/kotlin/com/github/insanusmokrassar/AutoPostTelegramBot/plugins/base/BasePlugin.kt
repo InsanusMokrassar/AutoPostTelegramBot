@@ -38,17 +38,29 @@ class BasePlugin : Plugin {
 
         val scope = NewDefaultCoroutineScope(3)
 
-        deleteCommandJob = deleteCommandJob ?: scope.enableDeletingOfPostsCommand(botWR)
+        deleteCommandJob = deleteCommandJob ?: scope.enableDeletingOfPostsCommand(
+            botWR,
+            baseConfig.postsTable,
+            baseConfig.postsMessagesTable
+        )
 
         startPostJob = startPostJob ?: scope.enableStartPostCommand()
         fixPostJob = fixPostJob ?: scope.enableFixPostCommand()
 
-        onMediaGroupJob = onMediaGroupJob ?: scope.enableOnMediaGroupsCallback()
-        onMessageJob = onMessageJob ?: scope.enableOnMessageCallback()
+        onMediaGroupJob = onMediaGroupJob ?: scope.enableOnMediaGroupsCallback(
+            baseConfig.postsTable,
+            baseConfig.postsMessagesTable
+        )
+        onMessageJob = onMessageJob ?: scope.enableOnMessageCallback(
+            baseConfig.postsTable,
+            baseConfig.postsMessagesTable
+        )
 
         postMessagesRegistrant = PostMessagesRegistrant(
             executor,
-            baseConfig.sourceChatId
+            baseConfig.sourceChatId,
+            baseConfig.postsTable,
+            baseConfig.postsMessagesTable
         ).also {
             renewRegisteredMessage = RenewRegisteredMessage(it).also { it.onInit(executor, baseConfig, pluginManager) }
         }

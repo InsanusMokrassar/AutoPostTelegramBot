@@ -5,7 +5,7 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.commonLogger
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.base.PostMessagesRegistrant
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.commands.CommandPlugin
 import com.github.insanusmokrassar.TelegramBotAPI.requests.DeleteMessage
-import com.github.insanusmokrassar.TelegramBotAPI.requests.send.SendMessage
+import com.github.insanusmokrassar.TelegramBotAPI.requests.send.SendTextMessage
 import com.github.insanusmokrassar.TelegramBotAPI.types.UpdateIdentifier
 import com.github.insanusmokrassar.TelegramBotAPI.types.message.abstracts.CommonMessage
 import com.github.insanusmokrassar.TelegramBotAPI.utils.extensions.executeAsync
@@ -22,7 +22,7 @@ class RenewRegisteredMessage(
         val executor = botWR ?.get() ?: return
         val replyTo = message.replyTo ?: let {
             executor.executeUnsafe(
-                SendMessage(
+                SendTextMessage(
                     message.chat.id,
                     "If you want to renew registered message, you must reply to some of messages of post",
                     replyToMessageId = message.messageId
@@ -32,7 +32,7 @@ class RenewRegisteredMessage(
         }
         val postId = PostsMessagesTable.findPostByMessageId(replyTo.messageId) ?: let {
             executor.executeUnsafe(
-                SendMessage(
+                SendTextMessage(
                     message.chat.id,
                     "Replied message does not match to any post",
                     replyToMessageId = message.messageId

@@ -1,6 +1,8 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.base.callbacks
 
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.PostTransaction
+import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsBaseInfoTable
+import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsMessagesInfoTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.PostMessage
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.commonLogger
 import com.github.insanusmokrassar.AutoPostTelegramBot.checkedMessagesFlow
@@ -12,7 +14,10 @@ import com.github.insanusmokrassar.TelegramBotAPI.types.message.abstracts.Conten
 import com.github.insanusmokrassar.TelegramBotAPI.types.message.content.TextContent
 import kotlinx.coroutines.*
 
-internal fun CoroutineScope.enableOnMessageCallback(): Job = launch {
+internal fun CoroutineScope.enableOnMessageCallback(
+    postsTable: PostsBaseInfoTable,
+    postsMessagesTable: PostsMessagesInfoTable
+): Job = launch {
     checkedMessagesFlow.collectWithErrors(
         { message, e ->
             commonLogger.throwing(
@@ -36,7 +41,10 @@ internal fun CoroutineScope.enableOnMessageCallback(): Job = launch {
             transaction.addMessageId(PostMessage(message))
             return@collectWithErrors
         } ?: also {
-            PostTransaction().use { transaction ->
+            PostTransaction(
+                postsTable,
+                postsMessagesTable
+            ).use { transaction ->
                 transaction.addMessageId(PostMessage(message))
             }
         }

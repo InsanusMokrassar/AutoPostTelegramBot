@@ -1,5 +1,6 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.choosers
 
+import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsBaseInfoTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.PostId
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.abstractions.RatingPair
@@ -76,8 +77,8 @@ abstract class AbstractSmartChooserBaseConfigItem : SmartChooserBaseConfigItem {
     val chooser: InnerChooser
         get() = commonInnerChoosers[sort] ?: randomSorter
 
-    fun checkPostAge(postId: Int): Boolean {
-        val postDateTime: DateTime = PostsTable.getPostCreationDateTime(postId) ?: return false
+    fun checkPostAge(postId: Int, postsTable: PostsBaseInfoTable): Boolean {
+        val postDateTime: DateTime = postsTable.getPostCreationDateTime(postId) ?: return false
         val minIsOk = minAge ?.let { minAge ->
             postDateTime.plus(minAge).isBeforeNow
         } ?: true
@@ -111,7 +112,6 @@ data class SmartChooserConfigItem (
     override val maxAge: Long? = null,
     override val otherwise: SmartChooserAdditionalConfigItem? = null
 ) : AbstractSmartChooserBaseConfigItem() {
-    @Transient
     private val timePairs: List<CalculatedPeriod> by lazy {
         (times ?.flatMap {
             it.parseDateTimes()
@@ -157,7 +157,7 @@ class SmartChooser(
                 ).mapNotNull {
                     ratingPlugin.resolvePostId(it.first) ?.let { postId ->
                         when {
-                            postId in exceptions || !item.checkPostAge(postId) -> null
+                            postId in exceptions || !item.checkPostAge(postId, postsTable) -> null
                             else -> postId to it
                         }
                     }

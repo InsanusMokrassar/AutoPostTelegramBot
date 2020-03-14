@@ -10,7 +10,7 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.utils.parseDateTimes
 import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
 import com.github.insanusmokrassar.TelegramBotAPI.requests.DeleteMessage
 import com.github.insanusmokrassar.TelegramBotAPI.requests.ForwardMessage
-import com.github.insanusmokrassar.TelegramBotAPI.requests.send.SendMessage
+import com.github.insanusmokrassar.TelegramBotAPI.requests.send.SendTextMessage
 import com.github.insanusmokrassar.TelegramBotAPI.types.*
 import com.github.insanusmokrassar.TelegramBotAPI.types.ParseMode.MarkdownParseMode
 import com.github.insanusmokrassar.TelegramBotAPI.types.message.abstracts.CommonMessage
@@ -26,7 +26,7 @@ private fun sendHelpForUsage(
     chatId: ChatId
 ) {
     executor.executeAsync(
-        SendMessage(
+        SendTextMessage(
             chatId,
             "Usage: `/$setPostTimeCommandName [time format]`.\n" +
                 "Reply post registered message and write command + time in correct format",
@@ -89,7 +89,7 @@ class EnableTimerCommand(
                             )
                         ).messageId
                         executor.executeAsync(
-                            SendMessage(
+                            SendTextMessage(
                                 logsChatId,
                                 "Parsed time: $parsed\n" +
                                     "Post saved with timer",

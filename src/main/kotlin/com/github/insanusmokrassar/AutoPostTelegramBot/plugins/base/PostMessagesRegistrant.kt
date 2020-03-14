@@ -1,7 +1,6 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.base
 
-import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsMessagesTable
-import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsTable
+import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.*
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.transactionCompletedChannel
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.commonLogger
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.NewDefaultCoroutineScope
@@ -9,7 +8,7 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.sendToLo
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscribeChecking
 import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
 import com.github.insanusmokrassar.TelegramBotAPI.bot.exceptions.ReplyMessageNotFoundException
-import com.github.insanusmokrassar.TelegramBotAPI.requests.send.SendMessage
+import com.github.insanusmokrassar.TelegramBotAPI.requests.send.SendTextMessage
 import com.github.insanusmokrassar.TelegramBotAPI.types.ChatIdentifier
 import com.github.insanusmokrassar.TelegramBotAPI.types.MessageIdentifier
 import com.github.insanusmokrassar.TelegramBotAPI.types.ParseMode.MarkdownParseMode
@@ -18,11 +17,12 @@ import java.lang.ref.WeakReference
 
 class PostMessagesRegistrant(
     executor: RequestsExecutor,
-    private val sourceChatId: ChatIdentifier
+    private val sourceChatId: ChatIdentifier,
+    private val postsTable: PostsBaseInfoTable,
+    private val postsMessagesTable: PostsMessagesInfoTable
 ) {
     private val botWR = WeakReference(executor)
     init {
-
         transactionCompletedChannel.subscribeChecking {
             registerPostMessage(
                 it
@@ -32,8 +32,8 @@ class PostMessagesRegistrant(
 
         val scope = NewDefaultCoroutineScope()
 
-        val registerJobs = PostsTable.getAll().mapNotNull {
-            if (PostsTable.postRegisteredMessage(it) == null) {
+        val registerJobs = postsTable.getAll().mapNotNull {
+            if (postsTable.postRegisteredMessage(it) == null) {
                 scope.launch {
                     registerPostMessage(
                         it
@@ -54,7 +54,7 @@ class PostMessagesRegistrant(
         retries: Int = 3
     ): MessageIdentifier? {
         val executor = botWR.get() ?: return null
-        val messages = PostsMessagesTable.getMessagesOfPost(
+        val messages = postsMessagesTable.getMessagesOfPost(
             registeredPostId
         ).toMutableList()
         var registeredMessageId: MessageIdentifier? = null
@@ -63,7 +63,7 @@ class PostMessagesRegistrant(
             val messageId = messages.first().messageId
             try {
                 val response = executor.execute(
-                    SendMessage(
+                    SendTextMessage(
                         sourceChatId,
                         "Post registered",
                         parseMode = MarkdownParseMode,
@@ -77,7 +77,7 @@ class PostMessagesRegistrant(
                     e,
                     "Register message"
                 )
-                PostsMessagesTable.removePostMessage(registeredPostId, messageId)
+                postsMessagesTable.removePostMessage(registeredPostId, messageId)
                 messages.removeAt(0)
             } catch (e: Exception) {
                 sendToLogger(
@@ -88,12 +88,12 @@ class PostMessagesRegistrant(
             }
         }
         return if (messages.isEmpty()) {
-            PostsTable.removePost(registeredPostId)
+            postsTable.removePost(registeredPostId)
             commonLogger.warning("Post $registeredPostId was removed")
             null
         } else {
             registeredMessageId ?.also {
-                PostsTable.postRegistered(registeredPostId, it)
+                postsTable.postRegistered(registeredPostId, it)
             }
         }
     }

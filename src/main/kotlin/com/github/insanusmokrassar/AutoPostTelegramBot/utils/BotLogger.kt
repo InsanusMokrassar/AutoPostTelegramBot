@@ -4,7 +4,7 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.commonLogger
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.splitForMessageWithAdditionalStep
 import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
 import com.github.insanusmokrassar.TelegramBotAPI.bot.exceptions.RequestException
-import com.github.insanusmokrassar.TelegramBotAPI.requests.send.SendMessage
+import com.github.insanusmokrassar.TelegramBotAPI.requests.send.SendTextMessage
 import com.github.insanusmokrassar.TelegramBotAPI.types.ChatIdentifier
 import com.github.insanusmokrassar.TelegramBotAPI.types.ParseMode.MarkdownParseMode
 import kotlinx.coroutines.*
@@ -27,7 +27,7 @@ private class LoggerHandler(
             formatter.format(msg).splitForMessageWithAdditionalStep(6).forEach { record ->
                 try {
                     bot.execute(
-                        SendMessage(
+                        SendTextMessage(
                             logsChatId,
                             record,
                             MarkdownParseMode
@@ -35,7 +35,7 @@ private class LoggerHandler(
                     )
                 } catch (e: RequestException) {
                     bot.execute(
-                        SendMessage(
+                        SendTextMessage(
                             logsChatId,
                             record
                         )

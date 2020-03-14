@@ -8,7 +8,7 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.utils.commands.Command
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.asPairs
 import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
 import com.github.insanusmokrassar.TelegramBotAPI.requests.ForwardMessage
-import com.github.insanusmokrassar.TelegramBotAPI.requests.send.SendMessage
+import com.github.insanusmokrassar.TelegramBotAPI.requests.send.SendTextMessage
 import com.github.insanusmokrassar.TelegramBotAPI.types.ChatIdentifier
 import com.github.insanusmokrassar.TelegramBotAPI.types.UpdateIdentifier
 import com.github.insanusmokrassar.TelegramBotAPI.types.message.abstracts.CommonMessage
@@ -37,7 +37,7 @@ class GetSchedulesCommand(
         GetSchedulesCommandScope.launch {
             try {
                 executor.execute(
-                    SendMessage(
+                    SendTextMessage(
                         chatId,
                         "Let me prepare data"
                     )
@@ -84,14 +84,13 @@ class GetSchedulesCommand(
             }.let {
                 if (it.isEmpty()) {
                     executor.executeAsync(
-                        SendMessage(
+                        SendTextMessage(
                             chatId,
                             "Nothing to show, schedule queue is empty"
                         )
                     )
                 } else {
-                    it.forEach {
-                            (postId, time) ->
+                    it.forEach { (postId, time) ->
                         executor.execute(
                             ForwardMessage(
                                 sourceChatId,
@@ -100,7 +99,7 @@ class GetSchedulesCommand(
                             )
                         )
                         executor.execute(
-                            SendMessage(
+                            SendTextMessage(
                                 chatId,
                                 "Post time: $time"
                             )

@@ -1,11 +1,15 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.base.commands
 
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.PostTransaction
+import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsBaseInfoTable
+import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsMessagesInfoTable
 import com.github.insanusmokrassar.TelegramBotAPI.types.ChatIdentifier
 import java.util.concurrent.ConcurrentHashMap
 
 object CommonKnownPostsTransactions {
     private val usersTransactions = ConcurrentHashMap<ChatIdentifier, PostTransaction>()
+    private lateinit var postsTable: PostsBaseInfoTable
+    private lateinit var postsMessagesTable: PostsMessagesInfoTable
 
     @Synchronized
     operator fun contains(chatIdentifier: ChatIdentifier): Boolean = usersTransactions[chatIdentifier] ?.let {
@@ -16,7 +20,7 @@ object CommonKnownPostsTransactions {
     fun startTransaction(chatIdentifier: ChatIdentifier): PostTransaction? = if (chatIdentifier in this) {
         null
     } else {
-        PostTransaction().also {
+        PostTransaction(postsTable, postsMessagesTable).also {
             usersTransactions[chatIdentifier] = it
         }
     }
@@ -36,5 +40,14 @@ object CommonKnownPostsTransactions {
         usersTransactions[chatIdentifier]
     } else {
         startTransaction(chatIdentifier)
+    }
+
+    @Synchronized
+    internal fun updatePostsAndPostsMessagesTables(
+        postsTable: PostsBaseInfoTable,
+        postsMessagesTable: PostsMessagesInfoTable
+    ) {
+        this.postsTable = postsTable
+        this.postsMessagesTable = postsMessagesTable
     }
 }

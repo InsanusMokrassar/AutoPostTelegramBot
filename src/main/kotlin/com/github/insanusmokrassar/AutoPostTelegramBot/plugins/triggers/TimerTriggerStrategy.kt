@@ -1,7 +1,6 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.triggers
 
-import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsMessagesTable
-import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsTable
+import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.*
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.FinalConfig
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.PostId
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.*
@@ -16,7 +15,7 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.sendToLo
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.flow.collectWithErrors
 import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
 import com.github.insanusmokrassar.TelegramBotAPI.requests.ForwardMessage
-import com.github.insanusmokrassar.TelegramBotAPI.requests.send.SendMessage
+import com.github.insanusmokrassar.TelegramBotAPI.requests.send.SendTextMessage
 import com.github.insanusmokrassar.TelegramBotAPI.types.ChatId
 import com.github.insanusmokrassar.TelegramBotAPI.types.ParseMode.MarkdownParseMode
 import com.github.insanusmokrassar.TelegramBotAPI.types.UpdateIdentifier
@@ -25,7 +24,6 @@ import com.github.insanusmokrassar.TelegramBotAPI.types.message.content.TextCont
 import com.github.insanusmokrassar.TelegramBotAPI.utils.extensions.executeUnsafe
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.BroadcastChannel
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
@@ -43,8 +41,8 @@ private class TimerScheduleCommand(
     private val timeChooserCallback: (after: DateTime) -> DateTime?,
     private val chooser: Chooser,
     private val executor: RequestsExecutor,
-    private val postsMessagesTable: PostsMessagesTable,
-    private val postsTable: PostsTable
+    private val postsMessagesTable: PostsMessagesInfoTable,
+    private val postsTable: PostsBaseInfoTable
 ) : Command() {
     override val commandRegex: Regex = timerScheduleCommandRegex
 
@@ -62,7 +60,7 @@ private class TimerScheduleCommand(
             it.key
         }.forEach { (dateTime, posts) ->
             executor.execute(
-                SendMessage(
+                SendTextMessage(
                     message.chat.id,
                     "Must be posted at `$dateTime`:",
                     MarkdownParseMode
@@ -86,7 +84,7 @@ private class TimerScheduleCommand(
             delay(1000L)
         }
         executor.execute(
-            SendMessage(
+            SendTextMessage(
                 message.chat.id,
                 "End of requested auto publishing messages"
             )
@@ -166,8 +164,8 @@ class TimerTriggerStrategy (
             ::getNextTime,
             chooser,
             executor,
-            PostsMessagesTable,
-            PostsTable
+            baseConfig.postsMessagesTable,
+            baseConfig.postsTable
         )
 
         TimerTriggerStrategyScope.launch {

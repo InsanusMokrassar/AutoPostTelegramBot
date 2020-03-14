@@ -64,7 +64,7 @@ class PostsMessagesInfoTable(private val database: Database) : Table() {
             messages.map {
                 message ->
                 insert {
-                    it[PostsMessagesTable.postIdColumn] = postId
+                    it[postIdColumn] = postId
                     it[messageIdColumn] = message.messageId
                     it[mediaGroupIdColumn] = message.mediaGroupId
                 }

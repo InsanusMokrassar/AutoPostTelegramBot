@@ -23,7 +23,10 @@ lateinit var PostsTable: PostsBaseInfoTable
 val PostsTableScope: CoroutineScope
     get() = PostsTable.coroutinesScope
 
-class PostsBaseInfoTable(private val database: Database) : Table() {
+class PostsBaseInfoTable(
+    private val database: Database,
+    private val postsMessageTable: PostsMessagesInfoTable
+) : Table() {
     internal val coroutinesScope = NewDefaultCoroutineScope()
     val postAllocatedChannel = BroadcastChannel<PostId>(Channel.CONFLATED)
     val postRemovedChannel = BroadcastChannel<PostId>(Channel.CONFLATED)
@@ -77,7 +80,7 @@ class PostsBaseInfoTable(private val database: Database) : Table() {
 
     fun removePost(postId: PostId) {
         transaction(database) {
-            PostsMessagesTable.removePostMessages(postId)
+            postsMessageTable.removePostMessages(postId)
             deleteWhere { idColumn.eq(postId) }
         }.also {
             coroutinesScope.launch {

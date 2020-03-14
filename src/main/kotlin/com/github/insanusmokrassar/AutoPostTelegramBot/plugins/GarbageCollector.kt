@@ -1,7 +1,6 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.plugins
 
-import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsMessagesTable
-import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsTable
+import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.*
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.FinalConfig
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.*
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.abstractions.RatingPair
@@ -32,7 +31,6 @@ class GarbageCollector(
     @Transient
     private lateinit var ratingPlugin: RatingPlugin
 
-    @Transient
     val skipDateTime: List<Pair<Long, Long>> by lazy {
         skipTime ?.parseDateTimes() ?.let {
                 parsed ->
@@ -57,7 +55,6 @@ class GarbageCollector(
         } ?: emptyList()
     }
 
-    @Transient
     val manualCheckDateTimes: List<CalculatedDateTime>? by lazy {
         manualCheckTime ?.parseDateTimes()
     }
@@ -76,10 +73,13 @@ class GarbageCollector(
             return
         }
 
+        val postsTable = baseConfig.postsTable
+        val postsMessagesTable = baseConfig.postsMessagesTable
+
         NewDefaultCoroutineScope(3).apply {
             launch {
                 ratingPlugin.allocateRatingChangedFlow().collectWithErrors {
-                    check(it, executor, baseConfig)
+                    check(postsTable, postsMessagesTable, it, executor, baseConfig)
                 }
             }
 
@@ -92,7 +92,7 @@ class GarbageCollector(
                             ratingPlugin.getRegisteredPosts().flatMap {
                                 ratingPlugin.getPostRatings(it)
                             }.forEach { pair ->
-                                check(pair, botSR, baseConfig, now)
+                                check(postsTable, postsMessagesTable, pair, botSR, baseConfig, now)
                             }
                         } ?.await() ?: break
                     }
@@ -102,18 +102,21 @@ class GarbageCollector(
     }
 
     private suspend fun check(
+        postsTable: PostsBaseInfoTable,
+        postsMessagesTable: PostsMessagesInfoTable,
         dataPair: RatingPair,
         executor: RequestsExecutor,
         baseConfig: FinalConfig,
         now: DateTime = DateTime.now()
     ) = ratingPlugin.resolvePostId(dataPair.first) ?.let {
-        PostsTable.getPostCreationDateTime(it) ?.also {
-                creatingDate ->
-            check(dataPair, creatingDate, executor, baseConfig, now)
+        postsTable.getPostCreationDateTime(it) ?.also { creatingDate ->
+            check(postsTable, postsMessagesTable, dataPair, creatingDate, executor, baseConfig, now)
         }
     }
 
     private suspend fun check(
+        postsTable: PostsBaseInfoTable,
+        postsMessagesTable: PostsMessagesInfoTable,
         dataPair: RatingPair,
         creatingDate: DateTime,
         executor: RequestsExecutor,
@@ -126,11 +129,13 @@ class GarbageCollector(
                 return
             }
         }
-        if (dataPair.second < minimalRate || PostsMessagesTable.getMessagesOfPost(postId).isEmpty()) {
+        if (dataPair.second < minimalRate || postsMessagesTable.getMessagesOfPost(postId).isEmpty()) {
             deletePost(
                 executor,
                 baseConfig.sourceChatId,
-                postId
+                postId,
+                postsTable,
+                postsMessagesTable
             )
         }
     }
