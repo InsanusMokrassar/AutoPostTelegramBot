@@ -1,6 +1,6 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.scheduler.commands
 
-import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsMessagesTable
+import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsMessagesInfoTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.commonLogger
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.scheduler.PostsSchedulesTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.*
@@ -23,6 +23,7 @@ private val GetSchedulesCommandScope = NewDefaultCoroutineScope(1)
 
 class GetSchedulesCommand(
     private val postsSchedulesTable: PostsSchedulesTable,
+    private val postsMessagesTable: PostsMessagesInfoTable,
     private val executorWR: WeakReference<RequestsExecutor>,
     private val sourceChatId: ChatIdentifier
 ) : Command() {
@@ -95,7 +96,7 @@ class GetSchedulesCommand(
                             ForwardMessage(
                                 sourceChatId,
                                 chatId,
-                                PostsMessagesTable.getMessagesOfPost(postId).firstOrNull() ?.messageId ?: return@forEach
+                                postsMessagesTable.getMessagesOfPost(postId).firstOrNull() ?.messageId ?: return@forEach
                             )
                         )
                         executor.execute(

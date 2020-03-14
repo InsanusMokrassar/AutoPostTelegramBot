@@ -1,6 +1,6 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.base.commands
 
-import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsMessagesTable
+import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsMessagesInfoTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.commonLogger
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.base.PostMessagesRegistrant
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.commands.CommandPlugin
@@ -14,7 +14,8 @@ import com.github.insanusmokrassar.TelegramBotAPI.utils.extensions.executeUnsafe
 val renewRegisteredMessageRegex: Regex = Regex("^renewRegistered(Message)?$")
 
 class RenewRegisteredMessage(
-    private val postMessagesRegistrant: PostMessagesRegistrant
+    private val postMessagesRegistrant: PostMessagesRegistrant,
+    private val postsMessagesTable: PostsMessagesInfoTable
 ) : CommandPlugin() {
     override val commandRegex: Regex = renewRegisteredMessageRegex
 
@@ -30,7 +31,7 @@ class RenewRegisteredMessage(
             )
             return
         }
-        val postId = PostsMessagesTable.findPostByMessageId(replyTo.messageId) ?: let {
+        val postId = postsMessagesTable.findPostByMessageId(replyTo.messageId) ?: let {
             executor.executeUnsafe(
                 SendTextMessage(
                     message.chat.id,

@@ -1,7 +1,7 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.publishers
 
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.exceptions.NoRowFoundException
-import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsTable
+import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsBaseInfoTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.abstractions.Chooser
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.NewDefaultCoroutineScope
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.commands.Command
@@ -22,7 +22,8 @@ class PublishPost(
     chooser: Chooser?,
     publisher: Publisher,
     private val botWR: WeakReference<RequestsExecutor>,
-    private val logsChatId: ChatIdentifier
+    private val logsChatId: ChatIdentifier,
+    private val postsTable: PostsBaseInfoTable
 ) : Command() {
     override val commandRegex: Regex = Regex("^/publishPost( \\d+)?$")
 
@@ -45,7 +46,7 @@ class PublishPost(
         message.replyTo ?.also {
             try {
                 choosen.add(
-                    PostsTable.findPost(it.messageId)
+                    postsTable.findPost(it.messageId)
                 )
             } catch (e: NoRowFoundException) {
                 botWR.get() ?.execute(

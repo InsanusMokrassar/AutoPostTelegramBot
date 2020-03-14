@@ -60,7 +60,8 @@ class PostPublisher : Publisher {
                 pluginManager.findFirstPlugin(),
                 pluginManager.findFirstPlugin() ?: throw IllegalStateException("Plugin `PostPublisher` can't be inited: there is no Publisher plugin"),
                 it,
-                baseConfig.logsChatId
+                baseConfig.logsChatId,
+                baseConfig.postsTable
             )
         }
 

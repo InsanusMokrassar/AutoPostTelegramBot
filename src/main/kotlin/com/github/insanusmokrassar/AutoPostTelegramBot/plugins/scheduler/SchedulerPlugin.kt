@@ -45,11 +45,14 @@ class SchedulerPlugin : Plugin {
 
         enableTimerCommand = EnableTimerCommand(
             timerSchedulesTable,
+            baseConfig.postsTable,
+            baseConfig.postsMessagesTable,
             executorWR,
             baseConfig.logsChatId
         )
         getSchedulesCommand = GetSchedulesCommand(
             timerSchedulesTable,
+            baseConfig.postsMessagesTable,
             executorWR,
             baseConfig.sourceChatId
         )

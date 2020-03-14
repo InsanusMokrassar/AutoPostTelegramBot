@@ -62,7 +62,7 @@ class BasePlugin : Plugin {
             baseConfig.postsTable,
             baseConfig.postsMessagesTable
         ).also {
-            renewRegisteredMessage = RenewRegisteredMessage(it).also { it.onInit(executor, baseConfig, pluginManager) }
+            renewRegisteredMessage = RenewRegisteredMessage(it, baseConfig.postsMessagesTable).also { it.onInit(executor, baseConfig, pluginManager) }
         }
     }
 }
