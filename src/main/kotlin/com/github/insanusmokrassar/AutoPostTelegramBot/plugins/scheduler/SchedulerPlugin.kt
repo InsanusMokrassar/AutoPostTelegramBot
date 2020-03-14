@@ -54,6 +54,7 @@ class SchedulerPlugin : Plugin {
         )
         disableTimerCommand = DisableTimerCommand(
             timerSchedulesTable,
+            baseConfig.postsTable,
             executorWR
         )
     }

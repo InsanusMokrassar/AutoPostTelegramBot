@@ -1,5 +1,6 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.scheduler.commands
 
+import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsBaseInfoTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.commonLogger
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.scheduler.PostsSchedulesTable
@@ -31,6 +32,7 @@ private fun sendHelpForUsage(
 
 class DisableTimerCommand(
     private val postsSchedulesTable: PostsSchedulesTable,
+    private val postsTable: PostsBaseInfoTable,
     private val botWR: WeakReference<RequestsExecutor>
 ) : Command() {
     override val commandRegex: Regex = Regex("^$disableSchedulePublishCommand$")
@@ -47,7 +49,7 @@ class DisableTimerCommand(
 
 
         try {
-            val postId = PostsTable.findPost(replyToMessage.messageId)
+            val postId = postsTable.findPost(replyToMessage.messageId)
 
             postsSchedulesTable.unregisterPost(postId)
 
