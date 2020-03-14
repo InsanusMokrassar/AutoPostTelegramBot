@@ -13,9 +13,12 @@ import org.jetbrains.exposed.sql.transactions.transaction
 
 typealias PostIdToMessagesIds = Pair<PostId, Collection<MessageIdentifier>>
 
-private val PostsMessagesTableScope = NewDefaultCoroutineScope()
+@Deprecated("Deprecated due to replacement into config")
+lateinit var PostsMessagesTable: PostsMessagesInfoTable
+    internal set
 
-object PostsMessagesTable : Table() {
+class PostsMessagesInfoTable(private val database: Database) : Table() {
+    private val coroutinesScope = NewDefaultCoroutineScope()
     private val newMessagesOfPost = BroadcastChannel<PostIdToMessagesIds>(mediumBroadcastCapacity)
 
     private val removedMessagesOfPost = BroadcastChannel<PostIdToMessagesIds>(mediumBroadcastCapacity)
@@ -25,43 +28,49 @@ object PostsMessagesTable : Table() {
     val removedMessagesOfPostFlow = removedMessagesOfPost.asFlow()
     val removedMessageOfPostFlow = removedMessageOfPost.asFlow()
 
-    private val messageId = long("messageId").primaryKey()
-    private val mediaGroupId = text("mediaGroupId").nullable()
-    private val postId = integer("postId")
+    private val messageIdColumn = long("messageId").primaryKey()
+    private val mediaGroupIdColumn = text("mediaGroupId").nullable()
+    private val postIdColumn = integer("postId")
+
+    init {
+        transaction(database) {
+            SchemaUtils.createMissingTablesAndColumns(this@PostsMessagesInfoTable)
+        }
+    }
 
     fun getMessagesOfPost(postId: PostId): List<PostMessage> {
         return transaction {
             select {
-                PostsMessagesTable.postId.eq(postId)
+                postIdColumn.eq(postId)
             }.map {
                 PostMessage(
-                    it[messageId],
-                    it[mediaGroupId]
+                    it[messageIdColumn],
+                    it[mediaGroupIdColumn]
                 )
             }
         }
     }
 
     fun findPostByMessageId(messageId: MessageIdentifier): PostId? {
-        return transaction {
+        return transaction(database) {
             select {
-                this@PostsMessagesTable.messageId.eq(messageId)
-            }.firstOrNull() ?.get(postId)
+                messageIdColumn.eq(messageId)
+            }.firstOrNull() ?.get(postIdColumn)
         }
     }
 
     fun addMessagesToPost(postId: PostId, vararg messages: PostMessage) {
-        transaction {
+        transaction(database) {
             messages.map {
                 message ->
                 insert {
-                    it[PostsMessagesTable.postId] = postId
-                    it[messageId] = message.messageId
-                    it[mediaGroupId] = message.mediaGroupId
+                    it[PostsMessagesTable.postIdColumn] = postId
+                    it[messageIdColumn] = message.messageId
+                    it[mediaGroupIdColumn] = message.mediaGroupId
                 }
                 message.messageId
             }.let {
-                PostsMessagesTableScope.launch {
+                coroutinesScope.launch {
                     newMessagesOfPost.send(PostIdToMessagesIds(postId, it))
                 }
             }
@@ -70,7 +79,7 @@ object PostsMessagesTable : Table() {
 
     fun removePostMessages(postId: PostId) {
         getMessagesOfPost(postId).let {
-            transaction {
+            transaction(database) {
                 it.mapNotNull {
                     postMessage ->
                     if (removePostMessage(postId, postMessage.messageId)) {
@@ -86,8 +95,8 @@ object PostsMessagesTable : Table() {
     }
 
     fun removePostMessage(postId: PostId, messageId: MessageIdentifier): Boolean {
-        return transaction {
-            deleteWhere { PostsMessagesTable.messageId.eq(messageId) } > 0
+        return transaction(database) {
+            deleteWhere { messageIdColumn.eq(messageId) } > 0
         }.also {
             if (it) {
                 notifyMessagesRemoved(postId, listOf(messageId))
@@ -97,10 +106,10 @@ object PostsMessagesTable : Table() {
 
     private fun notifyMessagesRemoved(postId: PostId, messagesIds: List<MessageIdentifier>) {
         if (messagesIds.isNotEmpty()) {
-            PostsMessagesTableScope.launch {
+            coroutinesScope.launch {
                 removedMessagesOfPost.send(postId to messagesIds.toList())
             }
-            PostsMessagesTableScope.launch {
+            coroutinesScope.launch {
                 messagesIds.forEach { messageId ->
                     removedMessageOfPost.send(PostIdMessageId(postId, messageId))
                 }

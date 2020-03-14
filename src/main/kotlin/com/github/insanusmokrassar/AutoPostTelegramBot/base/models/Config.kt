@@ -1,5 +1,7 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.base.models
 
+import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsBaseInfoTable
+import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsMessagesInfoTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.Plugin
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.NewDefaultCoroutineScope
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.PluginsListSerializer
@@ -61,6 +63,9 @@ data class FinalConfig (
     private val webhookConfig: WebhookConfig? = null,
     private val longPollingConfig: LongPollingConfig? = null
 ) {
+    val postsTable = PostsBaseInfoTable(databaseConfig.database)
+    val postsMessagesTable = PostsMessagesInfoTable(databaseConfig.database)
+
     suspend fun subscribe(filter: UpdatesFilter, scope: CoroutineScope = NewDefaultCoroutineScope(4)) {
         webhookConfig ?.setWebhook(
             bot,

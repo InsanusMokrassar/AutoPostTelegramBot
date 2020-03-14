@@ -5,6 +5,7 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.exceptions.
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.PostId
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.NewDefaultCoroutineScope
 import com.github.insanusmokrassar.TelegramBotAPI.types.MessageIdentifier
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
@@ -14,25 +15,37 @@ import org.joda.time.DateTime
 
 typealias PostIdMessageId = Pair<PostId, MessageIdentifier>
 
+@Deprecated("Deprecated due to replacement into config")
+lateinit var PostsTable: PostsBaseInfoTable
+    internal set
 
-val PostsTableScope = NewDefaultCoroutineScope()
+@Deprecated("Deprecated due to replacement into config")
+val PostsTableScope: CoroutineScope
+    get() = PostsTable.coroutinesScope
 
-object PostsTable : Table() {
+class PostsBaseInfoTable(private val database: Database) : Table() {
+    internal val coroutinesScope = NewDefaultCoroutineScope()
     val postAllocatedChannel = BroadcastChannel<PostId>(Channel.CONFLATED)
     val postRemovedChannel = BroadcastChannel<PostId>(Channel.CONFLATED)
     val postMessageRegisteredChannel = BroadcastChannel<PostIdMessageId>(Channel.CONFLATED)
 
-    private val id = integer("id").primaryKey().autoIncrement()
-    private val postRegisteredMessageId = long("postRegistered").nullable()
-    private val postDateTime = datetime("postDateTime").default(DateTime.now())
+    private val idColumn = integer("id").primaryKey().autoIncrement()
+    private val postRegisteredMessageIdColumn = long("postRegistered").nullable()
+    private val postDateTimeColumn = datetime("postDateTime").default(DateTime.now())
+
+    init {
+        transaction(database) {
+            SchemaUtils.createMissingTablesAndColumns(this@PostsBaseInfoTable)
+        }
+    }
 
     @Throws(CreationException::class)
     fun allocatePost(): PostId {
-        return transaction {
+        return transaction(database) {
             insert {
-                it[postDateTime] = DateTime.now()
-            }[id] ?.also {
-                PostsTableScope.launch {
+                it[postDateTimeColumn] = DateTime.now()
+            }[idColumn] ?.also {
+                coroutinesScope.launch {
                     postAllocatedChannel.send(it)
                 }
             }
@@ -43,56 +56,56 @@ object PostsTable : Table() {
      * @return Old message identifier if available
      */
     fun postRegistered(postId: PostId, messageId: MessageIdentifier): MessageIdentifier? {
-        return transaction {
+        return transaction(database) {
             val previousMessageId = postRegisteredMessage(postId)
-            update({ id.eq(postId) }) {
-                it[postRegisteredMessageId] = messageId
+            update({ idColumn.eq(postId) }) {
+                it[postRegisteredMessageIdColumn] = messageId
             }
             previousMessageId
         }.also {
-            PostsTableScope.launch {
+            coroutinesScope.launch {
                 postMessageRegisteredChannel.send(postId to messageId)
             }
         }
     }
 
     fun postRegisteredMessage(postId: PostId): MessageIdentifier? {
-        return transaction {
-            select { id.eq(postId) }.firstOrNull() ?.get(postRegisteredMessageId)
+        return transaction(database) {
+            select { idColumn.eq(postId) }.firstOrNull() ?.get(postRegisteredMessageIdColumn)
         }
     }
 
     fun removePost(postId: PostId) {
-        transaction {
+        transaction(database) {
             PostsMessagesTable.removePostMessages(postId)
-            deleteWhere { id.eq(postId) }
+            deleteWhere { idColumn.eq(postId) }
         }.also {
-            PostsTableScope.launch {
+            coroutinesScope.launch {
                 postRemovedChannel.send(postId)
             }
         }
     }
 
     fun getAll(): List<PostId> {
-        return transaction {
-            selectAll().map { it[id] }
+        return transaction(database) {
+            selectAll().map { it[idColumn] }
         }
     }
 
     @Throws(NoRowFoundException::class)
     fun findPost(messageId: MessageIdentifier): PostId {
-        return transaction {
+        return transaction(database) {
             select {
-                postRegisteredMessageId.eq(messageId)
-            }.firstOrNull() ?.get(id) ?: throw NoRowFoundException("Can't find row for message $messageId")
+                postRegisteredMessageIdColumn.eq(messageId)
+            }.firstOrNull() ?.get(idColumn) ?: throw NoRowFoundException("Can't find row for message $messageId")
         }
     }
 
     fun getPostCreationDateTime(postId: PostId): DateTime? {
-        return transaction {
+        return transaction(database) {
             select {
-                id.eq(postId)
-            }.firstOrNull() ?.get(postDateTime)
+                idColumn.eq(postId)
+            }.firstOrNull() ?.get(postDateTimeColumn)
         }
     }
 }
