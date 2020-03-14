@@ -39,7 +39,7 @@ class PostsMessagesInfoTable(private val database: Database) : Table() {
     }
 
     fun getMessagesOfPost(postId: PostId): List<PostMessage> {
-        return transaction {
+        return transaction(database) {
             select {
                 postIdColumn.eq(postId)
             }.map {
