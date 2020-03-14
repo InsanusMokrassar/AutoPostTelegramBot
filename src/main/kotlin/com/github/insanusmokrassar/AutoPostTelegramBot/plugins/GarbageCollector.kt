@@ -66,7 +66,7 @@ class GarbageCollector(
     ) {
         val botWR = WeakReference(executor)
 
-        ratingPlugin = pluginManager.findFirstPlugin<RatingPlugin>() ?:let {
+        ratingPlugin = pluginManager.findFirstPlugin() ?:let {
             commonLogger.warning(
                 "Plugin $name was not correctly inited: can't get data about ratings"
             )
