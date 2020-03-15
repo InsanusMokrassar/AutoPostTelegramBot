@@ -1,8 +1,7 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.base.database
 
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.exceptions.NothingToSaveException
-import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsMessagesTable
-import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsTable
+import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.*
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.PostId
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.PostMessage
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.NewDefaultCoroutineScope
@@ -18,7 +17,10 @@ val transactionCompletedChannel = BroadcastChannel<PostId>(Channel.CONFLATED)
 
 val PostTransactionsScope = NewDefaultCoroutineScope()
 
-class PostTransaction : Closeable {
+class PostTransaction(
+    private val postsTable: PostsBaseInfoTable = PostsTable,
+    private val postsMessagesTable: PostsMessagesInfoTable = PostsMessagesTable
+) : Closeable {
     private val messages = ArrayList<PostMessage>()
 
     var completed: Boolean = false
@@ -68,8 +70,8 @@ class PostTransaction : Closeable {
         if (messagesIds.isEmpty()) {
             throw NothingToSaveException("No messages for saving")
         }
-        val postId = PostsTable.allocatePost()
-        PostsMessagesTable.addMessagesToPost(
+        val postId = postsTable.allocatePost()
+        postsMessagesTable.addMessagesToPost(
             postId,
             *messagesIds
         )

@@ -1,11 +1,12 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.scheduler.commands
 
+import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsBaseInfoTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.commonLogger
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.scheduler.PostsSchedulesTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.commands.Command
 import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
-import com.github.insanusmokrassar.TelegramBotAPI.requests.send.SendMessage
+import com.github.insanusmokrassar.TelegramBotAPI.requests.send.SendTextMessage
 import com.github.insanusmokrassar.TelegramBotAPI.types.ChatId
 import com.github.insanusmokrassar.TelegramBotAPI.types.ParseMode.MarkdownParseMode
 import com.github.insanusmokrassar.TelegramBotAPI.types.UpdateIdentifier
@@ -20,7 +21,7 @@ private fun sendHelpForUsage(
     chatId: ChatId
 ) {
     executor.executeAsync(
-        SendMessage(
+        SendTextMessage(
             chatId,
             "Usage: `/$disableSchedulePublishCommand`.\n" +
                 "Reply post registered message and write command",
@@ -31,6 +32,7 @@ private fun sendHelpForUsage(
 
 class DisableTimerCommand(
     private val postsSchedulesTable: PostsSchedulesTable,
+    private val postsTable: PostsBaseInfoTable,
     private val botWR: WeakReference<RequestsExecutor>
 ) : Command() {
     override val commandRegex: Regex = Regex("^$disableSchedulePublishCommand$")
@@ -47,7 +49,7 @@ class DisableTimerCommand(
 
 
         try {
-            val postId = PostsTable.findPost(replyToMessage.messageId)
+            val postId = postsTable.findPost(replyToMessage.messageId)
 
             postsSchedulesTable.unregisterPost(postId)
 

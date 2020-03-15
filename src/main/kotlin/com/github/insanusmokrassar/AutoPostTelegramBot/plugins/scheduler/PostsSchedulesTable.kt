@@ -1,8 +1,6 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.scheduler
 
-import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.NewDefaultCoroutineScope
-import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscribe
 import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.asFlow
@@ -15,7 +13,9 @@ typealias PostIdPostTime = Pair<Int, DateTime>
 
 private val PostsSchedulesTableScope = NewDefaultCoroutineScope(4)
 
-class PostsSchedulesTable : Table() {
+class PostsSchedulesTable(
+    private val db: Database
+) : Table() {
     private val postIdColumn = integer("postId").primaryKey()
     private val postTimeColumn = datetime("postTime")
 
@@ -28,13 +28,13 @@ class PostsSchedulesTable : Table() {
     val postTimeRemovedFlow = postTimeRemovedChannel.asFlow()
 
     init {
-        PostsTable.postRemovedChannel.subscribe {
-            unregisterPost(it)
+        transaction(db) {
+            SchemaUtils.createMissingTablesAndColumns(this@PostsSchedulesTable)
         }
     }
 
     fun postTime(postId: Int): DateTime? {
-        return transaction {
+        return transaction(db) {
             select {
                 postIdColumn.eq(postId)
             }.firstOrNull() ?.get(postTimeColumn)
@@ -44,7 +44,7 @@ class PostsSchedulesTable : Table() {
     fun registerPostTime(postId: Int, postTime: DateTime) {
         var updated = false
         var registered = false
-        transaction {
+        transaction(db) {
             postTime(postId) ?.also {
                 update(
                     {
@@ -73,7 +73,7 @@ class PostsSchedulesTable : Table() {
     }
 
     fun unregisterPost(postId: Int) {
-        transaction {
+        transaction(db) {
             deleteWhere {
                 postIdColumn.eq(postId)
             } > 0
@@ -87,11 +87,11 @@ class PostsSchedulesTable : Table() {
     }
 
     fun registeredPostsTimes(): List<PostIdPostTime> {
-        return transaction { selectAll().map { it[postIdColumn] to it[postTimeColumn] }.sortedBy { (_, time) -> time.millis } }
+        return transaction(db) { selectAll().map { it[postIdColumn] to it[postTimeColumn] }.sortedBy { (_, time) -> time.millis } }
     }
 
     fun registeredPostsTimes(period: Pair<DateTime, DateTime>): List<PostIdPostTime> {
-        return transaction {
+        return transaction(db) {
             select {
                 postTimeColumn.between(period.first, period.second)
             }.map {
@@ -103,7 +103,7 @@ class PostsSchedulesTable : Table() {
     }
 
     fun nearPost(): PostIdPostTime? {
-        return transaction {
+        return transaction(db) {
             registeredPostsTimes().minBy { (_, time) ->
                 time.millis
             }

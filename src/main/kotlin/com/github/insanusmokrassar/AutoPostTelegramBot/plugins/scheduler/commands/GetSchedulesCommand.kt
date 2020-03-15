@@ -1,6 +1,6 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.scheduler.commands
 
-import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsMessagesTable
+import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsMessagesInfoTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.commonLogger
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.scheduler.PostsSchedulesTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.*
@@ -8,7 +8,7 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.utils.commands.Command
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.asPairs
 import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
 import com.github.insanusmokrassar.TelegramBotAPI.requests.ForwardMessage
-import com.github.insanusmokrassar.TelegramBotAPI.requests.send.SendMessage
+import com.github.insanusmokrassar.TelegramBotAPI.requests.send.SendTextMessage
 import com.github.insanusmokrassar.TelegramBotAPI.types.ChatIdentifier
 import com.github.insanusmokrassar.TelegramBotAPI.types.UpdateIdentifier
 import com.github.insanusmokrassar.TelegramBotAPI.types.message.abstracts.CommonMessage
@@ -23,6 +23,7 @@ private val GetSchedulesCommandScope = NewDefaultCoroutineScope(1)
 
 class GetSchedulesCommand(
     private val postsSchedulesTable: PostsSchedulesTable,
+    private val postsMessagesTable: PostsMessagesInfoTable,
     private val executorWR: WeakReference<RequestsExecutor>,
     private val sourceChatId: ChatIdentifier
 ) : Command() {
@@ -37,7 +38,7 @@ class GetSchedulesCommand(
         GetSchedulesCommandScope.launch {
             try {
                 executor.execute(
-                    SendMessage(
+                    SendTextMessage(
                         chatId,
                         "Let me prepare data"
                     )
@@ -84,23 +85,22 @@ class GetSchedulesCommand(
             }.let {
                 if (it.isEmpty()) {
                     executor.executeAsync(
-                        SendMessage(
+                        SendTextMessage(
                             chatId,
                             "Nothing to show, schedule queue is empty"
                         )
                     )
                 } else {
-                    it.forEach {
-                            (postId, time) ->
+                    it.forEach { (postId, time) ->
                         executor.execute(
                             ForwardMessage(
                                 sourceChatId,
                                 chatId,
-                                PostsMessagesTable.getMessagesOfPost(postId).firstOrNull() ?.messageId ?: return@forEach
+                                postsMessagesTable.getMessagesOfPost(postId).firstOrNull() ?.messageId ?: return@forEach
                             )
                         )
                         executor.execute(
-                            SendMessage(
+                            SendTextMessage(
                                 chatId,
                                 "Post time: $time"
                             )

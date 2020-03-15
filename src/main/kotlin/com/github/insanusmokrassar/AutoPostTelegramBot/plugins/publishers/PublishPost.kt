@@ -1,13 +1,14 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.publishers
 
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.exceptions.NoRowFoundException
+import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsBaseInfoTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.abstractions.Chooser
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.NewDefaultCoroutineScope
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.commands.Command
 import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
 import com.github.insanusmokrassar.TelegramBotAPI.requests.DeleteMessage
-import com.github.insanusmokrassar.TelegramBotAPI.requests.send.SendMessage
+import com.github.insanusmokrassar.TelegramBotAPI.requests.send.SendTextMessage
 import com.github.insanusmokrassar.TelegramBotAPI.types.ChatIdentifier
 import com.github.insanusmokrassar.TelegramBotAPI.types.ParseMode.MarkdownParseMode
 import com.github.insanusmokrassar.TelegramBotAPI.types.UpdateIdentifier
@@ -22,7 +23,8 @@ class PublishPost(
     chooser: Chooser?,
     publisher: Publisher,
     private val botWR: WeakReference<RequestsExecutor>,
-    private val logsChatId: ChatIdentifier
+    private val logsChatId: ChatIdentifier,
+    private val postsTable: PostsBaseInfoTable = PostsTable
 ) : Command() {
     override val commandRegex: Regex = Regex("^/publishPost( \\d+)?$")
 
@@ -45,11 +47,11 @@ class PublishPost(
         message.replyTo ?.also {
             try {
                 choosen.add(
-                    PostsTable.findPost(it.messageId)
+                    postsTable.findPost(it.messageId)
                 )
             } catch (e: NoRowFoundException) {
                 botWR.get() ?.execute(
-                    SendMessage(
+                    SendTextMessage(
                         message.chat.id,
                         "Message is not related to any post",
                         replyToMessageId = it.messageId
@@ -82,7 +84,7 @@ class PublishPost(
         botWR.get() ?.let { executor ->
             PublishPostScope.launch {
                 executor.execute(
-                    SendMessage(
+                    SendTextMessage(
                         logsChatId,
                         "Was chosen to publish: ${choosen.size}. (Repeats of choosing was excluded)",
                         parseMode = MarkdownParseMode

@@ -1,7 +1,6 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot
 
-import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsMessagesTable
-import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsTable
+import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.*
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.Config
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.FinalConfig
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.DefaultPluginManager
@@ -50,12 +49,9 @@ fun main(args: Array<String>) {
 
     val bot = config.bot
 
-    config.databaseConfig.apply {
-        connect()
-
-        transaction {
-            SchemaUtils.createMissingTablesAndColumns(PostsTable, PostsMessagesTable)
-        }
+    config.also {
+        PostsTable = it.postsTable
+        PostsMessagesTable = it.postsMessagesTable
     }
 
     runBlocking {

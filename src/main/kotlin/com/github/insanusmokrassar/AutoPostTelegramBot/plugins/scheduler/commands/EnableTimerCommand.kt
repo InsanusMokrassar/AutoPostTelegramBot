@@ -1,8 +1,7 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.scheduler.commands
 
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.exceptions.NoRowFoundException
-import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsMessagesTable
-import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsTable
+import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.*
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.scheduler.PostsSchedulesTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.NewDefaultCoroutineScope
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.commands.Command
@@ -10,7 +9,7 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.utils.parseDateTimes
 import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
 import com.github.insanusmokrassar.TelegramBotAPI.requests.DeleteMessage
 import com.github.insanusmokrassar.TelegramBotAPI.requests.ForwardMessage
-import com.github.insanusmokrassar.TelegramBotAPI.requests.send.SendMessage
+import com.github.insanusmokrassar.TelegramBotAPI.requests.send.SendTextMessage
 import com.github.insanusmokrassar.TelegramBotAPI.types.*
 import com.github.insanusmokrassar.TelegramBotAPI.types.ParseMode.MarkdownParseMode
 import com.github.insanusmokrassar.TelegramBotAPI.types.message.abstracts.CommonMessage
@@ -26,7 +25,7 @@ private fun sendHelpForUsage(
     chatId: ChatId
 ) {
     executor.executeAsync(
-        SendMessage(
+        SendTextMessage(
             chatId,
             "Usage: `/$setPostTimeCommandName [time format]`.\n" +
                 "Reply post registered message and write command + time in correct format",
@@ -39,6 +38,8 @@ private val EnableTimerCommandScope = NewDefaultCoroutineScope(1)
 
 class EnableTimerCommand(
     private val postsSchedulesTable: PostsSchedulesTable,
+    private val postsTable: PostsBaseInfoTable,
+    private val postsMessagesTable: PostsMessagesInfoTable,
     private val executorWR: WeakReference<RequestsExecutor>,
     private val logsChatId: ChatIdentifier
 ) : Command() {
@@ -56,7 +57,7 @@ class EnableTimerCommand(
             return
         }
         try {
-            val postId = PostsTable.findPost(replyToMessage.messageId)
+            val postId = postsTable.findPost(replyToMessage.messageId)
             val chatId = message.chat.id
 
             val preparsedText = content.text.let {
@@ -83,13 +84,13 @@ class EnableTimerCommand(
                             ForwardMessage(
                                 chatId,
                                 logsChatId,
-                                PostsMessagesTable.getMessagesOfPost(
+                                postsMessagesTable.getMessagesOfPost(
                                     postId
                                 ).firstOrNull() ?.messageId ?: replyToMessage.messageId
                             )
                         ).messageId
                         executor.executeAsync(
-                            SendMessage(
+                            SendTextMessage(
                                 logsChatId,
                                 "Parsed time: $parsed\n" +
                                     "Post saved with timer",

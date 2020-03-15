@@ -1,13 +1,12 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.base.commands
 
-import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsMessagesTable
-import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsTable
+import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.*
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.commands.buildCommandFlow
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.sendToLogger
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.flow.collectWithErrors
 import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
 import com.github.insanusmokrassar.TelegramBotAPI.requests.DeleteMessage
-import com.github.insanusmokrassar.TelegramBotAPI.requests.send.SendMessage
+import com.github.insanusmokrassar.TelegramBotAPI.requests.send.SendTextMessage
 import com.github.insanusmokrassar.TelegramBotAPI.types.ChatIdentifier
 import com.github.insanusmokrassar.TelegramBotAPI.types.MessageIdentifier
 import com.github.insanusmokrassar.TelegramBotAPI.types.ParseMode.MarkdownParseMode
@@ -19,15 +18,17 @@ suspend fun deletePost(
     executor: RequestsExecutor,
     chatId: ChatIdentifier,
     postId: Int,
+    postsTable: PostsBaseInfoTable,
+    postsMessagesTable: PostsMessagesInfoTable,
     vararg additionalMessagesIdsToDelete: MessageIdentifier
 ) {
     val messagesToDelete = mutableListOf(
-        *PostsMessagesTable.getMessagesOfPost(postId).map { it.messageId }.toTypedArray(),
-        PostsTable.postRegisteredMessage(postId),
+        *postsMessagesTable.getMessagesOfPost(postId).map { it.messageId }.toTypedArray(),
+        postsTable.postRegisteredMessage(postId),
         *additionalMessagesIdsToDelete.toTypedArray()
     ).toSet().filterNotNull()
 
-    PostsTable.removePost(postId)
+    postsTable.removePost(postId)
 
     messagesToDelete.forEach { currentMessageToDeleteId ->
         try {
@@ -49,7 +50,9 @@ suspend fun deletePost(
 val deletePostRegex: Regex = Regex("^deletePost$")
 
 internal fun CoroutineScope.enableDeletingOfPostsCommand(
-    botWR: WeakReference<RequestsExecutor>
+    botWR: WeakReference<RequestsExecutor>,
+    postsTable: PostsBaseInfoTable,
+    postsMessagesTable: PostsMessagesInfoTable
 ): Job = launch {
     buildCommandFlow(
         deletePostRegex
@@ -58,18 +61,20 @@ internal fun CoroutineScope.enableDeletingOfPostsCommand(
         message.replyTo ?.also {
             val messageId = it.messageId
             try {
-                val postId = PostsTable.findPost(messageId)
+                val postId = postsTable.findPost(messageId)
                 val chatId = message.chat.id
                 deletePost(
                     bot,
                     chatId,
                     postId,
+                    postsTable,
+                    postsMessagesTable,
                     messageId,
                     message.messageId
                 )
             } catch (e: Exception) {
                 bot.execute(
-                    SendMessage(
+                    SendTextMessage(
                         message.chat.id,
                         "Message in reply is not related to any post",
                         parseMode = MarkdownParseMode

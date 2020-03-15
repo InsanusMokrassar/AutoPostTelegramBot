@@ -1,11 +1,11 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.base.commands
 
-import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsMessagesTable
+import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsMessagesInfoTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.commonLogger
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.base.PostMessagesRegistrant
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.commands.CommandPlugin
 import com.github.insanusmokrassar.TelegramBotAPI.requests.DeleteMessage
-import com.github.insanusmokrassar.TelegramBotAPI.requests.send.SendMessage
+import com.github.insanusmokrassar.TelegramBotAPI.requests.send.SendTextMessage
 import com.github.insanusmokrassar.TelegramBotAPI.types.UpdateIdentifier
 import com.github.insanusmokrassar.TelegramBotAPI.types.message.abstracts.CommonMessage
 import com.github.insanusmokrassar.TelegramBotAPI.utils.extensions.executeAsync
@@ -14,7 +14,8 @@ import com.github.insanusmokrassar.TelegramBotAPI.utils.extensions.executeUnsafe
 val renewRegisteredMessageRegex: Regex = Regex("^renewRegistered(Message)?$")
 
 class RenewRegisteredMessage(
-    private val postMessagesRegistrant: PostMessagesRegistrant
+    private val postMessagesRegistrant: PostMessagesRegistrant,
+    private val postsMessagesTable: PostsMessagesInfoTable
 ) : CommandPlugin() {
     override val commandRegex: Regex = renewRegisteredMessageRegex
 
@@ -22,7 +23,7 @@ class RenewRegisteredMessage(
         val executor = botWR ?.get() ?: return
         val replyTo = message.replyTo ?: let {
             executor.executeUnsafe(
-                SendMessage(
+                SendTextMessage(
                     message.chat.id,
                     "If you want to renew registered message, you must reply to some of messages of post",
                     replyToMessageId = message.messageId
@@ -30,9 +31,9 @@ class RenewRegisteredMessage(
             )
             return
         }
-        val postId = PostsMessagesTable.findPostByMessageId(replyTo.messageId) ?: let {
+        val postId = postsMessagesTable.findPostByMessageId(replyTo.messageId) ?: let {
             executor.executeUnsafe(
-                SendMessage(
+                SendTextMessage(
                     message.chat.id,
                     "Replied message does not match to any post",
                     replyToMessageId = message.messageId

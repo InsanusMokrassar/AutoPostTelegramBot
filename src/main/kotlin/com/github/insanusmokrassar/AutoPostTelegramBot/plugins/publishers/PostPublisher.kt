@@ -1,7 +1,6 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.publishers
 
-import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsMessagesTable
-import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsTable
+import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.*
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.FinalConfig
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.PostMessage
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.*
@@ -12,7 +11,7 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.utils.resend
 import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
 import com.github.insanusmokrassar.TelegramBotAPI.requests.DeleteMessage
 import com.github.insanusmokrassar.TelegramBotAPI.requests.ForwardMessage
-import com.github.insanusmokrassar.TelegramBotAPI.requests.send.SendMessage
+import com.github.insanusmokrassar.TelegramBotAPI.requests.send.SendTextMessage
 import com.github.insanusmokrassar.TelegramBotAPI.types.*
 import com.github.insanusmokrassar.TelegramBotAPI.types.message.abstracts.ContentMessage
 import com.github.insanusmokrassar.TelegramBotAPI.types.message.abstracts.Message
@@ -46,6 +45,11 @@ class PostPublisher : Publisher {
     @Transient
     private var publishPostCommand: PublishPost? = null
 
+    @Transient
+    private lateinit var postsTable: PostsBaseInfoTable
+    @Transient
+    private lateinit var postsMessagesTable: PostsMessagesInfoTable
+
     override suspend fun onInit(
         executor: RequestsExecutor,
         baseConfig: FinalConfig,
@@ -56,13 +60,17 @@ class PostPublisher : Publisher {
                 pluginManager.findFirstPlugin(),
                 pluginManager.findFirstPlugin() ?: throw IllegalStateException("Plugin `PostPublisher` can't be inited: there is no Publisher plugin"),
                 it,
-                baseConfig.logsChatId
+                baseConfig.logsChatId,
+                baseConfig.postsTable
             )
         }
 
         sourceChatId = baseConfig.sourceChatId
         targetChatId = baseConfig.targetChatId
         logsChatId = baseConfig.logsChatId
+
+        postsTable = baseConfig.postsTable
+        postsMessagesTable = baseConfig.postsMessagesTable
     }
 
     override suspend fun publishPost(postId: Int) {
@@ -75,7 +83,7 @@ class PostPublisher : Publisher {
 
         try {
             executor.execute(
-                SendMessage(
+                SendTextMessage(
                     logsChatId,
                     "Start post"
                 )
@@ -83,7 +91,7 @@ class PostPublisher : Publisher {
                 messagesToDelete.add(it.chat.id to it.messageId)
             }
 
-            val messagesOfPost = PostsMessagesTable.getMessagesOfPost(postId).asSequence().associate {
+            val messagesOfPost = postsMessagesTable.getMessagesOfPost(postId).asSequence().associate {
                 it.messageId to it
             }.toMutableMap()
 
@@ -105,7 +113,7 @@ class PostPublisher : Publisher {
                 commonLogger.warning(
                     "Can't forward message with id: $messageId; it will be removed from post"
                 )
-                PostsMessagesTable.removePostMessage(postId, messageId)
+                postsMessagesTable.removePostMessage(postId, messageId)
                 messagesOfPost.remove(messageId)
             }
 
@@ -115,7 +123,7 @@ class PostPublisher : Publisher {
 
             val contentMessages = messages.asSequence().mapNotNull { it.value as? ContentMessage<*> }.associate { it.messageId to it }
             if (contentMessages.isEmpty()) {
-                PostsTable.removePost(postId)
+                postsTable.removePost(postId)
                 commonLogger.warning("Post $postId will be removed cause it contains not publishable messages")
                 return
             }
@@ -162,7 +170,9 @@ class PostPublisher : Publisher {
             deletePost(
                 executor,
                 sourceChatId,
-                postId
+                postId,
+                postsTable,
+                postsMessagesTable
             )
         } catch (e: Throwable) {
             sendToLogger(e, "Publish post")
