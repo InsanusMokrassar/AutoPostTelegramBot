@@ -2,7 +2,6 @@ package com.github.insanusmokrassar.AutoPostTelegramBot.utils.CallbackQueryRecei
 
 import com.github.insanusmokrassar.AutoPostTelegramBot.checkedCallbacksQueriesFlow
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.NewDefaultCoroutineScope
-import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscribe
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.flow.collectWithErrors
 import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
 import com.github.insanusmokrassar.TelegramBotAPI.types.update.CallbackQueryUpdate

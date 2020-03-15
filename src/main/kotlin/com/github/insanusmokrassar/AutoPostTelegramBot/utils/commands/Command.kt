@@ -1,7 +1,6 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.utils.commands
 
 import com.github.insanusmokrassar.AutoPostTelegramBot.checkedMessagesFlow
-import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscribe
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.flow.collectWithErrors
 import com.github.insanusmokrassar.TelegramBotAPI.types.MessageEntity.textsources.BotCommandTextSource
 import com.github.insanusmokrassar.TelegramBotAPI.types.UpdateIdentifier

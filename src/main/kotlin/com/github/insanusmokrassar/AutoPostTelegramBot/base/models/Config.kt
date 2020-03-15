@@ -5,18 +5,12 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.Post
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.Plugin
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.base.commands.CommonKnownPostsTransactions
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.NewDefaultCoroutineScope
-import com.github.insanusmokrassar.AutoPostTelegramBot.utils.PluginsListSerializer
 import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
 import com.github.insanusmokrassar.TelegramBotAPI.types.ChatId
 import com.github.insanusmokrassar.TelegramBotAPI.types.toChatId
-import com.github.insanusmokrassar.TelegramBotAPI.types.update.*
-import com.github.insanusmokrassar.TelegramBotAPI.types.update.MediaGroupUpdates.MediaGroupUpdate
 import com.github.insanusmokrassar.TelegramBotAPI.updateshandlers.UpdatesFilter
-import com.github.insanusmokrassar.TelegramBotAPI.utils.extensions.startGettingOfUpdates
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.channels.SendChannel
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.Transient
 import org.h2.Driver
 
 @Serializable

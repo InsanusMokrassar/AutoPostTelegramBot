@@ -1,7 +1,6 @@
 package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.choosers
 
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsBaseInfoTable
-import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.PostId
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.abstractions.RatingPair
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.abstractions.getRatingRange
@@ -11,7 +10,6 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.utils.parseDateTimes
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import org.joda.time.DateTime
-import org.joda.time.DateTimeZone
 import java.util.*
 
 private const val ascendSort = "ascend"
