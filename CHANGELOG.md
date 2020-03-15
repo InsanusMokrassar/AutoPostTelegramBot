@@ -13,7 +13,21 @@
 * `DatabaseConfig#connect` now is deprecated. It is recommended to use `DatabaseConfig#database` property
 * Fixed issue with `PostsSchedulesTable`, when table was not created automatically
 * Refactor work with posts and posts messages
-* `SafeLazy` util class was added
+    * `PostsTable` and `PostsMessagesTable` now are deprecated global values. It can be replaced inside of plugins by
+    calling `baseConfig.postsTable` or `baseConfig.postsMessagesTable` inside of `onInit` block of your plugin
+    * `PostTransaction` now have incoming arguments `postsTable` and `postsMessagesTable`, which are by default set up
+    to deprecated global variables
+    * `RateChooser` now have two protected fields: `postsTable` and `postsMessagesTable`
+    * Several classes now have `postsTable` or/and `postsMessagesTable` as arguments. Remember that it is optional for
+    now, but will be required soon:
+        * `PublishPost`
+        * `DisableTimerCommand`
+        * `EnableTimerCommand`
+        * `GetSchedulesCommand`
+        * `TimerScheduleCommand`
+* `PostsSchedulesTable` now require database connection as argument
+* `PostsTableScope` now is deprecated due to incorrect visibility level (soon it will be `private`)
+* `SafeLazy` util class was added. You can use `CoroutineScope#createSafeLazy` for easily creating of it
 
 ### 1.8.1
 

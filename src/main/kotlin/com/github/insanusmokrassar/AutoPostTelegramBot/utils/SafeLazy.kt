@@ -5,6 +5,8 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlin.coroutines.*
 
+fun <T : Any> CoroutineScope.createSafeLazy() = SafeLazy<T>(this)
+
 class SafeLazy<T: Any> (
     parentScope: CoroutineScope
 ) : Closeable {

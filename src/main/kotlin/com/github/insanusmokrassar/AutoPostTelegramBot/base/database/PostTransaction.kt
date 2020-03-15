@@ -18,8 +18,8 @@ val transactionCompletedChannel = BroadcastChannel<PostId>(Channel.CONFLATED)
 val PostTransactionsScope = NewDefaultCoroutineScope()
 
 class PostTransaction(
-    private val postsTable: PostsBaseInfoTable,
-    private val postsMessagesTable: PostsMessagesInfoTable
+    private val postsTable: PostsBaseInfoTable = PostsTable,
+    private val postsMessagesTable: PostsMessagesInfoTable = PostsMessagesTable
 ) : Closeable {
     private val messages = ArrayList<PostMessage>()
 

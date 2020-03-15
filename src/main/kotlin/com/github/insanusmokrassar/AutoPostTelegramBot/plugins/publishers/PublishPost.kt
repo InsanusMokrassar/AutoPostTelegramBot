@@ -2,6 +2,7 @@ package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.publishers
 
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.exceptions.NoRowFoundException
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsBaseInfoTable
+import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.abstractions.Chooser
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.NewDefaultCoroutineScope
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.commands.Command
@@ -23,7 +24,7 @@ class PublishPost(
     publisher: Publisher,
     private val botWR: WeakReference<RequestsExecutor>,
     private val logsChatId: ChatIdentifier,
-    private val postsTable: PostsBaseInfoTable
+    private val postsTable: PostsBaseInfoTable = PostsTable
 ) : Command() {
     override val commandRegex: Regex = Regex("^/publishPost( \\d+)?$")
 
