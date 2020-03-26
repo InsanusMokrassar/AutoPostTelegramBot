@@ -3,8 +3,11 @@ package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.scheduler
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.FinalConfig
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.*
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.scheduler.commands.*
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.SafeLazy
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscribe
 import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import java.lang.ref.WeakReference
@@ -12,8 +15,7 @@ import java.lang.ref.WeakReference
 @Serializable
 class SchedulerPlugin : Plugin {
     @Transient
-    lateinit var timerSchedulesTable: PostsSchedulesTable
-        private set
+    private val timerSchedulesTableLazy = SafeLazy<PostsSchedulesTable>(CoroutineScope(Dispatchers.Default))
 
     @Transient
     private lateinit var enableTimerCommand: EnableTimerCommand
@@ -25,8 +27,12 @@ class SchedulerPlugin : Plugin {
     @Transient
     private lateinit var scheduler: Scheduler
 
+    suspend fun getSchedulesTable() = timerSchedulesTableLazy.get()
+
     override suspend fun onInit(executor: RequestsExecutor, baseConfig: FinalConfig, pluginManager: PluginManager) {
-        timerSchedulesTable = PostsSchedulesTable(baseConfig.databaseConfig.database)
+        timerSchedulesTableLazy.set(PostsSchedulesTable(baseConfig.databaseConfig.database))
+        val timerSchedulesTable = timerSchedulesTableLazy.get()
+
         scheduler = Scheduler(
             timerSchedulesTable,
             pluginManager.findFirstPlugin() ?: return

@@ -8,6 +8,10 @@
 * `TimerTriggerStrategy` now have new extension `getPostsInRange` and `getTriggersInRange`
 * `MostRatedChooser` now correctly work with exceptions list
 
+### 1.8.3
+
+* Hotfix for scheduler plugin and its table
+
 ### 1.8.2
 
 * `DatabaseConfig#connect` now is deprecated. It is recommended to use `DatabaseConfig#database` property

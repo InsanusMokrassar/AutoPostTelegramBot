@@ -120,10 +120,12 @@ class TimerTriggerStrategy (
         val near = timesOfTriggering.nearDateTime(after) ?: return null
         schedulerPluginToCheckCollision ?.let {
             val afterNear = near + 1000L
-            val thereIsScheduled = it.timerSchedulesTable.registeredPostsTimes(
-                near - 1000L to afterNear
-            ).any { (_, dateTime) ->
-                dateTime == near
+            val thereIsScheduled = runBlocking {
+                it.getSchedulesTable().registeredPostsTimes(
+                    near - 1000L to afterNear
+                ).any { (_, dateTime) ->
+                    dateTime == near
+                }
             }
             if (thereIsScheduled) {
                 return getNextTime(afterNear)
@@ -149,12 +151,12 @@ class TimerTriggerStrategy (
             pluginManager.findFirstPlugin<SchedulerPlugin>() ?.let {
                 schedulerPluginToCheckCollision = it
                 TimerTriggerStrategyScope.launch {
-                    it.timerSchedulesTable.postTimeRegisteredFlow.collectWithErrors { (_, dateTime) ->
+                    it.getSchedulesTable().postTimeRegisteredFlow.collectWithErrors { (_, dateTime) ->
                         publicationTimesPossiblyChangedBroadcastChannel.send(dateTime)
                     }
                 }
                 TimerTriggerStrategyScope.launch {
-                    it.timerSchedulesTable.postTimeChangedFlow.collectWithErrors { (_, dateTime) ->
+                    it.getSchedulesTable().postTimeChangedFlow.collectWithErrors { (_, dateTime) ->
                         publicationTimesPossiblyChangedBroadcastChannel.send(dateTime)
                     }
                 }

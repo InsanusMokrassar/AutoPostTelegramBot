@@ -24,7 +24,7 @@ class RatingTimerAutoDisablePlugin : Plugin {
 
         CoroutineScope(Dispatchers.Default).apply {
             launch {
-                schedulerPlugin.timerSchedulesTable.postTimeRegisteredFlow.collectWithErrors(
+                schedulerPlugin.getSchedulesTable().postTimeRegisteredFlow.collectWithErrors(
                     { _, error ->
                         commonLogger.throwing(
                             name,
@@ -40,7 +40,7 @@ class RatingTimerAutoDisablePlugin : Plugin {
             }
             launch {
                 ratingPlugin.allocateRatingAddedFlow().collectWithErrors {
-                    schedulerPlugin.timerSchedulesTable.unregisterPost(it.first)
+                    schedulerPlugin.getSchedulesTable().unregisterPost(it.first)
                 }
             }
         }
