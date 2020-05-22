@@ -70,8 +70,7 @@ data class FinalConfig (
             scope
         ) ?: longPollingConfig ?.applyTo(
             bot,
-            filter.asUpdateReceiver,
-            filter.allowedUpdates
-        ) ?.start(scope)
+            filter
+        )
     }
 }

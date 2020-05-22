@@ -2,12 +2,14 @@ package com.github.insanusmokrassar.AutoPostTelegramBot.utils.commands
 
 import com.github.insanusmokrassar.AutoPostTelegramBot.checkedMessagesFlow
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.flow.collectWithErrors
+import com.github.insanusmokrassar.TelegramBotAPI.extensions.utils.updates.*
 import com.github.insanusmokrassar.TelegramBotAPI.types.MessageEntity.textsources.BotCommandTextSource
 import com.github.insanusmokrassar.TelegramBotAPI.types.UpdateIdentifier
 import com.github.insanusmokrassar.TelegramBotAPI.types.message.abstracts.CommonMessage
 import com.github.insanusmokrassar.TelegramBotAPI.types.message.content.TextContent
 import com.github.insanusmokrassar.TelegramBotAPI.types.update.abstracts.BaseMessageUpdate
-import com.github.insanusmokrassar.TelegramBotAPI.utils.extensions.UpdateReceiver
+import com.github.insanusmokrassar.TelegramBotAPI.types.update.abstracts.BaseSentMessageUpdate
+import com.github.insanusmokrassar.TelegramBotAPI.updateshandlers.UpdateReceiver
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.mapNotNull
@@ -45,17 +47,6 @@ abstract class Command {
 
 fun buildCommandFlow(
     commandRegex: Regex
-): Flow<CommonMessage<TextContent>> = checkedMessagesFlow.mapNotNull {
-    val data = it.data
-    if (data is CommonMessage<*>) {
-        val contentAsText = data.content as? TextContent ?: return@mapNotNull null
-        val contentEntities = contentAsText.entities
-        contentEntities.firstOrNull { textPart ->
-            val source = textPart.source
-            source is BotCommandTextSource && commandRegex.matches(source.command)
-        } ?.let {
-            return@mapNotNull data as CommonMessage<TextContent>
-        }
-    }
-    null
-}
+): Flow<CommonMessage<TextContent>> = checkedMessagesFlow.onlySentMessageUpdates().filterCommandsInsideTextMessages(
+    commandRegex
+).mapNotNull { it as? CommonMessage<TextContent> }

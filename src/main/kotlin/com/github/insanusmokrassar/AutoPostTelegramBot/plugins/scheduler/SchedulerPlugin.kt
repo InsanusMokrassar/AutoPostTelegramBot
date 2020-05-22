@@ -4,10 +4,10 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.FinalConfig
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.*
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.scheduler.commands.*
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.SafeLazy
-import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscribe
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.flow.collectWithErrors
 import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.asFlow
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import java.lang.ref.WeakReference
@@ -39,8 +39,12 @@ class SchedulerPlugin : Plugin {
         )
         val executorWR = WeakReference(executor)
 
-        baseConfig.postsTable.postRemovedChannel.subscribe {
-            timerSchedulesTable.unregisterPost(it)
+        coroutineScope {
+            launch {
+                baseConfig.postsTable.postRemovedChannel.asFlow().collectWithErrors {
+                    timerSchedulesTable.unregisterPost(it)
+                }
+            }
         }
 
         enableTimerCommand = EnableTimerCommand(

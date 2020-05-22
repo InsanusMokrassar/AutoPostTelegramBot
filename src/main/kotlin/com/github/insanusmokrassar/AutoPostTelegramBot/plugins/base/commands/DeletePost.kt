@@ -11,8 +11,8 @@ import com.github.insanusmokrassar.TelegramBotAPI.requests.send.SendTextMessage
 import com.github.insanusmokrassar.TelegramBotAPI.types.ChatIdentifier
 import com.github.insanusmokrassar.TelegramBotAPI.types.MessageIdentifier
 import com.github.insanusmokrassar.TelegramBotAPI.types.ParseMode.MarkdownParseMode
+import com.github.insanusmokrassar.TelegramBotAPI.utils.extensions.executeUnsafe
 import kotlinx.coroutines.*
-import kotlinx.io.IOException
 import java.lang.ref.WeakReference
 
 suspend fun deletePost(
@@ -32,18 +32,18 @@ suspend fun deletePost(
     postsTable.removePost(postId)
 
     messagesToDelete.forEach { currentMessageToDeleteId ->
-        try {
-            executor.execute(
-                DeleteMessage(
-                    chatId,
-                    currentMessageToDeleteId
+        executor.executeUnsafe(
+            DeleteMessage(
+                chatId,
+                currentMessageToDeleteId
+            )
+        ) {
+            it.forEach { e ->
+                executor.sendToLogger(
+                    e,
+                    "Deleting of post"
                 )
-            )
-        } catch (e: IOException) {
-            executor.sendToLogger(
-                e,
-                "Deleting of post"
-            )
+            }
         }
     }
 }

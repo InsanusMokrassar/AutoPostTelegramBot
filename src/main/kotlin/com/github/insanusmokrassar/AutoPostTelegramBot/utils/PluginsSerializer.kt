@@ -3,19 +3,18 @@ package com.github.insanusmokrassar.AutoPostTelegramBot.utils
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.Plugin
 import com.github.insanusmokrassar.TelegramBotAPI.utils.toJson
 import kotlinx.serialization.*
-import kotlinx.serialization.internal.ArrayListSerializer
-import kotlinx.serialization.internal.StringDescriptor
+import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.json.*
 
 @Serializer(Plugin::class)
 internal object PluginSerializer : KSerializer<Plugin> {
-    override val descriptor: SerialDescriptor = StringDescriptor.withName(Plugin::class.simpleName ?: "Plugin")
+    override val descriptor: SerialDescriptor = JsonArraySerializer.descriptor
 
-    override fun serialize(encoder: Encoder, obj: Plugin) {
+    override fun serialize(encoder: Encoder, value: Plugin) {
         val array = JsonArray(
             listOf(
-                JsonPrimitive(obj::class.java.canonicalName),
-                obj.toJson(serializerByTypeToken(obj::class.java))
+                JsonPrimitive(value::class.java.canonicalName),
+                value.toJson(serializerByTypeToken(value::class.java))
             )
         )
         JsonArraySerializer.serialize(
@@ -38,4 +37,4 @@ internal object PluginSerializer : KSerializer<Plugin> {
     }
 }
 
-object PluginsListSerializer: KSerializer<List<Plugin>> by ArrayListSerializer(PluginSerializer)
+object PluginsListSerializer: KSerializer<List<Plugin>> by ListSerializer(PluginSerializer)

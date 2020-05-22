@@ -6,7 +6,7 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.transaction
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.commonLogger
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.NewDefaultCoroutineScope
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.sendToLogger
-import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.subscribeChecking
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.flow.collectWithErrors
 import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
 import com.github.insanusmokrassar.TelegramBotAPI.bot.exceptions.ReplyMessageNotFoundException
 import com.github.insanusmokrassar.TelegramBotAPI.requests.send.SendTextMessage
@@ -14,6 +14,7 @@ import com.github.insanusmokrassar.TelegramBotAPI.types.ChatIdentifier
 import com.github.insanusmokrassar.TelegramBotAPI.types.MessageIdentifier
 import com.github.insanusmokrassar.TelegramBotAPI.types.ParseMode.MarkdownParseMode
 import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.asFlow
 import java.lang.ref.WeakReference
 
 class PostMessagesRegistrant(
@@ -24,14 +25,14 @@ class PostMessagesRegistrant(
 ) {
     private val botWR = WeakReference(executor)
     init {
-        transactionCompletedChannel.subscribeChecking {
-            registerPostMessage(
-                it
-            )
-            true
-        }
-
         val scope = NewDefaultCoroutineScope()
+        scope.launch {
+            transactionCompletedChannel.asFlow().collectWithErrors {
+                registerPostMessage(
+                    it
+                )
+            }
+        }
 
         val registerJobs = postsTable.getAll().mapNotNull {
             if (postsTable.postRegisteredMessage(it) == null) {

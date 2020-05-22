@@ -16,7 +16,7 @@ import com.github.insanusmokrassar.TelegramBotAPI.types.update.CallbackQueryUpda
 import com.github.insanusmokrassar.TelegramBotAPI.types.update.MediaGroupUpdates.SentMediaGroupUpdate
 import com.github.insanusmokrassar.TelegramBotAPI.types.update.abstracts.BaseMessageUpdate
 import com.github.insanusmokrassar.TelegramBotAPI.updateshandlers.FlowsUpdatesFilter
-import com.github.insanusmokrassar.TelegramBotAPI.utils.extensions.UpdateReceiver
+import com.github.insanusmokrassar.TelegramBotAPI.updateshandlers.UpdateReceiver
 import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.asFlow
