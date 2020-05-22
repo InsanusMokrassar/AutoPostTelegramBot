@@ -14,42 +14,39 @@ publishing {
     publications {
         maven(MavenPublication) {
             from components.java
-            groupId "${project.group}"
-            artifactId "${project.name}"
-            version "${project.version}"
 
             artifact sourcesJar
             artifact javadocJar
-            
-            pom.withXml {
-                asNode().children().last() + {
-                    resolveStrategy = Closure.DELEGATE_FIRST
-                    name 'Auto post Telegram Bot'
-                    description 'It is base library for creating smart bot for simple management of channels posts'
-                    url "https://insanusmokrassar.github.io/${project.name}"
 
-                    scm {
-                        connection "scm:git:git://github.com/insanusmokrassar/${project.name}.git"
-                        developerConnection "scm:git:[fetch=]https://github.com/insanusmokrassar/${project.name}.git[push=]ssh:git@github.com:insanusmokrassar/${project.name}.git"
-                        url "https://github.com/insanusmokrassar/${project.name}"
+            pom {
+                resolveStrategy = Closure.DELEGATE_FIRST
 
-                    }
+                description = "It is base library for creating smart bot for simple management of channels posts"
+                name = "Auto post Telegram Bot"
+                url = "https://insanusmokrassar.github.io/AutoPostTelegramBot"
 
-                    developers {
+                scm {
+                    developerConnection = "scm:git:[fetch=]https://github.com/insanusmokrassar/AutoPostTelegramBot[push=]https://github.com/insanusmokrassar/AutoPostTelegramBot"
+                    url = "https://github.com/insanusmokrassar/AutoPostTelegramBot"
+                }
+
+                developers {
+                    
                         developer {
-                            id "InsanusMokrassar"
-                            name "Ovsyannikov Alexey"
-                            email "ovsyannikov.alexey95@gmail.com"
+                            id = "InsanusMokrassar"
+                            name = "Ovsyannikov Alexey"
+                            email = "ovsyannikov.alexey95@gmail.com"
                         }
-                    }
+                    
+                }
 
-                    licenses {
+                licenses {
+                    
                         license {
-                            name 'The Apache Software License, Version 2.0'
-                            url "https://github.com/InsanusMokrassar/${project.name}/blob/master/LICENSE"
-                            distribution 'repo'
+                            name = "Apache Software License 2.0"
+                            url = "https://opensource.org/licenses/Apache-2.0"
                         }
-                    }
+                    
                 }
             }
         }
