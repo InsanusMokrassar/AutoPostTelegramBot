@@ -2,6 +2,13 @@
 
 ## 1.9.0
 
+* Versions updates:
+    * Kotlin: `1.3.61` -> `1.3.72`
+    * Coroutines: `1.3.3` -> `1.3.6`
+    * Kotlin Serialization: `0.14.0` -> `0.20.0`
+    * `TelegramBotAPI` -> `TelegramBotAPI-all` + version change: `0.23.2` -> `0.27.3`
+    * Ktor: `1.3.1` -> `1.3.2`
+
 ## 1.8.0
 
 * Version updates:
