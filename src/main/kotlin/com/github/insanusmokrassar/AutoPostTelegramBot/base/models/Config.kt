@@ -5,6 +5,7 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.Post
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.Plugin
 import com.github.insanusmokrassar.AutoPostTelegramBot.plugins.base.commands.CommonKnownPostsTransactions
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.NewDefaultCoroutineScope
+import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.sendToLogger
 import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
 import com.github.insanusmokrassar.TelegramBotAPI.types.ChatId
 import com.github.insanusmokrassar.TelegramBotAPI.types.toChatId
@@ -54,7 +55,8 @@ data class FinalConfig (
     val databaseConfig: DatabaseConfig,
     val pluginsConfigs: List<Plugin> = emptyList(),
     private val webhookConfig: WebhookConfig? = null,
-    private val longPollingConfig: LongPollingConfig? = null
+    private val longPollingConfig: LongPollingConfig? = null,
+    private val errorsVerbose: Boolean = false
 ) {
     val postsMessagesTable = PostsMessagesInfoTable(databaseConfig.database)
     val postsTable = PostsBaseInfoTable(databaseConfig.database, postsMessagesTable)
@@ -68,13 +70,27 @@ data class FinalConfig (
             startWebhookServer(
                 bot,
                 filter,
-                scope
+                scope,
+                if (errorsVerbose) {
+                    {
+                        bot.sendToLogger(it, "Long polling getting updates")
+                    }
+                } else {
+                    null
+                }
             )
         } ?: longPollingConfig ?.apply {
             startLongPollingListening(
                 bot,
                 filter,
-                scope
+                scope,
+                if (errorsVerbose) {
+                    {
+                        bot.sendToLogger(it, "Long polling getting updates")
+                    }
+                } else {
+                    null
+                }
             )
         } ?: error("Webhooks or long polling way for updates retrieving must be used, but nothing configured")
     }

@@ -8,6 +8,7 @@ import com.github.insanusmokrassar.TelegramBotAPI.requests.abstracts.toInputFile
 import com.github.insanusmokrassar.TelegramBotAPI.requests.webhook.SetWebhook
 import com.github.insanusmokrassar.TelegramBotAPI.updateshandlers.UpdatesFilter
 import com.github.insanusmokrassar.TelegramBotAPI.updateshandlers.webhook.WebhookPrivateKeyConfig
+import com.github.insanusmokrassar.TelegramBotAPI.utils.ExceptionHandler
 import io.ktor.server.cio.CIO
 import io.ktor.server.engine.ApplicationEngine
 import kotlinx.coroutines.CoroutineScope
@@ -20,13 +21,13 @@ data class WebhookConfig(
     val port: Int,
     val certificatePath: String? = null,
     val maxConnections: Int? = null,
-    val privateKeyConfig: WebhookPrivateKeyConfig? = null,
-    val errorsVerbose: Boolean = false
+    val privateKeyConfig: WebhookPrivateKeyConfig? = null
 ) {
     suspend fun startWebhookServer(
         bot: RequestsExecutor,
         filter: UpdatesFilter,
-        scope: CoroutineScope = NewDefaultCoroutineScope(4)
+        scope: CoroutineScope = NewDefaultCoroutineScope(4),
+        exceptionsHandler: ExceptionHandler<Unit>? = null
     ): ApplicationEngine = certificatePath ?.let { File(it).toInputFile() } ?.let {
         bot.setWebhookInfoAndStartListenWebhooks(
             port,
@@ -37,11 +38,7 @@ data class WebhookConfig(
                 allowedUpdates = filter.allowedUpdates,
                 maxAllowedConnections = maxConnections
             ),
-            {
-                if (errorsVerbose) {
-                    bot.sendToLogger(it, "Webhooks")
-                }
-            },
+            exceptionsHandler ?: {},
             privateKeyConfig = privateKeyConfig,
             scope = scope,
             block = filter.asUpdateReceiver
@@ -54,11 +51,7 @@ data class WebhookConfig(
             allowedUpdates = filter.allowedUpdates,
             maxAllowedConnections = maxConnections
         ),
-        {
-            if (errorsVerbose) {
-                bot.sendToLogger(it, "Webhooks")
-            }
-        },
+        exceptionsHandler ?: {},
         privateKeyConfig = privateKeyConfig,
         scope = scope,
         block = filter.asUpdateReceiver
