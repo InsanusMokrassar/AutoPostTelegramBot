@@ -23,7 +23,6 @@ data class BotConfig(
             responseAwaitMillis = it.responseAwaitMillis ?: clientConfig ?.readTimeout
         )
     } ?: LongPollingConfig(
-        null,
         clientConfig ?.readTimeout
     ).also {
         longPollingConfig = it

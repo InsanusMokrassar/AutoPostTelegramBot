@@ -39,11 +39,9 @@ class SchedulerPlugin : Plugin {
         )
         val executorWR = WeakReference(executor)
 
-        coroutineScope {
-            launch {
-                baseConfig.postsTable.postRemovedChannel.asFlow().collectWithErrors {
-                    timerSchedulesTable.unregisterPost(it)
-                }
+        CoroutineScope(Dispatchers.Default).launch {
+            baseConfig.postsTable.postRemovedChannel.asFlow().collectWithErrors {
+                timerSchedulesTable.unregisterPost(it)
             }
         }
 

@@ -23,7 +23,7 @@ data class WebhookConfig(
     val privateKeyConfig: WebhookPrivateKeyConfig? = null,
     val errorsVerbose: Boolean = false
 ) {
-    suspend fun setWebhook(
+    suspend fun startWebhookServer(
         bot: RequestsExecutor,
         filter: UpdatesFilter,
         scope: CoroutineScope = NewDefaultCoroutineScope(4)

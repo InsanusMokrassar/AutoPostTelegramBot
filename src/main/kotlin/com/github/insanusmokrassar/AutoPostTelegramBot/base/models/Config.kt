@@ -63,14 +63,19 @@ data class FinalConfig (
         CommonKnownPostsTransactions.updatePostsAndPostsMessagesTables(postsTable, postsMessagesTable)
     }
 
-    suspend fun subscribe(filter: UpdatesFilter, scope: CoroutineScope = NewDefaultCoroutineScope(4)) {
-        webhookConfig ?.setWebhook(
-            bot,
-            filter,
-            scope
-        ) ?: longPollingConfig ?.applyTo(
-            bot,
-            filter
-        )
+    suspend fun startGettingUpdates(filter: UpdatesFilter, scope: CoroutineScope = NewDefaultCoroutineScope(4)) {
+        webhookConfig ?.apply {
+            startWebhookServer(
+                bot,
+                filter,
+                scope
+            )
+        } ?: longPollingConfig ?.apply {
+            startLongPollingListening(
+                bot,
+                filter,
+                scope
+            )
+        } ?: error("Webhooks or long polling way for updates retrieving must be used, but nothing configured")
     }
 }
