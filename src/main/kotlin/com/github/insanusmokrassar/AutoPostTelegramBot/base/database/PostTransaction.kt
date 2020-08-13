@@ -4,16 +4,21 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.exceptions.
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.*
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.PostId
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.PostMessage
+import com.github.insanusmokrassar.AutoPostTelegramBot.extraLargeBroadcastCapacity
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.NewDefaultCoroutineScope
 import kotlinx.coroutines.channels.BroadcastChannel
-import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.launch
 import java.io.Closeable
 
-val transactionStartedChannel = BroadcastChannel<Unit>(Channel.CONFLATED)
-val transactionMessageAddedChannel = BroadcastChannel<Array<out PostMessage>>(Channel.CONFLATED)
-val transactionMessageRemovedChannel = BroadcastChannel<PostMessage>(Channel.CONFLATED)
-val transactionCompletedChannel = BroadcastChannel<PostId>(Channel.CONFLATED)
+private val transactionStartedChannel = BroadcastChannel<PostTransaction>(extraLargeBroadcastCapacity)
+val transactionStartedFlow = transactionStartedChannel.asFlow()
+private val transactionMessageAddedChannel = BroadcastChannel<Array<out PostMessage>>(extraLargeBroadcastCapacity)
+val transactionMessageAddedFlow = transactionMessageAddedChannel.asFlow()
+private val transactionMessageRemovedChannel = BroadcastChannel<PostMessage>(extraLargeBroadcastCapacity)
+val transactionMessageRemovedFlow = transactionMessageRemovedChannel.asFlow()
+private val transactionCompletedChannel = BroadcastChannel<PostId>(extraLargeBroadcastCapacity)
+val transactionCompletedFlow = transactionCompletedChannel.asFlow()
 
 val PostTransactionsScope = NewDefaultCoroutineScope()
 
@@ -28,7 +33,7 @@ class PostTransaction(
 
     init {
         PostTransactionsScope.launch {
-            transactionStartedChannel.send(Unit)
+            transactionStartedChannel.send(this@PostTransaction)
         }
     }
 

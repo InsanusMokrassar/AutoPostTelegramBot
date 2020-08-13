@@ -4,11 +4,12 @@
 
 * Versions updates:
     * Kotlin: `1.3.61` -> `1.3.72`
-    * Coroutines: `1.3.3` -> `1.3.6`
+    * Coroutines: `1.3.3` -> `1.3.8`
     * Kotlin Serialization: `0.14.0` -> `0.20.0`
-    * `TelegramBotAPI` -> `TelegramBotAPI-all` + version change: `0.23.2` -> `0.27.4`
+    * `TelegramBotAPI` -> `TelegramBotAPI-all` + version change: `0.23.2` -> `0.27.10`
     * Ktor: `1.3.1` -> `1.3.2`
-* `BroadcastChannel` and `ReceiveChannel` extensions was removed
+* `BroadcastChannel` and `ReceiveChannel` extensions were removed
+* Transaction flows added
 
 ## 1.8.0
 

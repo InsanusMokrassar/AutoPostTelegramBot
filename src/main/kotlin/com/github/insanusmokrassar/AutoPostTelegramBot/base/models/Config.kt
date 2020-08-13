@@ -10,6 +10,7 @@ import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
 import com.github.insanusmokrassar.TelegramBotAPI.types.ChatId
 import com.github.insanusmokrassar.TelegramBotAPI.types.toChatId
 import com.github.insanusmokrassar.TelegramBotAPI.updateshandlers.UpdatesFilter
+import com.github.insanusmokrassar.TelegramBotAPI.utils.ExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.serialization.Serializable
 import org.h2.Driver
@@ -65,32 +66,26 @@ data class FinalConfig (
         CommonKnownPostsTransactions.updatePostsAndPostsMessagesTables(postsTable, postsMessagesTable)
     }
 
+    private val exceptionHandler: ExceptionHandler<Unit>? = if (errorsVerbose) {
+        { bot.sendToLogger(it, "Long polling getting updates") }
+    } else {
+        null
+    }
+
     suspend fun startGettingUpdates(filter: UpdatesFilter, scope: CoroutineScope = NewDefaultCoroutineScope(4)) {
         webhookConfig ?.apply {
             startWebhookServer(
                 bot,
                 filter,
                 scope,
-                if (errorsVerbose) {
-                    {
-                        bot.sendToLogger(it, "Long polling getting updates")
-                    }
-                } else {
-                    null
-                }
+                exceptionHandler
             )
         } ?: longPollingConfig ?.apply {
             startLongPollingListening(
                 bot,
                 filter,
                 scope,
-                if (errorsVerbose) {
-                    {
-                        bot.sendToLogger(it, "Long polling getting updates")
-                    }
-                } else {
-                    null
-                }
+                exceptionHandler
             )
         } ?: error("Webhooks or long polling way for updates retrieving must be used, but nothing configured")
     }

@@ -14,7 +14,7 @@ import com.github.insanusmokrassar.TelegramBotAPI.types.ChatIdentifier
 import com.github.insanusmokrassar.TelegramBotAPI.types.MessageIdentifier
 import com.github.insanusmokrassar.TelegramBotAPI.types.ParseMode.MarkdownParseMode
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.flow.*
 import java.lang.ref.WeakReference
 
 class PostMessagesRegistrant(
@@ -26,13 +26,9 @@ class PostMessagesRegistrant(
     private val botWR = WeakReference(executor)
     init {
         val scope = NewDefaultCoroutineScope()
-        scope.launch {
-            transactionCompletedChannel.asFlow().collectWithErrors {
-                registerPostMessage(
-                    it
-                )
-            }
-        }
+        transactionCompletedChannel.asFlow().onEach {
+            registerPostMessage(it)
+        }.launchIn(scope)
 
         val registerJobs = postsTable.getAll().mapNotNull {
             if (postsTable.postRegisteredMessage(it) == null) {
@@ -47,7 +43,6 @@ class PostMessagesRegistrant(
         }
         scope.launch {
             registerJobs.joinAll()
-            scope.coroutineContext.cancel()
         }
     }
 
