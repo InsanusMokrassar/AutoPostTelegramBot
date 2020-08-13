@@ -44,7 +44,7 @@ publishing {
                     
                         license {
                             name = "Apache Software License 2.0"
-                            url = "https://opensource.org/licenses/Apache-2.0"
+                            url = "https://github.com/InsanusMokrassar/${project.name}/blob/master/LICENSE"
                         }
                     
                 }
