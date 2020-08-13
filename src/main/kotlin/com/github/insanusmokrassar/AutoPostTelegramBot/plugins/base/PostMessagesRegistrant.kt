@@ -2,11 +2,10 @@ package com.github.insanusmokrassar.AutoPostTelegramBot.plugins.base
 
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsBaseInfoTable
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.tables.PostsMessagesInfoTable
-import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.transactionCompletedChannel
+import com.github.insanusmokrassar.AutoPostTelegramBot.base.database.transactionCompletedFlow
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.plugins.commonLogger
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.NewDefaultCoroutineScope
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.extensions.sendToLogger
-import com.github.insanusmokrassar.AutoPostTelegramBot.utils.flow.collectWithErrors
 import com.github.insanusmokrassar.TelegramBotAPI.bot.RequestsExecutor
 import com.github.insanusmokrassar.TelegramBotAPI.bot.exceptions.ReplyMessageNotFoundException
 import com.github.insanusmokrassar.TelegramBotAPI.requests.send.SendTextMessage
@@ -26,7 +25,7 @@ class PostMessagesRegistrant(
     private val botWR = WeakReference(executor)
     init {
         val scope = NewDefaultCoroutineScope()
-        transactionCompletedChannel.asFlow().onEach {
+        transactionCompletedFlow.onEach {
             registerPostMessage(it)
         }.launchIn(scope)
 
