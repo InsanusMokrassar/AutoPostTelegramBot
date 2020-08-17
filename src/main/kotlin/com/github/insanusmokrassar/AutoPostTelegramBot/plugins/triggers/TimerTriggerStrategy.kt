@@ -101,6 +101,7 @@ private fun getPlusTwentyFourHours() = System.currentTimeMillis() + twentyFourHo
 class TimerTriggerStrategy (
     private val delay: Long? = null,
     private val time: String = "00:00-00:00 01:00",
+    private val times: List<String>? = null,
     private val substitutedByScheduler: Boolean = false
 ) : Plugin {
     @Transient
@@ -114,7 +115,7 @@ class TimerTriggerStrategy (
     private var lastTime = DateTime.now()
 
     private val timesOfTriggering: List<CalculatedDateTime> by lazy {
-        time.parseDateTimes()
+        (times ?: listOf(time)).flatMap { it.parseDateTimes() }
     }
     fun getNextTime(after: DateTime = DateTime.now()): DateTime? {
         val near = timesOfTriggering.nearDateTime(after) ?: return null
