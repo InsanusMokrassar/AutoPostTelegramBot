@@ -11,6 +11,7 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.utils.flow.collectWithErr
 import com.github.insanusmokrassar.TelegramBotAPI.types.ChatIdentifier
 import com.github.insanusmokrassar.TelegramBotAPI.types.MessageEntity.textsources.BotCommandTextSource
 import com.github.insanusmokrassar.TelegramBotAPI.types.message.abstracts.ContentMessage
+import com.github.insanusmokrassar.TelegramBotAPI.types.message.abstracts.MediaGroupMessage
 import com.github.insanusmokrassar.TelegramBotAPI.types.message.content.TextContent
 import kotlinx.coroutines.*
 
@@ -34,6 +35,9 @@ internal fun CoroutineScope.enableOnMessageCallback(
                     return@collectWithErrors
                 }
             }
+        }
+        if (message is MediaGroupMessage) {
+            return@collectWithErrors // do nothing
         }
 
         val chatId: ChatIdentifier = message.chat.id

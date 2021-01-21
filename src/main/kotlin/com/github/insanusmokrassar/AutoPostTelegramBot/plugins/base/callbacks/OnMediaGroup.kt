@@ -23,6 +23,7 @@ internal fun CoroutineScope.enableOnMediaGroupsCallback(
             )
         }
     ) {
+        println(it)
         val messages = it.data
         val id = messages.first().chat.id
         CommonKnownPostsTransactions[id] ?.also {
