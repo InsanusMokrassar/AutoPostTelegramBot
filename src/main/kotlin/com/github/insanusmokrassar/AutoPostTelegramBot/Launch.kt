@@ -10,9 +10,11 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.utils.NewDefaultCoroutine
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.flow.collectWithErrors
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.flow.combineFlows
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.load
+import com.github.insanusmokrassar.TelegramBotAPI.extensions.utils.safely
 import com.github.insanusmokrassar.TelegramBotAPI.extensions.utils.updates.filterBaseMessageUpdates
 import com.github.insanusmokrassar.TelegramBotAPI.requests.chat.get.GetChat
 import com.github.insanusmokrassar.TelegramBotAPI.types.CallbackQuery.MessageDataCallbackQuery
+import com.github.insanusmokrassar.TelegramBotAPI.types.mediaCountInMediaGroup
 import com.github.insanusmokrassar.TelegramBotAPI.types.message.abstracts.MediaGroupMessage
 import com.github.insanusmokrassar.TelegramBotAPI.types.update.CallbackQueryUpdate
 import com.github.insanusmokrassar.TelegramBotAPI.types.update.MediaGroupUpdates.*
@@ -32,7 +34,7 @@ const val extraLargeBroadcastCapacity = 64
 
 const val commonListenersCapacity = mediumBroadcastCapacity
 
-private val scope = NewDefaultCoroutineScope(8)
+private val scope = CoroutineScope(Dispatchers.Default)
 
 val flowFilter = FlowsUpdatesFilter(extraLargeBroadcastCapacity)
 
@@ -66,26 +68,35 @@ fun main(args: Array<String>) {
         val mutex = Mutex()
         suspend fun send() {
             mediaGroupsChannel.send(currentList.first() to currentList.flatMap { it.origins })
+            currentList.clear()
         }
         var debounceJob: Job? = null
         launch {
             combineFlows(flowFilter.messageMediaGroupFlow, flowFilter.channelPostMediaGroupFlow, scope = scope).filter {
                 val mediaGroupChatId = it.data.first().chat.id
                 mediaGroupChatId == config.sourceChatId
-            }.collectWithErrors({ _, _ -> mutex.unlock() }) {
+            }.collectWithErrors({ _, _ -> if (mutex.isLocked) mutex.unlock() }) {
+                debounceJob ?.cancelAndJoin()
                 mutex.withLock {
-                    debounceJob ?.cancel()
                     val currentMediaGroup = it.data.first().mediaGroupId
                     val previousMediaGroup = currentList.firstOrNull() ?.data ?.first() ?.mediaGroupId
                     if (currentMediaGroup != previousMediaGroup && currentList.isNotEmpty()) {
+                        commonLogger.info("Current mediagroup do not equals to previous ($currentMediaGroup, $previousMediaGroup)")
                         send()
                     }
                     currentList.add(it)
-                    debounceJob = launch {
-                        delay(1000L)
-                        mutex.withLock {
-                            if (currentList.isNotEmpty()) {
-                                send()
+                    if (currentList.size == mediaCountInMediaGroup.last) {
+                        send()
+                    } else {
+                        debounceJob = scope.launch {
+                            safely({ if (mutex.isLocked) mutex.unlock() }) {
+                                delay(5000L)
+                                mutex.withLock {
+                                    commonLogger.info("Sending after debounce")
+                                    if (currentList.isNotEmpty()) {
+                                        send()
+                                    }
+                                }
                             }
                         }
                     }
@@ -94,8 +105,10 @@ fun main(args: Array<String>) {
         }
         launch {
             checkedMessagesFlow.collectWithErrors {
+                debounceJob ?.cancelAndJoin()
                 mutex.withLock {
                     if (currentList.isNotEmpty()) {
+                        commonLogger.info("Sending on non-mediagroup message")
                         send()
                     }
                 }
@@ -117,7 +130,7 @@ fun main(args: Array<String>) {
         PostsMessagesTable = it.postsMessagesTable
     }
 
-    runBlocking {
+    scope.launch {
         commonLogger.info("Source chat: ${bot.execute(GetChat(config.sourceChatId))}")
         commonLogger.info("Target chat: ${bot.execute(GetChat(config.targetChatId))}")
 
@@ -134,5 +147,8 @@ fun main(args: Array<String>) {
             flowFilter,
             scope
         )
+    }
+    runBlocking {
+        scope.coroutineContext[Job]!!.join()
     }
 }

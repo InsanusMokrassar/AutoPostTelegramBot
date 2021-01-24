@@ -4,6 +4,7 @@ import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.PostId
 import com.github.insanusmokrassar.AutoPostTelegramBot.base.models.PostMessage
 import com.github.insanusmokrassar.AutoPostTelegramBot.mediumBroadcastCapacity
 import com.github.insanusmokrassar.AutoPostTelegramBot.utils.NewDefaultCoroutineScope
+import com.github.insanusmokrassar.TelegramBotAPI.types.MediaGroupIdentifier
 import com.github.insanusmokrassar.TelegramBotAPI.types.MessageIdentifier
 import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.flow.asFlow
@@ -28,9 +29,9 @@ class PostsMessagesInfoTable(private val database: Database) : Table() {
     val removedMessagesOfPostFlow = removedMessagesOfPost.asFlow()
     val removedMessageOfPostFlow = removedMessageOfPost.asFlow()
 
-    private val messageIdColumn = long("messageId").primaryKey()
-    private val mediaGroupIdColumn = text("mediaGroupId").nullable()
-    private val postIdColumn = integer("postId")
+    private val messageIdColumn: Column<MessageIdentifier> = long("messageId").primaryKey()
+    private val mediaGroupIdColumn: Column<MediaGroupIdentifier?> = text("mediaGroupId").nullable()
+    private val postIdColumn: Column<PostId> = integer("postId")
 
     init {
         transaction(database) {
