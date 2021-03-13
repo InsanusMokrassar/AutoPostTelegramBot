@@ -17,11 +17,11 @@ apply plugin: 'kotlin'
 apply plugin: 'kotlinx-serialization'
 
 project.version = "$version"
-project.group = "com.github.insanusmokrassar"
+project.group = "dev.inmo"
 
 apply from: "publish.gradle"
 
-mainClassName="com.github.insanusmokrassar.AutoPostTelegramBot.LaunchKt"
+mainClassName="dev.inmo.AutoPostTelegramBot.LaunchKt"
 
 repositories {
     mavenLocal()
