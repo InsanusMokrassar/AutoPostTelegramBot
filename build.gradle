@@ -35,14 +35,16 @@ repositories {
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     api "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlin_coroutines_version"
-    api "org.jetbrains.kotlinx:kotlinx-serialization-runtime:$kotlin_serialisation_runtime_version"
-    api "com.github.insanusmokrassar:TelegramBotAPI-all:$telegram_bot_api_version"
+    api "org.jetbrains.kotlinx:kotlinx-serialization-json:$kotlin_serialisation_runtime_version"
+    api "dev.inmo:tgbotapi:$telegram_bot_api_version"
 
     implementation "io.ktor:ktor-server-cio:$ktor_version"
     implementation "io.ktor:ktor-client-okhttp:$ktor_version"
 
-    api "org.jetbrains.exposed:exposed:$kotlin_exposed_version"
+    api "org.jetbrains.exposed:exposed-jdbc:$kotlin_exposed_version"
+    api "org.jetbrains.exposed:exposed-jodatime:$kotlin_exposed_version"
     implementation "com.h2database:h2:$h2_version"
+    api "joda-time:joda-time:$joda_time_version"
 
     // Use JUnit test framework
     testImplementation 'junit:junit:4.12'
