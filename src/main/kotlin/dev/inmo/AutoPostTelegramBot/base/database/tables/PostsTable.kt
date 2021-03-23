@@ -33,7 +33,8 @@ class PostsBaseInfoTable(
     val postRemovedChannel = BroadcastChannel<PostId>(Channel.CONFLATED)
     val postMessageRegisteredChannel = BroadcastChannel<PostIdMessageId>(Channel.CONFLATED)
 
-    private val idColumn = integer("id").primaryKey().autoIncrement()
+    private val idColumn = integer("id").autoIncrement()
+    override val primaryKey: PrimaryKey = PrimaryKey(idColumn)
     private val postRegisteredMessageIdColumn = long("postRegistered").nullable()
     private val postDateTimeColumn = datetime("postDateTime").default(DateTime.now())
 

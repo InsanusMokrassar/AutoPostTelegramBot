@@ -29,7 +29,8 @@ class PostsMessagesInfoTable(private val database: Database) : Table() {
     val removedMessagesOfPostFlow = removedMessagesOfPost.asFlow()
     val removedMessageOfPostFlow = removedMessageOfPost.asFlow()
 
-    private val messageIdColumn: Column<MessageIdentifier> = long("messageId").primaryKey()
+    private val messageIdColumn: Column<MessageIdentifier> = long("messageId")
+    override val primaryKey: PrimaryKey = PrimaryKey(messageIdColumn)
     private val mediaGroupIdColumn: Column<MediaGroupIdentifier?> = text("mediaGroupId").nullable()
     private val postIdColumn: Column<PostId> = integer("postId")
 
