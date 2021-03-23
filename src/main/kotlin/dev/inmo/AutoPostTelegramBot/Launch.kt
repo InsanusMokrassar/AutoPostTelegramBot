@@ -10,6 +10,7 @@ import dev.inmo.AutoPostTelegramBot.utils.flow.collectWithErrors
 import dev.inmo.AutoPostTelegramBot.utils.flow.combineFlows
 import dev.inmo.AutoPostTelegramBot.utils.load
 import dev.inmo.micro_utils.coroutines.*
+import dev.inmo.tgbotapi.extensions.api.chat.get.getChat
 import dev.inmo.tgbotapi.extensions.utils.shortcuts.mediaGroupId
 import dev.inmo.tgbotapi.extensions.utils.updates.filterBaseMessageUpdatesByChatId
 import dev.inmo.tgbotapi.requests.chat.get.GetChat
@@ -37,7 +38,7 @@ const val commonListenersCapacity = mediumBroadcastCapacity
 
 private val scope = CoroutineScope(Dispatchers.Default)
 
-val flowFilter = FlowsUpdatesFilter(extraLargeBroadcastCapacity)
+val flowFilter = FlowsUpdatesFilter()
 
 lateinit var checkedMessagesFlow: Flow<BaseSentMessageUpdate>
     private set
@@ -149,8 +150,8 @@ fun main(args: Array<String>) {
     }
 
     scope.launch {
-        commonLogger.info("Source chat: ${bot.execute(GetChat(config.sourceChatId))}")
-        commonLogger.info("Target chat: ${bot.execute(GetChat(config.targetChatId))}")
+        commonLogger.info("Source chat: ${bot.getChat(config.sourceChatId)}")
+        commonLogger.info("Target chat: ${bot.getChat(config.targetChatId)}")
 
         val pluginManager = DefaultPluginManager(
             config.pluginsConfigs
@@ -167,6 +168,6 @@ fun main(args: Array<String>) {
         )
     }
     runBlocking {
-        scope.coroutineContext[Job]!!.join()
+        scope.coroutineContext.job.join()
     }
 }
