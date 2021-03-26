@@ -10,8 +10,11 @@ import java.util.logging.Logger
 
 typealias PluginName = String
 
-val commonLogger = Logger.getLogger("common").also {
-    it.level = Level.FINER
+val commonLogger = Logger.getLogger("common").also { logger ->
+    logger.level = Level.FINER
+    logger.handlers.forEach {
+        it.level = logger.level
+    }
 }
 
 @Serializable(PluginSerializer::class)

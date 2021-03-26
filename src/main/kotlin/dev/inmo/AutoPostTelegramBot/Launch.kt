@@ -53,8 +53,6 @@ lateinit var checkedMediaGroupsFlow: Flow<SentMediaGroupUpdate>
 fun main(args: Array<String>) {
     val config: FinalConfig = load(args[0], Config.serializer()).finalConfig
 
-    commonLogger.level = Level.FINER
-
     checkedMessagesFlow = (flowFilter.messageFlow + flowFilter.channelPostFlow).filterBaseMessageUpdatesByChatId(
         config.sourceChatId
     ).filter { it.data !is MediaGroupMessage<*> }
