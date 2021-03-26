@@ -11,7 +11,7 @@ import java.util.logging.Logger
 typealias PluginName = String
 
 val commonLogger = Logger.getLogger("common").also { logger ->
-    logger.level = Level.FINER
+    logger.level = Level.ALL
     logger.handlers.forEach {
         it.level = logger.level
     }
