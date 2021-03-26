@@ -7,7 +7,7 @@ import dev.inmo.AutoPostTelegramBot.base.plugins.commonLogger
 import dev.inmo.AutoPostTelegramBot.utils.NewDefaultCoroutineScope
 import dev.inmo.AutoPostTelegramBot.utils.extensions.sendToLogger
 import dev.inmo.tgbotapi.bot.RequestsExecutor
-import dev.inmo.tgbotapi.bot.exceptions.ReplyMessageNotFoundException
+import dev.inmo.tgbotapi.bot.exceptions.*
 import dev.inmo.tgbotapi.requests.send.SendTextMessage
 import dev.inmo.tgbotapi.types.ChatIdentifier
 import dev.inmo.tgbotapi.types.MessageIdentifier
@@ -77,7 +77,23 @@ class PostMessagesRegistrant(
                 )
                 postsMessagesTable.removePostMessage(registeredPostId, messageId)
                 messages.removeAt(0)
+            } catch (e: CommonRequestException) {
+                if (e.plainAnswer.contains("Bad Request: replied message not found")) {
+                    sendToLogger(
+                        e,
+                        "Register message"
+                    )
+                    postsMessagesTable.removePostMessage(registeredPostId, messageId)
+                    messages.removeAt(0)
+                } else {
+                    sendToLogger(
+                        e,
+                        "Register message; Left retries: $actualRetries"
+                    )
+                    actualRetries--
+                }
             } catch (e: Exception) {
+                println(e::class)
                 sendToLogger(
                     e,
                     "Register message; Left retries: $actualRetries"
