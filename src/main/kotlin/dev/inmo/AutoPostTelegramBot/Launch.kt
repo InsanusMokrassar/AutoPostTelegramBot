@@ -27,6 +27,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import java.util.logging.Level
 
 const val extraSmallBroadcastCapacity = 4
 const val smallBroadcastCapacity = 8
@@ -51,6 +52,8 @@ lateinit var checkedMediaGroupsFlow: Flow<SentMediaGroupUpdate>
 
 fun main(args: Array<String>) {
     val config: FinalConfig = load(args[0], Config.serializer()).finalConfig
+
+    commonLogger.level = Level.FINER
 
     checkedMessagesFlow = (flowFilter.messageFlow + flowFilter.channelPostFlow).filterBaseMessageUpdatesByChatId(
         config.sourceChatId

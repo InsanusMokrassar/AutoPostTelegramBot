@@ -14,7 +14,6 @@ class BotLogger(
 ) : Plugin {
     override suspend fun onInit(executor: RequestsExecutor, baseConfig: FinalConfig, pluginManager: PluginManager) {
         val logExecutor = config ?.createBot() ?: executor
-        super.onInit(logExecutor, baseConfig, pluginManager)
         initHandler(logExecutor, baseConfig.logsChatId)
     }
 }
