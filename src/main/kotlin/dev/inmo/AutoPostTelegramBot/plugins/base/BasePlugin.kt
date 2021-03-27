@@ -47,15 +47,6 @@ class BasePlugin : Plugin {
         startPostJob = startPostJob ?: scope.enableStartPostCommand()
         fixPostJob = fixPostJob ?: scope.enableFixPostCommand()
 
-        onMediaGroupJob = onMediaGroupJob ?: scope.enableOnMediaGroupsCallback(
-            baseConfig.postsTable,
-            baseConfig.postsMessagesTable
-        )
-        onMessageJob = onMessageJob ?: scope.enableOnMessageCallback(
-            baseConfig.postsTable,
-            baseConfig.postsMessagesTable
-        )
-
         postMessagesRegistrant = PostMessagesRegistrant(
             executor,
             baseConfig.sourceChatId,
@@ -64,5 +55,12 @@ class BasePlugin : Plugin {
         ).also {
             renewRegisteredMessage = RenewRegisteredMessage(it, baseConfig.postsMessagesTable).also { it.onInit(executor, baseConfig, pluginManager) }
         }
+
+        onMediaGroupJob = onMediaGroupJob ?: scope.enableOnMediaGroupsCallback(
+            CommonKnownPostsTransactions
+        )
+        onMessageJob = onMessageJob ?: scope.enableOnMessageCallback(
+            CommonKnownPostsTransactions
+        )
     }
 }

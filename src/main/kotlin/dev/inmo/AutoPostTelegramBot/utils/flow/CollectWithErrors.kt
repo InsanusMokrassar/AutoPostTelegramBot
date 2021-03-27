@@ -2,13 +2,16 @@ package dev.inmo.AutoPostTelegramBot.utils.flow
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.supervisorScope
 
 suspend fun <T> Flow<T>.collectWithErrors(
-    onError: (suspend (value: T, throwable: Throwable) -> Unit)? = null,
+    onError: (suspend (value: T, throwable: Throwable) -> Unit)?,
     action: suspend (value: T) -> Unit
 ) = collect {
     try {
-        action(it)
+        supervisorScope {
+            action(it)
+        }
     } catch (e: Throwable) {
         onError ?.invoke(it, e)
     }

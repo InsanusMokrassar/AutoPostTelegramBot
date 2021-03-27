@@ -4,6 +4,7 @@ import dev.inmo.AutoPostTelegramBot.base.database.tables.PostsBaseInfoTable
 import dev.inmo.AutoPostTelegramBot.base.database.tables.PostsMessagesInfoTable
 import dev.inmo.AutoPostTelegramBot.base.plugins.Plugin
 import dev.inmo.AutoPostTelegramBot.plugins.base.commands.CommonKnownPostsTransactions
+import dev.inmo.AutoPostTelegramBot.plugins.base.commands.PostsTransactions
 import dev.inmo.AutoPostTelegramBot.utils.NewDefaultCoroutineScope
 import dev.inmo.AutoPostTelegramBot.utils.extensions.sendToLogger
 import dev.inmo.micro_utils.coroutines.ExceptionHandler
@@ -63,7 +64,7 @@ data class FinalConfig (
     val postsTable = PostsBaseInfoTable(databaseConfig.database, postsMessagesTable)
 
     init {
-        CommonKnownPostsTransactions.updatePostsAndPostsMessagesTables(postsTable, postsMessagesTable)
+        CommonKnownPostsTransactions = PostsTransactions(postsTable, postsMessagesTable)
     }
 
     private val exceptionHandler: ExceptionHandler<Unit>? = if (errorsVerbose) {

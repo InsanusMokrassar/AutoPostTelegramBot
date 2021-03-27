@@ -6,10 +6,11 @@ import dev.inmo.AutoPostTelegramBot.base.database.tables.PostsMessagesInfoTable
 import dev.inmo.tgbotapi.types.ChatIdentifier
 import java.util.concurrent.ConcurrentHashMap
 
-object CommonKnownPostsTransactions {
+class PostsTransactions(
+    private val postsTable: PostsBaseInfoTable,
+    private val postsMessagesTable: PostsMessagesInfoTable
+) {
     private val usersTransactions = ConcurrentHashMap<ChatIdentifier, PostTransaction>()
-    private lateinit var postsTable: PostsBaseInfoTable
-    private lateinit var postsMessagesTable: PostsMessagesInfoTable
 
     @Synchronized
     operator fun contains(chatIdentifier: ChatIdentifier): Boolean = usersTransactions[chatIdentifier] ?.let {
@@ -43,11 +44,18 @@ object CommonKnownPostsTransactions {
     }
 
     @Synchronized
-    internal fun updatePostsAndPostsMessagesTables(
-        postsTable: PostsBaseInfoTable,
-        postsMessagesTable: PostsMessagesInfoTable
-    ) {
-        this.postsTable = postsTable
-        this.postsMessagesTable = postsMessagesTable
+    fun doInTransaction(
+        chatId: ChatIdentifier,
+        completeIfNewOne: Boolean = true,
+        block: (PostTransaction) -> Unit
+    ) = get(chatId) ?.let(block) ?: startTransaction(chatId) ?.let {
+        if (completeIfNewOne) {
+            it.use(block)
+        } else {
+            it.let(block)
+        }
     }
 }
+
+lateinit var CommonKnownPostsTransactions: PostsTransactions
+    internal set

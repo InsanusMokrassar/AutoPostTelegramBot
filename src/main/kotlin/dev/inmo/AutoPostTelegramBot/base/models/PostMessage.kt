@@ -1,5 +1,6 @@
 package dev.inmo.AutoPostTelegramBot.base.models
 
+import dev.inmo.tgbotapi.extensions.utils.asMediaGroupMessage
 import dev.inmo.tgbotapi.types.MediaGroupIdentifier
 import dev.inmo.tgbotapi.types.MessageIdentifier
 import dev.inmo.tgbotapi.types.message.abstracts.MediaGroupMessage
@@ -17,7 +18,7 @@ data class PostMessage(
             field = value
         }
 
-    constructor(message: Message) : this(message.messageId, (message as? MediaGroupMessage<*>) ?.mediaGroupId) {
+    constructor(message: Message) : this(message.messageId, message.asMediaGroupMessage() ?.mediaGroupId) {
         this.message = message
     }
 }
