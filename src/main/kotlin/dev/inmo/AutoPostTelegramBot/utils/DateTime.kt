@@ -106,7 +106,7 @@ private object CommonConverter : Converter {
                 CalculatedDateTime(
                     from,
                     dateTime,
-                    calculated.maxBy {
+                    calculated.maxByOrNull {
                         it.changeDifference
                     } ?.changeDifference ?: throw IllegalStateException(),
                     importantFields,

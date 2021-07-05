@@ -28,7 +28,7 @@ internal fun CoroutineScope.enableOnMessageCallback(
         when (message) {
             is MediaGroupMessage<*> -> return@collectWithErrors
             is ContentMessage<*> -> message.content.asTextContent() ?.let { content ->
-                if (content.textEntities.firstOrNull { it.source is BotCommandTextSource } != null) {
+                if (content.textSources.firstOrNull { it is BotCommandTextSource } != null) {
                     return@collectWithErrors
                 }
             }

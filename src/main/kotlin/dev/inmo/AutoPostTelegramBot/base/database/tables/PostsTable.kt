@@ -49,7 +49,7 @@ class PostsBaseInfoTable(
         return transaction(database) {
             insert {
                 it[postDateTimeColumn] = DateTime.now()
-            }[idColumn] ?.also {
+            }[idColumn].also {
                 coroutinesScope.launch {
                     postAllocatedChannel.send(it)
                 }

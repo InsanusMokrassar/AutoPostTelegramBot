@@ -37,7 +37,7 @@ class SafeLazy<T: Any> (
         return try {
             value
         } catch (e: UninitializedPropertyAccessException) {
-            suspendCoroutine { requestsToGetValue.offer(it) }
+            suspendCoroutine { requestsToGetValue.trySend(it) }
         }
     }
 

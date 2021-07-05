@@ -17,8 +17,9 @@ private val PostsSchedulesTableScope = NewDefaultCoroutineScope(4)
 class PostsSchedulesTable(
     private val db: Database
 ) : Table() {
-    private val postIdColumn = integer("postId").primaryKey()
+    private val postIdColumn = integer("postId")
     private val postTimeColumn = datetime("postTime")
+    override val primaryKey: PrimaryKey = PrimaryKey(postIdColumn)
 
     private val postTimeRegisteredChannel = BroadcastChannel<PostIdPostTime>(Channel.CONFLATED)
     private val postTimeChangedChannel = BroadcastChannel<PostIdPostTime>(Channel.CONFLATED)
@@ -105,7 +106,7 @@ class PostsSchedulesTable(
 
     fun nearPost(): PostIdPostTime? {
         return transaction(db) {
-            registeredPostsTimes().minBy { (_, time) ->
+            registeredPostsTimes().minByOrNull { (_, time) ->
                 time.millis
             }
         }

@@ -6,28 +6,18 @@ import dev.inmo.AutoPostTelegramBot.base.models.Config
 import dev.inmo.AutoPostTelegramBot.base.models.FinalConfig
 import dev.inmo.AutoPostTelegramBot.base.plugins.DefaultPluginManager
 import dev.inmo.AutoPostTelegramBot.base.plugins.commonLogger
-import dev.inmo.AutoPostTelegramBot.utils.flow.collectWithErrors
-import dev.inmo.AutoPostTelegramBot.utils.flow.combineFlows
 import dev.inmo.AutoPostTelegramBot.utils.load
 import dev.inmo.micro_utils.coroutines.*
 import dev.inmo.tgbotapi.extensions.api.chat.get.getChat
-import dev.inmo.tgbotapi.extensions.utils.shortcuts.mediaGroupId
 import dev.inmo.tgbotapi.extensions.utils.updates.*
-import dev.inmo.tgbotapi.requests.chat.get.GetChat
 import dev.inmo.tgbotapi.types.CallbackQuery.MessageDataCallbackQuery
-import dev.inmo.tgbotapi.types.MediaGroupIdentifier
-import dev.inmo.tgbotapi.types.mediaCountInMediaGroup
 import dev.inmo.tgbotapi.types.message.abstracts.MediaGroupMessage
 import dev.inmo.tgbotapi.types.update.CallbackQueryUpdate
 import dev.inmo.tgbotapi.types.update.MediaGroupUpdates.*
 import dev.inmo.tgbotapi.types.update.abstracts.*
 import dev.inmo.tgbotapi.updateshandlers.FlowsUpdatesFilter
 import kotlinx.coroutines.*
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
-import java.util.logging.Level
 
 const val extraSmallBroadcastCapacity = 4
 const val smallBroadcastCapacity = 8

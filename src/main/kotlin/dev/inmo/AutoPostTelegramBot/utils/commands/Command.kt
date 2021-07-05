@@ -30,8 +30,7 @@ abstract class Command {
     suspend fun invoke(p1: BaseMessageUpdate) {
         (p1.data as? CommonMessage<*>) ?.let { message ->
             (message.content as? TextContent) ?.also {
-                it.textEntities.firstOrNull { textPart ->
-                    val source = textPart.source
+                it.textSources.firstOrNull { source ->
                     source is BotCommandTextSource && (commandRegex.matches(source.command))
                 } ?.also {
                     onCommand(p1.updateId, message)

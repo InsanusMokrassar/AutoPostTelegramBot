@@ -75,7 +75,7 @@ class EnableTimerCommand(
 
             preparsedText.parseDateTimes().asSequence().map {
                 it.asFuture
-            }.min() ?.also {
+            }.minOrNull() ?.also {
                     parsed ->
                 parsed.also {
                     postsSchedulesTable.registerPostTime(postId, parsed)

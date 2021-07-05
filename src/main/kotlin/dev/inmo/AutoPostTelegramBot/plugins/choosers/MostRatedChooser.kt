@@ -27,7 +27,7 @@ class MostRatedChooser : RateChooser() {
                 } ?: mostRated.add(it)
             }
         }
-        return mostRated.minBy { (ratingId, _) -> ratingId } ?.let { (ratingId, _) ->
+        return mostRated.minByOrNull { (ratingId, _) -> ratingId } ?.let { (ratingId, _) ->
             ratingPlugin.resolvePostId(ratingId) ?.let {
                 listOf(it)
             }
