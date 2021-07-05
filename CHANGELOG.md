@@ -1,5 +1,16 @@
 # Auto Post Telegram Bot Changelog
 
+## 1.9.0
+
+* Versions updates:
+    * Kotlin: `1.3.61` -> `1.3.72`
+    * Coroutines: `1.3.3` -> `1.3.8`
+    * Kotlin Serialization: `0.14.0` -> `0.20.0`
+    * `TelegramBotAPI` -> `TelegramBotAPI-all` + version change: `0.23.2` -> `0.27.10`
+    * Ktor: `1.3.1` -> `1.3.2`
+* `BroadcastChannel` and `ReceiveChannel` extensions were removed
+* Transaction flows added
+
 ## 1.8.0
 
 * Version updates:
@@ -7,6 +18,10 @@
     * Telegram Bot API `0.21.0` -> `0.22.1`
 * `TimerTriggerStrategy` now have new extension `getPostsInRange` and `getTriggersInRange`
 * `MostRatedChooser` now correctly work with exceptions list
+
+### 1.8.3
+
+* Hotfix for scheduler plugin and its table
 
 ### 1.8.2
 

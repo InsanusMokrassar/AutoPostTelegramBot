@@ -1,37 +1,82 @@
-apply plugin: 'com.jfrog.bintray'
+apply plugin: 'maven-publish'
+apply plugin: 'signing'
 
-ext {
-    projectBintrayDir = "${project.group}/".replace(".", "/") + "${project.name}/${project.version}"
+
+task javadocJar(type: Jar) {
+    from javadoc
+    classifier = 'javadoc'
+}
+task sourcesJar(type: Jar) {
+    from sourceSets.main.allSource
+    classifier = 'sources'
 }
 
-bintray {
-    user = project.hasProperty('BINTRAY_USER') ? project.property('BINTRAY_USER') : System.getenv('BINTRAY_USER')
-    key = project.hasProperty('BINTRAY_KEY') ? project.property('BINTRAY_KEY') : System.getenv('BINTRAY_KEY')
-    publications = ["maven"]
-    filesSpec {
-        into "$projectBintrayDir"
-        from("build/libs") {
-            include "**/*.asc"
-        }
-        from("build/publications/maven") {
-            rename 'pom-default.xml(.*)', "${project.name}-${project.version}.pom\$1"
-        }
-    }
-    pkg {
-        repo = 'StandardRepository'
-        name = "${project.name}"
-        vcsUrl = "https://github.com/InsanusMokrassar/${project.name}"
-        licenses = ['Apache-2.0']
-        version {
-            name = "${project.version}"
-            released = new Date()
-            vcsTag = name
-            gpg {
-                sign = true
-                passphrase = project.hasProperty('signing.gnupg.passphrase') ? project.property('signing.gnupg.passphrase') : System.getenv('signing.gnupg.passphrase')
+publishing {
+    publications {
+        maven(MavenPublication) {
+            from components.java
+
+            artifact javadocJar
+            artifact sourcesJar
+
+            pom {
+                resolveStrategy = Closure.DELEGATE_FIRST
+
+                description = "It is base library for creating smart bot for simple management of channels posts"
+                name = "Auto post Telegram Bot"
+                url = "https://insanusmokrassar.github.io/AutoPostTelegramBot"
+
+                scm {
+                    developerConnection = "scm:git:[fetch=]https://github.com/insanusmokrassar/AutoPostTelegramBot[push=]https://github.com/insanusmokrassar/AutoPostTelegramBot"
+                    url = "https://github.com/insanusmokrassar/AutoPostTelegramBot"
+                }
+
+                developers {
+                    
+                        developer {
+                            id = "InsanusMokrassar"
+                            name = "Ovsyannikov Alexey"
+                            email = "ovsyannikov.alexey95@gmail.com"
+                        }
+                    
+                }
+
+                licenses {
+                    
+                        license {
+                            name = "Apache Software License 2.0"
+                            url = "https://github.com/InsanusMokrassar/${project.name}/blob/master/LICENSE"
+                        }
+                    
+                }
+            }
+            repositories {
+                if ((project.hasProperty('GITHUBPACKAGES_USER') || System.getenv('GITHUBPACKAGES_USER') != null) && (project.hasProperty('GITHUBPACKAGES_PASSWORD') || System.getenv('GITHUBPACKAGES_PASSWORD') != null)) {
+                    maven {
+                        name = "GithubPackages"
+                        url = uri("https://maven.pkg.github.com/InsanusMokrassar/AutoPostTelegramBot")
+                        credentials {
+                            username = project.hasProperty('GITHUBPACKAGES_USER') ? project.property('GITHUBPACKAGES_USER') : System.getenv('GITHUBPACKAGES_USER')
+                            password = project.hasProperty('GITHUBPACKAGES_PASSWORD') ? project.property('GITHUBPACKAGES_PASSWORD') : System.getenv('GITHUBPACKAGES_PASSWORD')
+                        }
+                    }
+                }
+                if ((project.hasProperty('SONATYPE_USER') || System.getenv('SONATYPE_USER') != null) && (project.hasProperty('SONATYPE_PASSWORD') || System.getenv('SONATYPE_PASSWORD') != null)) {
+                    maven {
+                        name = "sonatype"
+                        url = uri("https://oss.sonatype.org/service/local/staging/deploy/maven2/")
+                        credentials {
+                            username = project.hasProperty('SONATYPE_USER') ? project.property('SONATYPE_USER') : System.getenv('SONATYPE_USER')
+                            password = project.hasProperty('SONATYPE_PASSWORD') ? project.property('SONATYPE_PASSWORD') : System.getenv('SONATYPE_PASSWORD')
+                        }
+                    }
+                }
             }
         }
     }
 }
 
-apply from: "maven.publish.gradle"
+signing {
+    useGpgCmd()
+    sign publishing.publications
+}
