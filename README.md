@@ -1,3 +1,5 @@
+**БОТ ЗААРХИВИРОВАН И НЕ ЯВЛЯЕТСЯ ДЕЕСПОСОБНЫМ ВВИДУ ОБНОВЛЕНИЙ TELEGRAM BOT API. ВЫ МОЖЕТЕ ИСПОЛЬЗОВАТЬ [PlaguPoster](https://github.com/InsanusMokrassar/PlaguPoster) КОТОРЫЙ ИМЕЕТ ТОТ ЖЕ И ДАЖЕ БОЛЕЕ ШИРОКИЙ ФУНКЦИОНАЛ**
+
 # Auto Post Telegram Bot
 
 [![Download](https://api.bintray.com/packages/insanusmokrassar/StandardRepository/AutoPostTelegramBot/images/download.svg)](https://bintray.com/insanusmokrassar/StandardRepository/AutoPostTelegramBot/_latestVersion) [![Build Status](https://travis-ci.com/InsanusMokrassar/AutoPostTelegramBot.svg?branch=master)](https://travis-ci.com/InsanusMokrassar/AutoPostTelegramBot)
